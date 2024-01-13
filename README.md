@@ -5,11 +5,9 @@
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Blazor.FilePond
 ### A Blazor interop library for the file upload library [FilePond](https://pqina.nl/filepond/)
 
-This library was created to make it easier to use FilePond in Blazor. It provides access to the options, methods, plugins, and events. There is a demo project showing some common usages.
+This library simplifies the integration of FilePond into Blazor applications, providing access to options, methods, plugins, and events. A demo project showcasing common usages is included.
 
-FilePond documentation for reference: https://pqina.nl/filepond/docs/
-
-⚠️ 95%+ of the FilePond JS has been implemented, but there are a few things that aren't there yet. If you need something that's not supported, please open an issue or submit a PR.
+Diligence was taken to align the API, options, and events closely with the JS. Refer to the [FilePond documentation](https://pqina.nl/filepond/docs/) for details.
 
 ## Installation
 
@@ -77,3 +75,5 @@ public void ConfigureServices(IServiceCollection services)
     }
 }
 ```
+
+⚠️ While 95%+ of the FilePond JS has been implemented, there are a few features not yet supported. If you need assistance or want to request a new feature, please open an issue or submit a pull request.
