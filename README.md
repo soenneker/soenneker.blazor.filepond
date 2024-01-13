@@ -7,7 +7,7 @@
 
 This library simplifies the integration of FilePond into Blazor applications, providing access to options, methods, plugins, and events. A demo project showcasing common usages is included.
 
-Diligence was taken to align the API, options, and events closely with the JS. Refer to the [FilePond documentation](https://pqina.nl/filepond/docs/) for details.
+Diligence was taken to align the Blazor API with JS. Refer to the [FilePond documentation](https://pqina.nl/filepond/docs/) for details.
 
 ## Installation
 
