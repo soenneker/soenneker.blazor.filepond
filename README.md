@@ -39,10 +39,11 @@ public void ConfigureServices(IServiceCollection services)
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/filepond@4.30.6/dist/filepond.min.css">
 ```
 
-### 4. Add the script to your `wwwroot/index.html` file
+### 4. Add the scripts to your `wwwroot/index.html` file
 
 ```html
 <script src="https://cdn.jsdelivr.net/npm/filepond@4.30.6/dist/filepond.min.js"></script>
+<script src="_content/Soenneker.Blazor.FilePond/filepondinterop.js"></script>
 ```
 
 ## Usage
