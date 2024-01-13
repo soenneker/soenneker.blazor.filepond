@@ -1,0 +1,706 @@
+﻿@using System.Collections.Concurrent
+@using System.Data
+@using System.IO
+@using System.Text.Json
+@using System.Threading
+@using Microsoft.AspNetCore.Components.Forms
+@using Microsoft.JSInterop
+@using Soenneker.Blazor.FilePond.Abstract
+@using Soenneker.Blazor.FilePond.Dtos
+@using Soenneker.Blazor.FilePond.Enums
+@using Soenneker.Blazor.FilePond.Options
+@using Soenneker.Blazor.Utils.InteropEventListener.Abstract
+@using Soenneker.Extensions.List
+@using Soenneker.Extensions.String
+@using Soenneker.Utils.Json
+
+@inject IFilePondInterop FilePondInterop
+@inject IInteropEventListener InteropEventListener
+
+@implements IFilePond
+
+<input @ref="_elementReference" type="file" @attributes="Attributes" />
+
+@code {
+
+    /// <summary>
+    /// Internal use, not the actual HTML element's id
+    /// </summary>
+    private string _elementId = Guid.NewGuid().ToString();
+
+    private CancellationTokenSource _cTs = new();
+
+    private ElementReference _elementReference;
+
+    [Parameter(CaptureUnmatchedValues = true)]
+    public Dictionary<string, object>? Attributes { get; set; }
+
+    [Parameter]
+    public FilePondOptions? Options { get; set; }
+
+    [Parameter]
+    public EventCallback OnInit { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondError? Error, FilePondFileItem File, string Status)> OnWarning { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondError? Error, FilePondFileItem File, string Status)> OnError { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnInitFile { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnAddFileStart { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondFileItem File, int Progress)> OnAddFileProgress { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondError?, FilePondFileItem)> OnAddFile { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnProcessFileStart { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondFileItem File, int Progress)> OnProcessFileProgress { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnProcessFileAbort { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnProcessFileRevert { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondError? Error, FilePondFileItem File)> OnProcessFile { get; set; }
+
+    [Parameter]
+    public EventCallback OnProcessFiles { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondError? Error, FilePondFileItem File)> OnRemoveFile { get; set; }
+
+    [Parameter]
+    public EventCallback<(FilePondFileItem File, object Output)> OnPrepareFile { get; set; }
+
+    [Parameter]
+    public EventCallback<List<FilePondFileItem>> OnUpdateFiles { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnActivateFile { get; set; }
+
+    [Parameter]
+    public EventCallback<(List<FilePondFileItem> Files, int Origin, int Target)> OnReorderFiles { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnServerLoad { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnServerError { get; set; }
+
+    [Parameter]
+    public EventCallback<FilePondFileItem> OnServerData { get; set; }
+
+    [Parameter]
+    public Func<FilePondFileItem, ValueTask<bool>>? OnBeforeDropFile { get; set; }
+
+    [Parameter]
+    public Func<FilePondFileItem, ValueTask<bool>>? OnBeforeAddFile { get; set; }
+
+    [Parameter]
+    public Func<FilePondFileItem, ValueTask<bool>>? OnBeforeRemoveFile { get; set; }
+
+    [Parameter]
+    public Func<FilePondFileRenameInfo, ValueTask<string>>? OnFileRename { get; set; }
+
+    public List<FilePondFileItem> Files { get; private set; } = [];
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            InteropEventListener.Initialize(FilePondInterop);
+            await Create();
+        }
+    }
+
+    public async ValueTask Create(FilePondOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        if (options != null)
+            Options = options;
+
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+
+        await FilePondInterop.Create(_elementReference, _elementId, Options, linkedCts.Token);
+
+        await AddEventListeners();
+    }
+
+    public ValueTask SetOptions(FilePondOptions options, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.SetOptions(_elementId, options, linkedCts.Token);
+    }
+
+    public ValueTask AddFile(string uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+    }
+
+    public ValueTask AddFile(Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.AddFile(_elementId, stream, options, linkedCts.Token);
+    }
+
+    public ValueTask AddFiles(List<string> uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+    }
+
+    public ValueTask RemoveFile(FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.RemoveFile(_elementId, null, options, linkedCts.Token);
+    }
+
+    public ValueTask RemoveFile(string fileId, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.RemoveFile(_elementId, fileId, options, linkedCts.Token);
+    }
+
+    public ValueTask RemoveFile(int index, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.RemoveFile(_elementId, index, options, linkedCts.Token);
+    }
+
+    public ValueTask RemoveFiles(object? query = null, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.RemoveFiles(_elementId, query, options, linkedCts.Token);
+    }
+
+    public async ValueTask ProcessFile(object? query = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        await FilePondInterop.ProcessFile(_elementId, query, linkedCts.Token);
+    }
+
+    public async ValueTask ProcessFiles(object? query = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        await FilePondInterop.ProcessFiles(_elementId, query, linkedCts.Token);
+    }
+
+    public ValueTask<object> PrepareFile(object? query = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.PrepareFile(_elementId, query, linkedCts.Token);
+    }
+
+    public ValueTask<object[]> PrepareFiles(object? query = null, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.PrepareFiles(_elementId, query, linkedCts.Token);
+    }
+
+    public ValueTask<FilePondFileItem?> GetFile(bool forceInterop = false, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+
+        if (!forceInterop)
+            return ValueTask.FromResult(Files.FirstOrDefault());
+
+        return FilePondInterop.GetFile(_elementId, null, linkedCts.Token);
+    }
+
+    public async ValueTask<FilePondFileItem?> GetFile(int index, bool forceInterop = false, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+
+        if (forceInterop)
+            return await FilePondInterop.GetFile(_elementId, index, linkedCts.Token);
+
+        if (Files.Count > index)
+            return Files[index];
+
+        return null;
+    }
+
+    public ValueTask<FilePondFileItem?> GetFile(string fileId, bool forceInterop = false, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+
+        if (!forceInterop)
+            return ValueTask.FromResult(Files.FirstOrDefault(c => c.Id == fileId));
+
+        return FilePondInterop.GetFile(_elementId, fileId, linkedCts.Token);
+    }
+
+    public async ValueTask<List<FilePondFileItem>?> GetFiles(bool forceInterop = false, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+
+        if (!forceInterop)
+            return Files;
+
+        List<FilePondFileItem>? tempFiles = await FilePondInterop.GetFiles(_elementId, linkedCts.Token);
+
+        if (tempFiles != null)
+            Files = tempFiles;
+
+        return Files;
+    }
+
+    public ValueTask Browse(CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.Browse(_elementId, linkedCts.Token);
+    }
+
+    public ValueTask Sort(string compareFunctionName, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.Sort(_elementId, compareFunctionName, linkedCts.Token);
+    }
+
+    public ValueTask MoveFile(object query, int index, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.MoveFile(_elementId, query, index, linkedCts.Token);
+    }
+
+    public ValueTask Destroy(CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.Destroy(_elementId, linkedCts.Token);
+    }
+
+    public ValueTask EnablePlugins(params FilePondPluginType[] filePondPluginTypes)
+    {
+        List<string> pluginTypes = filePondPluginTypes.Select(c => c.Name).ToList();
+
+        return FilePondInterop.EnablePlugins(pluginTypes, _cTs.Token);
+    }
+
+    public ValueTask EnablePlugins(params string[] filePondPluginTypes)
+    {
+        return FilePondInterop.EnablePlugins(filePondPluginTypes.ToList(), _cTs.Token);
+    }
+
+    public async ValueTask ReInitialize(CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        await FilePondInterop.Destroy(_elementId, linkedCts.Token);
+        await Create(Options, linkedCts.Token);
+    }
+
+    public ValueTask<Stream?> GetStreamForFile(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.GetStreamForFile(_elementId, null, maxAllowedSize, linkedCts.Token);
+    }
+
+    public ValueTask<Stream?> GetStreamForFile(int index, long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.GetStreamForFile(_elementId, index, maxAllowedSize, linkedCts.Token);
+    }
+
+    public ValueTask<Stream?> GetStreamForFile(string fileId, long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.GetStreamForFile(_elementId, fileId, maxAllowedSize, linkedCts.Token);
+    }
+
+    public ValueTask<List<Stream>> GetAllStreams(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    {
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.GetAllStreams(_elementId, maxAllowedSize, linkedCts.Token);
+    }
+
+    /// <summary>
+    /// Destroys the element.
+    /// </summary>
+    public ValueTask DisposeAsync()
+    {
+        InteropEventListener.DisposeForElement(_elementId);
+        _cTs.Cancel();
+        return FilePondInterop.Destroy(_elementId);
+    }
+
+    public void Dispose()
+    {
+        InteropEventListener.DisposeForElement(_elementId);
+        _cTs.Cancel();
+        FilePondInterop.Destroy(_elementId);
+    }
+
+    private async ValueTask AddEventListeners()
+    {
+        if (OnInit.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnInit)),
+                async e => { await OnInit.InvokeAsync(); });
+        }
+
+        if (OnWarning.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnWarning)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    (FilePondError?, FilePondFileItem, string) parameters = (
+                        jsonDocument.RootElement[0].Deserialize<FilePondError>(),
+                        jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
+                        jsonDocument.RootElement[2].GetString()!
+                    );
+                    await OnWarning.InvokeAsync(parameters);
+                });
+        }
+
+        if (OnError.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnError)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    (FilePondError?, FilePondFileItem, string) parameters = (
+                        jsonDocument.RootElement[0].Deserialize<FilePondError>(),
+                        jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
+                        jsonDocument.RootElement[2].GetString()!
+                    );
+                    await OnError.InvokeAsync(parameters);
+                });
+        }
+
+        if (OnInitFile.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnInitFile)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
+                    await OnInitFile.InvokeAsync(file);
+                });
+        }
+
+        if (OnAddFileStart.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnAddFileStart)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
+                    await OnAddFileStart.InvokeAsync(file);
+                });
+        }
+
+        if (OnAddFileProgress.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnAddFileProgress)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    (FilePondFileItem, int) parameters = (
+                        jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
+                        jsonDocument.RootElement[1].GetInt32()
+                    );
+
+                    await OnAddFileProgress.InvokeAsync(parameters);
+                });
+        }
+
+        await AddEventListener<string>(
+            GetJsEventName(nameof(OnAddFile)),
+            async e =>
+            {
+                JsonDocument jsonDocument = JsonDocument.Parse(e);
+
+                var error = jsonDocument.RootElement[0].Deserialize<FilePondError>();
+                var file = jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!;
+
+                Files.Add(file);
+
+                if (OnAddFile.HasDelegate)
+                    await OnAddFile.InvokeAsync((error, file));
+            });
+
+        if (OnProcessFileStart.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnProcessFileStart)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
+                    await OnProcessFileStart.InvokeAsync(file);
+                });
+        }
+
+        if (OnProcessFileProgress.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnProcessFileProgress)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    (FilePondFileItem, int) parameters = (
+                        jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
+                        jsonDocument.RootElement[1].GetInt32()
+                    );
+                    await OnProcessFileProgress.InvokeAsync(parameters);
+                });
+        }
+
+        if (OnProcessFileAbort.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnProcessFileAbort)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
+                    await OnProcessFileAbort.InvokeAsync(file);
+                });
+        }
+
+        if (OnProcessFileRevert.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnProcessFileRevert)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
+                    await OnProcessFileRevert.InvokeAsync(file);
+                });
+        }
+
+        if (OnProcessFile.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnProcessFile)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+
+                    var parameters = (
+                        jsonDocument.RootElement[0].Deserialize<FilePondError>(),
+                        jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!
+                    );
+                    await OnProcessFile.InvokeAsync(parameters);
+                });
+        }
+
+        if (OnProcessFiles.HasDelegate)
+        {
+            // Uncomment and adjust the types accordingly
+            // await AddEventListener<string>(
+            //     GetJsEventName(nameof(OnProcessFiles)),
+            //     async e => await OnProcessFiles.InvokeAsync()
+            // );
+        }
+
+        await AddEventListener<string>(
+            GetJsEventName(nameof(OnRemoveFile)),
+            async e =>
+            {
+                JsonDocument jsonDocument = JsonDocument.Parse(e);
+
+                var error = jsonDocument.RootElement[0].Deserialize<FilePondError>();
+                var file = jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!;
+
+                Files.Remove(c => c.Id == file.Id);
+
+                if (OnRemoveFile.HasDelegate)
+                    await OnRemoveFile.InvokeAsync((error, file));
+            });
+
+
+        if (OnPrepareFile.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnPrepareFile)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    var parameters = (
+                        jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
+                        jsonDocument.RootElement[1].Deserialize<object>()!
+                    );
+                    await OnPrepareFile.InvokeAsync(parameters);
+                });
+        }
+
+        if (OnUpdateFiles.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnUpdateFiles)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    List<FilePondFileItem> files = jsonDocument.RootElement.EnumerateArray()
+                        .Select(item => item.Deserialize<FilePondFileItem>()!)
+                        .ToList();
+                    await OnUpdateFiles.InvokeAsync(files);
+                });
+        }
+
+        if (OnActivateFile.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnActivateFile)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
+                    await OnActivateFile.InvokeAsync(file);
+                });
+        }
+
+        if (OnReorderFiles.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnReorderFiles)),
+                async e =>
+                {
+                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    (List<FilePondFileItem>, int, int) parameters = (
+                        jsonDocument.RootElement[0].EnumerateArray()
+                            .Select(item => item.Deserialize<FilePondFileItem>()!)
+                            .ToList(),
+                        jsonDocument.RootElement[1].GetInt32(),
+                        jsonDocument.RootElement[2].GetInt32()
+                    );
+                    await OnReorderFiles.InvokeAsync(parameters);
+                });
+        }
+
+        if (OnServerLoad.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnServerLoad)),
+                async e =>
+                {
+                    // JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    // (List<FilePondFileItem>, int, int) parameters = (
+                    //     jsonDocument.RootElement[0].EnumerateArray()
+                    //         .Select(item => item.Deserialize<FilePondFileItem>()!)
+                    //         .ToList(),
+                    //     jsonDocument.RootElement[1].GetInt32(),
+                    //     jsonDocument.RootElement[2].GetInt32()
+                    // );
+                    await OnServerLoad.InvokeAsync();
+                });
+        }
+
+        if (OnServerError.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnServerError)),
+                async e =>
+                {
+                    // JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    // (List<FilePondFileItem>, int, int) parameters = (
+                    //     jsonDocument.RootElement[0].EnumerateArray()
+                    //         .Select(item => item.Deserialize<FilePondFileItem>()!)
+                    //         .ToList(),
+                    //     jsonDocument.RootElement[1].GetInt32(),
+                    //     jsonDocument.RootElement[2].GetInt32()
+                    // );
+                    await OnServerError.InvokeAsync();
+                });
+        }
+
+        if (OnServerData.HasDelegate)
+        {
+            await AddEventListener<string>(
+                GetJsEventName(nameof(OnServerData)),
+                async e =>
+                {
+                    // JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    // (List<FilePondFileItem>, int, int) parameters = (
+                    //     jsonDocument.RootElement[0].EnumerateArray()
+                    //         .Select(item => item.Deserialize<FilePondFileItem>()!)
+                    //         .ToList(),
+                    //     jsonDocument.RootElement[1].GetInt32(),
+                    //     jsonDocument.RootElement[2].GetInt32()
+                    // );
+                    await OnServerData.InvokeAsync();
+                });
+        }
+
+        if (OnBeforeAddFile != null)
+        {
+            await AddEventListener<string, bool>(nameof(OnBeforeAddFile),
+                async e =>
+                {
+                    var file = JsonUtil.Deserialize<FilePondFileItem>(e);
+                    bool result = await OnBeforeAddFile(file!);
+                    return result;
+                });
+        }
+
+        if (OnBeforeDropFile != null)
+        {
+            await AddEventListener<string, bool>(nameof(OnBeforeDropFile),
+                async e =>
+                {
+                    var file = JsonUtil.Deserialize<FilePondFileItem>(e);
+                    bool result = await OnBeforeDropFile(file!);
+                    return result;
+                });
+        }
+
+        if (OnBeforeRemoveFile != null)
+        {
+            await AddEventListener<string, bool>(nameof(OnBeforeDropFile),
+                async e =>
+                {
+                    var file = JsonUtil.Deserialize<FilePondFileItem>(e);
+                    bool result = await OnBeforeRemoveFile(file!);
+                    return result;
+                });
+        }
+
+        if (OnFileRename != null)
+        {
+            await AddEventListener<string, string>(nameof(OnFileRename),
+                async e =>
+                {
+                    var file = JsonUtil.Deserialize<FilePondFileRenameInfo>(e);
+                    string result = await OnFileRename(file!);
+                    return result;
+                });
+        }
+    }
+
+    private static string GetJsEventName(string callback)
+    {
+        // Remove first two characters
+        string subStr = callback[2..];
+        string result = subStr.ToLowerInvariant();
+        return result;
+    }
+
+    private ValueTask AddEventListener<T>(string eventName, Func<T, ValueTask> callback)
+    {
+        return InteropEventListener.Add("filepondinterop.addEventListener", _elementId, eventName, callback, _cTs.Token);
+    }
+
+    private ValueTask AddEventListener<TInput, TOutput>(string eventName, Func<TInput, ValueTask<TOutput>> callback)
+    {
+        return InteropEventListener.Add("filepondinterop.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
+    }
+}

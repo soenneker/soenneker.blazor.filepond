@@ -1,0 +1,135 @@
+﻿@page "/"
+@using Soenneker.Blazor.FilePond
+@using Soenneker.Blazor.FilePond.Dtos
+@using Microsoft.Extensions.Logging
+@using Soenneker.Blazor.FilePond.Options
+@using System.IO
+@using Soenneker.Blazor.FilePond.Enums
+@using Soenneker.Extensions.String
+@using Soenneker.Utils.Random
+@inject ILogger<Index> Logger
+
+<img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png"/>
+<h1>Soenneker.Blazor.FilePond demo</h1>
+<p>This page demonstrates some of the uses of the FilePond component.</p>
+
+<FilePond @ref="FilePond" OnInit="OnInit" OnAddFile="OnAddFile" Options="_options" OnInitFile="OnInitFile" 
+          OnBeforeAddFile="OnBeforeAddFile"></FilePond>
+
+<button @onclick="AddFile" >AddFile</button>
+<button @onclick="AddFileFromStream" >AddFileFromStream</button>
+<button @onclick="AddFiles" >AddFiles</button>
+<button @onclick="Browse" >Browse</button>
+<button @onclick="GetFile" >GetFile</button>
+<button @onclick="GetFiles" >GetFiles</button>
+<button @onclick="RemoveFile" >RemoveFile</button>
+<button @onclick="RemoveFiles" >RemoveFiles</button>
+<button @onclick="GetStreamForFile" >GetStreamForFile</button>
+
+@code{
+    private FilePond? FilePond { get; set; }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await FilePond!.EnablePlugins(FilePondPluginType.FileValidateType, FilePondPluginType.ImagePreview, FilePondPluginType.FileRename);
+        }
+    }
+
+    private readonly FilePondOptions _options = new()
+    {
+        MaxFiles = 20,
+        AllowMultiple = true
+    };
+
+    private void OnInit()
+    {
+        Logger.LogInformation("OnInit fired");
+    }
+
+    private async Task AddFile()
+    {
+        await FilePond!.AddFile(GetRandomImageUri());
+    }
+
+    private static string GetRandomImageUri()
+    {
+        int fileHeight = RandomUtil.Next(200, 500);
+        int fileWidth = RandomUtil.Next(200, 500);
+
+        return $"https://picsum.photos/{fileHeight}/{fileWidth}";
+    }
+
+    private async Task AddFileFromStream()
+    {
+        var test = "Hello world";
+        var stream = await test.ToMemoryStream();
+        await FilePond!.AddFile(stream);
+    }
+
+    private async Task AddFiles()
+    {
+        await FilePond!.AddFiles([
+            GetRandomImageUri(),
+        GetRandomImageUri()
+        ]);
+    }
+
+    private async Task GetFile()
+    {
+        FilePondFileItem? result = await FilePond!.GetFile();
+    }
+
+    private async Task Browse()
+    {
+        await FilePond!.Browse();
+    }
+
+    private async Task GetStreamForFile()
+    {
+        Stream? stream = await FilePond!.GetStreamForFile();
+        await stream!.DisposeAsync();
+    }
+
+    private async Task GetFiles()
+    {
+        List<FilePondFileItem>? result = await FilePond!.GetFiles();
+    }
+
+    private async Task RemoveFile()
+    {
+        await FilePond!.RemoveFile();
+    }
+
+    private async Task RemoveFiles()
+    {
+        await FilePond!.RemoveFiles();
+    }
+
+    private void OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
+    {
+        Logger.LogInformation("OnAddFile fired: Filename: {fileName}", obj.fileItem.Filename);
+    }
+
+    private void OnInitFile(FilePondFileItem file)
+    {
+        Logger.LogInformation("OnInitFile fired: Filename: {fileName}", file.Filename);
+    }
+
+
+    private ValueTask<bool> OnBeforeAddFile(FilePondFileItem file)
+    {
+        Logger.LogInformation("OnBeforeAddFile fired: Filename: {fileName}", file.Filename);
+
+        return ValueTask.FromResult(true);
+    }
+
+    private ValueTask<string> OnFileRename(FilePondFileRenameInfo file)
+    {
+        Logger.LogInformation("OnFileRename fired: Filename: {fileName}", file.Name);
+
+        return ValueTask.FromResult("test");
+    }
+
+}
