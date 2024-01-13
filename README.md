@@ -16,7 +16,6 @@ FilePond documentation for reference: https://pqina.nl/filepond/docs/
 ```
 dotnet add package Soenneker.Blazor.FilePond
 ```
-```
 
 ### 1. Add the following to your `_Imports.razor` file
 
