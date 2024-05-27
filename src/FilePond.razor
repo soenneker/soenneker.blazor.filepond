@@ -1,21 +1,18 @@
-﻿@using System.Collections.Concurrent
-@using System.Data
-@using System.IO
+﻿@using System.IO
 @using System.Text.Json
 @using System.Threading
-@using Microsoft.AspNetCore.Components.Forms
-@using Microsoft.JSInterop
+@using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.FilePond.Abstract
 @using Soenneker.Blazor.FilePond.Dtos
 @using Soenneker.Blazor.FilePond.Enums
 @using Soenneker.Blazor.FilePond.Options
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
 @using Soenneker.Extensions.List
-@using Soenneker.Extensions.String
 @using Soenneker.Utils.Json
 
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
+@inject ILogger<FilePond> _logger
 
 @implements IFilePond
 
@@ -115,19 +112,37 @@
 
     public List<FilePondFileItem> Files { get; private set; } = [];
 
+    private List<string> _silentAddFiles = [];
+
+    private bool _initialized = false;
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            InteropEventListener.Initialize(FilePondInterop);
+            if (Options is {ManualCreate: true})
+            {
+                return;
+            }
+
             await Create();
         }
     }
 
     public async ValueTask Create(FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
+        if (_initialized)
+        {
+            _logger.LogError("FilePond 'Create' cannot be called multiple times without destroying the instance first");
+            return;
+        }
+
+        _initialized = true;
+
         if (options != null)
             Options = options;
+
+        InteropEventListener.Initialize(FilePondInterop);
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
 
@@ -142,8 +157,22 @@
         return FilePondInterop.SetOptions(_elementId, options, linkedCts.Token);
     }
 
+    public ValueTask AddFile(string uriOrBase64EncodedData, bool silentAdd, CancellationToken cancellationToken = default)
+    {
+        if (silentAdd)
+            AddSilentFileNameFromUri(uriOrBase64EncodedData);
+
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, null, linkedCts.Token);
+    }
+
     public ValueTask AddFile(string uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
+        if (options is {SilentAdd: true})
+        {
+            AddSilentFileNameFromUri(uriOrBase64EncodedData);
+        }
+
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
         return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
     }
@@ -156,6 +185,14 @@
 
     public ValueTask AddFiles(List<string> uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
+        if (options is {SilentAdd: true})
+        {
+            foreach (string uri in uriOrBase64EncodedData)
+            {
+                AddSilentFileNameFromUri(uri);
+            }
+        }
+
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
         return FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
     }
@@ -326,18 +363,29 @@
     /// <summary>
     /// Destroys the element.
     /// </summary>
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         InteropEventListener.DisposeForElement(_elementId);
-        _cTs.Cancel();
-        return FilePondInterop.Destroy(_elementId);
+        await _cTs.CancelAsync();
+        await FilePondInterop.Destroy(_elementId);
+        SharedDisposal();
     }
 
+    /// <inheritdoc cref="DisposeAsync"/>
     public void Dispose()
     {
         InteropEventListener.DisposeForElement(_elementId);
         _cTs.Cancel();
         FilePondInterop.Destroy(_elementId);
+        SharedDisposal();
+    }
+
+    private void SharedDisposal()
+    {
+        _silentAddFiles.Clear();
+        Files.Clear();
+
+        _initialized = false;
     }
 
     private async ValueTask AddEventListeners()
@@ -433,7 +481,15 @@
                 Files.Add(file);
 
                 if (OnAddFile.HasDelegate)
+                {
+                    if (_silentAddFiles.Contains(file.Filename))
+                    {
+                        _silentAddFiles.Remove(file.Filename);
+                        return;
+                    }
+
                     await OnAddFile.InvokeAsync((error, file));
+                }
             });
 
         if (OnProcessFileStart.HasDelegate)
@@ -703,4 +759,15 @@
     {
         return InteropEventListener.Add("filepondinterop.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
     }
+
+    private void AddSilentFileNameFromUri(string uri)
+    {
+        if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? uriObj))
+            return;
+
+        string fileName = Path.GetFileName(uriObj.AbsolutePath);
+
+        _silentAddFiles.Add(fileName);
+    }
+
 }

@@ -52,7 +52,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public ValueTask AddFile(string elementId, Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var streamRef = new DotNetStreamReference(stream, leaveOpen: false);
+        using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
         return JsRuntime.InvokeVoidAsync("filepondinterop.addFileFromStream", cancellationToken, elementId, streamRef, options);
     }
 

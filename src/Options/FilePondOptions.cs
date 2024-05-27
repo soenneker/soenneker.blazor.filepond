@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Soenneker.Blazor.FilePond.Options.Create;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Soenneker.Blazor.FilePond.Options;
@@ -27,6 +28,12 @@ public class FilePondOptions
     public bool Required { get; set; } = false;
 
     /// <summary>
+    /// If true, "Create" will not get called automatically from OnAfterRenderAsync. This is helpful when Create needs to be called from a component for example.
+    /// </summary>
+    [JsonIgnore]
+    public bool ManualCreate { get; set; }
+
+    /// <summary>
     /// Gets or sets a value indicating whether the output field is disabled.
     /// </summary>
     [JsonPropertyName("disabled")]
@@ -42,7 +49,8 @@ public class FilePondOptions
     /// Gets or sets a list of file locations that should be loaded immediately.
     /// </summary>
     [JsonPropertyName("files")]
-    public List<string> Files { get; set; } = [];
+    // ReSharper disable once CollectionNeverQueried.Global
+    public List<FilePondCreateFile> Files { get; set; } = [];
 
     /// <summary>
     /// Gets or sets a value indicating whether drag n' drop is enabled.

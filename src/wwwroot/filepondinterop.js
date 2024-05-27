@@ -41,12 +41,16 @@ window.filepondinterop = (function () {
 
         var response = new Response(readableStream);
 
-        response.blob().then((blob) => {
-            if (!options)
-                pond.addFile(blob);
-            else
-                pond.addFile(blob, options);
-        });
+        try {
+            response.blob().then((blob) => {
+                if (!options)
+                    pond.addFile(blob);
+                else
+                    pond.addFile(blob, options);
+            });
+        } catch (error) {
+            console.error('Error adding file from stream:', error);
+        }
     }
 
     function addFiles(elementId, uris, options) {

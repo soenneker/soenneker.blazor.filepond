@@ -28,7 +28,6 @@ public record FilePondFileItem
     [JsonConverter(typeof(SmartEnumValueConverter<FilePondFileOrigin, int>))]
     public FilePondFileOrigin? Origin { get; set; }
 
-
     /// <summary>
     /// Gets or sets the current status of the file. Use the FilePond.FileStatus enum to determine the status.
     /// </summary>

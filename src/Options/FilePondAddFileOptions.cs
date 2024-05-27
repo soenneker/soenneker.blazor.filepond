@@ -17,5 +17,11 @@ public class FilePondAddFileOptions
     [JsonPropertyName("index")]
     public int? Index { get; set; }
 
+    /// <summary>
+    /// If enabled, does not trigger AddFile event after adding this particular file.
+    /// </summary>
+    [JsonIgnore]
+    public bool SilentAdd { get; set; }
+
     // TODO: Document other available options for adding a file.
 }

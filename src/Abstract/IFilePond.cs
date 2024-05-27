@@ -172,6 +172,15 @@ public interface IFilePond : IDisposable, IAsyncDisposable
     /// Adds a file to FilePond.
     /// </summary>
     /// <param name="uriOrBase64EncodedData">The file elementReference.</param>
+    /// <param name="silentAdd">If true, don't trigger AddFile event</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask AddFile(string uriOrBase64EncodedData, bool silentAdd, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Adds a file to FilePond.
+    /// </summary>
+    /// <param name="uriOrBase64EncodedData">The file elementReference.</param>
     /// <param name="options">Additional options for the added file.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
@@ -297,12 +306,14 @@ public interface IFilePond : IDisposable, IAsyncDisposable
     /// <summary>
     /// Enables the specified FilePond plugins.
     /// </summary>
+    /// <remarks>Needs to be called BEFORE creation of the FilePond instance.</remarks>
     /// <param name="filePondPluginTypes">The types of plugins to enable.</param>
     ValueTask EnablePlugins(params FilePondPluginType[] filePondPluginTypes);
 
     /// <summary>
     /// Enables the specified FilePond plugins.
     /// </summary>
+    /// <remarks>Needs to be called BEFORE creation of the FilePond instance.</remarks>
     /// <param name="filePondPluginTypes">The types of plugins to enable.</param>
     ValueTask EnablePlugins(params string[] filePondPluginTypes);
 

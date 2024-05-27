@@ -2,21 +2,22 @@
 @using Soenneker.Blazor.FilePond
 @using Soenneker.Blazor.FilePond.Dtos
 @using Microsoft.Extensions.Logging
-@using Soenneker.Blazor.FilePond.Options
 @using System.IO
 @using Soenneker.Blazor.FilePond.Enums
 @using Soenneker.Extensions.String
 @using Soenneker.Utils.Random
 @inject ILogger<Index> Logger
 
-<img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png"/>
+<img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" />
 <h1>Soenneker.Blazor.FilePond demo</h1>
 <p>This page demonstrates some of the uses of the FilePond component.</p>
 
-<FilePond @ref="FilePond" OnInit="OnInit" OnAddFile="OnAddFile" Options="_options" OnInitFile="OnInitFile" 
-          OnBeforeAddFile="OnBeforeAddFile"></FilePond>
+<FilePond @ref="FilePond" OnInit="OnInit" OnAddFile="OnAddFile" OnInitFile="OnInitFile"
+          OnBeforeAddFile="OnBeforeAddFile">
+</FilePond>
 
 <button @onclick="AddFile" >AddFile</button>
+<button @onclick="AddFileSilently">AddFileSilently</button>
 <button @onclick="AddFileFromStream" >AddFileFromStream</button>
 <button @onclick="AddFiles" >AddFiles</button>
 <button @onclick="Browse" >Browse</button>
@@ -26,6 +27,10 @@
 <button @onclick="RemoveFiles" >RemoveFiles</button>
 <button @onclick="GetStreamForFile" >GetStreamForFile</button>
 
+<br />
+<button @onclick="Create">Create</button>
+<button @onclick="EnableImagePlugin">EnableImagePlugin</button>
+
 @code{
     private FilePond? FilePond { get; set; }
 
@@ -33,24 +38,35 @@
     {
         if (firstRender)
         {
-            await FilePond!.EnablePlugins(FilePondPluginType.FileValidateType, FilePondPluginType.ImagePreview, FilePondPluginType.FileRename);
+            await FilePond!.EnablePlugins(FilePondPluginType.ImagePreview);
+
+            await FilePond.Create();
         }
     }
-
-    private readonly FilePondOptions _options = new()
-    {
-        MaxFiles = 20,
-        AllowMultiple = true
-    };
 
     private void OnInit()
     {
         Logger.LogInformation("OnInit fired");
     }
 
+    private async Task Create()
+    {
+        await FilePond!.Create();
+    }
+
+    private async Task EnableImagePlugin()
+    {
+        await FilePond!.EnablePlugins(FilePondPluginType.ImagePreview);
+    }
+
     private async Task AddFile()
     {
         await FilePond!.AddFile(GetRandomImageUri());
+    }
+
+    private async Task AddFileSilently()
+    {
+        await FilePond!.AddFile(GetRandomImageUri(), true);
     }
 
     private static string GetRandomImageUri()
@@ -63,16 +79,17 @@
 
     private async Task AddFileFromStream()
     {
-        var test = "Hello world";
+        const string test = "Hello world";
         var stream = await test.ToMemoryStream();
         await FilePond!.AddFile(stream);
+        await stream.DisposeAsync();
     }
 
     private async Task AddFiles()
     {
         await FilePond!.AddFiles([
             GetRandomImageUri(),
-        GetRandomImageUri()
+            GetRandomImageUri()
         ]);
     }
 
@@ -116,7 +133,6 @@
     {
         Logger.LogInformation("OnInitFile fired: Filename: {fileName}", file.Filename);
     }
-
 
     private ValueTask<bool> OnBeforeAddFile(FilePondFileItem file)
     {
