@@ -33,13 +33,13 @@ public void ConfigureServices(IServiceCollection services)
 ### 3. Add the stylesheet to your `wwwroot/index.html` file
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/filepond@4.30.6/dist/filepond.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.css" integrity="sha256-a95jYCBL4++k1XyLYgulKmY33bIJIVYMsJO/RNytaJM=" crossorigin="anonymous">
 ```
 
 ### 4. Add the scripts to your `wwwroot/index.html` file
 
 ```html
-<script src="https://cdn.jsdelivr.net/npm/filepond@4.30.6/dist/filepond.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.js" integrity="sha256-6yXpr8+sATA4Q2ANTyZmpn4ZGP7grbIRNpe9s0Y+iO0=" crossorigin="anonymous"></script>
 <script src="_content/Soenneker.Blazor.FilePond/filepondinterop.js"></script>
 ```
 

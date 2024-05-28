@@ -136,7 +136,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
         return ValueTask.CompletedTask;
     }
-    
+
     public async ValueTask<Stream?> GetStreamForFile(string elementId, object? query = null, long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
     {
         try

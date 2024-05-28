@@ -765,6 +765,7 @@
         if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? uriObj))
             return;
 
+
         string fileName = Path.GetFileName(uriObj.AbsolutePath);
 
         _silentAddFiles.Add(fileName);
