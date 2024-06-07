@@ -13,7 +13,7 @@ namespace Soenneker.Blazor.FilePond.Abstract;
 /// <summary>
 /// Represents a FilePond component in Blazor.
 /// </summary>
-public interface IFilePond : IDisposable, IAsyncDisposable
+public interface IFilePond 
 {
     /// <summary>
     /// Gets or sets the HTML attributes to apply to the element.

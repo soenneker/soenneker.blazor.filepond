@@ -1,4 +1,3 @@
-using Microsoft.AspNetCore.Components;
 using System.Threading.Tasks;
 using Soenneker.Blazor.FilePond.Options;
 using Soenneker.Blazor.FilePond.Dtos;
@@ -17,11 +16,10 @@ public interface IFilePondInterop : IEventListeningInterop
     /// <summary>
     /// Creates a FilePond instance for the specified HTML element with optional configuration options.
     /// </summary>
-    /// <param name="elementReference">The reference to the HTML element where the FilePond instance will be attached.</param>
     /// <param name="elementId">The unique identifier for the HTML element, used to associate the FilePond instance with the element.</param>
     /// <param name="options">(Optional) Configuration options for customizing the behavior of the FilePond instance.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    ValueTask Create(ElementReference elementReference, string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default);
+    ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Overrides multiple options at once.
@@ -158,11 +156,7 @@ public interface IFilePondInterop : IEventListeningInterop
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask Destroy(string elementId, CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Enables specified plugins for the environment this FilePond instance is running in.
-    /// </summary>
-    /// <param name="filePondPluginType">An array of <see cref="string"/> values representing the plugins to be enabled.</param>
-    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+
     ValueTask EnablePlugins(List<string> filePondPluginType, CancellationToken cancellationToken = default);
 
     /// <summary>

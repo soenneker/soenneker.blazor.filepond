@@ -4,7 +4,6 @@ using Soenneker.Blazor.FilePond.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using System.Threading.Tasks;
-using Microsoft.AspNetCore.Components;
 using Soenneker.Blazor.FilePond.Dtos;
 using Soenneker.Blazor.FilePond.Options;
 using Soenneker.Utils.Json;
@@ -28,14 +27,14 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         _logger = logger;
     }
 
-    public ValueTask Create(ElementReference elementReference, string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
+    public ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
         string? json = null;
 
         if (options != null)
             json = JsonUtil.Serialize(options);
 
-        return JsRuntime.InvokeVoidAsync("filepondinterop.create", cancellationToken, elementReference, elementId, json);
+        return JsRuntime.InvokeVoidAsync("filepondinterop.create", cancellationToken, elementId, json);
     }
 
     public ValueTask SetOptions(string elementId, FilePondOptions options, CancellationToken cancellationToken = default)

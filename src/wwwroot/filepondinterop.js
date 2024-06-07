@@ -2,8 +2,11 @@ window.filepondinterop = (function () {
     var ponds = {};
     var options = {};
 
-    function create(element, elementId, options) {
+    function create(elementId, options) {
         var pond;
+
+        var selector = '[blazor-interop-id="' + elementId + '"]';
+        var element = document.querySelector(selector);
 
         if (options) {
             var opt = JSON.parse(options);
@@ -144,10 +147,14 @@ window.filepondinterop = (function () {
         pond.moveFile(query, index);
     }
 
-    function destroy(elementId) {
+    function destroy(elementId, element) {
         var pond = ponds[elementId];
-        pond.destroy();
+        if (pond) {
+            pond.destroy();
+        }
+
         ponds[elementId] = null;
+        options[elementId] = null;
     }
 
     function addEventListener(elementId, eventName, dotNetCallback) {

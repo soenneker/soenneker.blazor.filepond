@@ -1,6 +1,7 @@
 ﻿@using System.IO
 @using System.Text.Json
 @using System.Threading
+@using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.FilePond.Abstract
 @using Soenneker.Blazor.FilePond.Dtos
@@ -9,25 +10,18 @@
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
 @using Soenneker.Extensions.List
 @using Soenneker.Utils.Json
-
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
 @inject ILogger<FilePond> _logger
+@inject NavigationManager Navigation
 
 @implements IFilePond
-
-<input @ref="_elementReference" type="file" @attributes="Attributes" />
+<input type="file" @attributes="Attributes" blazor-interop-id="@_elementId" />
 
 @code {
+    private string _elementId;
 
-    /// <summary>
-    /// Internal use, not the actual HTML element's id
-    /// </summary>
-    private string _elementId = Guid.NewGuid().ToString();
-
-    private CancellationTokenSource _cTs = new();
-
-    private ElementReference _elementReference;
+    private CancellationTokenSource _cTs;
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? Attributes { get; set; }
@@ -110,11 +104,30 @@
     [Parameter]
     public Func<FilePondFileRenameInfo, ValueTask<string>>? OnFileRename { get; set; }
 
-    public List<FilePondFileItem> Files { get; private set; } = [];
+    public List<FilePondFileItem> Files { get; private set; }
 
-    private List<string> _silentAddFiles = [];
+    private List<string> _silentAddFiles;
 
-    private bool _initialized = false;
+    private bool _initialized;
+
+    public FilePond()
+    {
+        _initialized = false;
+        _elementId = Guid.NewGuid().ToString();
+        _cTs = new CancellationTokenSource();
+        Files = [];
+        _silentAddFiles = [];
+    }
+
+    protected override void OnInitialized()
+    {
+        Navigation.RegisterLocationChangingHandler(OnLocationChanging);
+    }
+
+    private ValueTask OnLocationChanging(LocationChangingContext context)
+    {
+        return DisposeAsync();
+    }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
@@ -145,8 +158,7 @@
         InteropEventListener.Initialize(FilePondInterop);
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
-        await FilePondInterop.Create(_elementReference, _elementId, Options, linkedCts.Token);
+        await FilePondInterop.Create(_elementId, Options, linkedCts.Token);
 
         await AddEventListeners();
     }
@@ -358,34 +370,6 @@
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
         return FilePondInterop.GetAllStreams(_elementId, maxAllowedSize, linkedCts.Token);
-    }
-
-    /// <summary>
-    /// Destroys the element.
-    /// </summary>
-    public async ValueTask DisposeAsync()
-    {
-        InteropEventListener.DisposeForElement(_elementId);
-        await _cTs.CancelAsync();
-        await FilePondInterop.Destroy(_elementId);
-        SharedDisposal();
-    }
-
-    /// <inheritdoc cref="DisposeAsync"/>
-    public void Dispose()
-    {
-        InteropEventListener.DisposeForElement(_elementId);
-        _cTs.Cancel();
-        FilePondInterop.Destroy(_elementId);
-        SharedDisposal();
-    }
-
-    private void SharedDisposal()
-    {
-        _silentAddFiles.Clear();
-        Files.Clear();
-
-        _initialized = false;
     }
 
     private async ValueTask AddEventListeners()
@@ -765,10 +749,19 @@
         if (!Uri.TryCreate(uri, UriKind.Absolute, out Uri? uriObj))
             return;
 
-
         string fileName = Path.GetFileName(uriObj.AbsolutePath);
 
         _silentAddFiles.Add(fileName);
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        Files.Clear();
+        _silentAddFiles.Clear();
+        await _cTs.CancelAsync();
+        InteropEventListener.DisposeForElement(_elementId);
+        await FilePondInterop.Destroy(_elementId);
+        _initialized = false;
     }
 
 }

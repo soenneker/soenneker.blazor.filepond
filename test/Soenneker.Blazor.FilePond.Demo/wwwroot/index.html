@@ -6,6 +6,8 @@
         <title>Soenneker.Blazor.FilePond.Demo</title>
         <base href="/" />
         <link href="css/app.css" rel="stylesheet" />
+
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.css" >
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.min.css" >
 
@@ -16,22 +18,23 @@
     </head>
 
     <body>
-        <div id="app" >Loading...</div>
+        <div id="app">Loading...</div>
 
-        <div id="blazor-error-ui" >
+        <div id="blazor-error-ui">
             An unhandled error has occurred.
-            <a href="" class="reload" >Reload</a>
-            <a class="dismiss" >🗙</a>
+            <a href="" class="reload">Reload</a>
+            <a class="dismiss">🗙</a>
         </div>
-        <script src="_framework/blazor.webassembly.js" ></script>
-        <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.min.js" ></script>
-        <script src="https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.js" ></script>
 
-        <!--     
-        <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.js" integrity="sha256-5JziHzKDP7jz3alUCQDv7XDXxuilLVGAcI1drXmE/Bk=" crossorigin="anonymous"></script>
-        <script src="https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.js" integrity="sha256-6yXpr8+sATA4Q2ANTyZmpn4ZGP7grbIRNpe9s0Y+iO0=" crossorigin="anonymous"></script>
-        -->
-        <script src="_content/Soenneker.Blazor.FilePond/filepondinterop.js" ></script>
+        <script src="_framework/blazor.webassembly.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.js"></script>
+
+        <!--
+    <script src="https://cdn.jsdelivr.net/npm/filepond-plugin-image-preview@4.6.12/dist/filepond-plugin-image-preview.js" integrity="sha256-5JziHzKDP7jz3alUCQDv7XDXxuilLVGAcI1drXmE/Bk=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.js" integrity="sha256-6yXpr8+sATA4Q2ANTyZmpn4ZGP7grbIRNpe9s0Y+iO0=" crossorigin="anonymous"></script>
+    -->
+        <script src="_content/Soenneker.Blazor.FilePond/filepondinterop.js"></script>
     </body>
 
 </html>

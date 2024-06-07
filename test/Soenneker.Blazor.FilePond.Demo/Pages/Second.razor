@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/second"
 @using Soenneker.Blazor.FilePond
 @using Soenneker.Blazor.FilePond.Dtos
 @using Microsoft.Extensions.Logging
@@ -7,7 +7,6 @@
 @using Soenneker.Extensions.String
 @using Soenneker.Utils.Random
 @inject ILogger<Index> Logger
-
 
 <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" />
 <h1>Soenneker.Blazor.FilePond demo</h1>
@@ -32,7 +31,7 @@
 <button @onclick="Create" >Create</button>
 <button @onclick="EnableImagePlugin" >EnableImagePlugin</button>
 
-<NavLink href="/second" >Navigate to second page</NavLink>
+<NavLink href="/" >Navigate to first page</NavLink>
 
 @code{
     private FilePond? FilePond { get; set; }
@@ -129,7 +128,6 @@
     {
         await FilePond!.Destroy();
     }
-
 
     private void OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
     {
