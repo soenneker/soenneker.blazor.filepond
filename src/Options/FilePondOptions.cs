@@ -10,12 +10,6 @@ namespace Soenneker.Blazor.FilePond.Options;
 public class FilePondOptions
 {
     /// <summary>
-    /// Gets or sets the input field name to use. Default value is 'filepond'.
-    /// </summary>
-    [JsonPropertyName("name")]
-    public string Name { get; set; } = "filepond";
-
-    /// <summary>
     /// Gets or sets an additional CSS class to add to the root element.
     /// </summary>
     [JsonPropertyName("className")]

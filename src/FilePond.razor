@@ -113,7 +113,7 @@
     public FilePond()
     {
         _initialized = false;
-        _elementId = Guid.NewGuid().ToString();
+        _elementId = '_' + Guid.NewGuid().ToString();
         _cTs = new CancellationTokenSource();
         Files = [];
         _silentAddFiles = [];
