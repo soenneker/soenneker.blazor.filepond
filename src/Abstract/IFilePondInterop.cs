@@ -156,6 +156,7 @@ public interface IFilePondInterop : IEventListeningInterop
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask Destroy(string elementId, CancellationToken cancellationToken = default);
 
+    ValueTask CreateObserver(string elementId, CancellationToken cancellationToken = default);
 
     ValueTask EnablePlugins(List<string> filePondPluginType, CancellationToken cancellationToken = default);
 

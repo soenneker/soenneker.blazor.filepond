@@ -124,6 +124,11 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         return JsRuntime.InvokeVoidAsync("filepondinterop.destroy", cancellationToken, elementId);
     }
 
+    public ValueTask CreateObserver(string elementId, CancellationToken cancellationToken = default)
+    {
+        return JsRuntime.InvokeVoidAsync("filepondinterop.createObserver", cancellationToken, elementId);
+    }
+
     public ValueTask EnablePlugins(List<string> filePondPluginTypes, CancellationToken cancellationToken = default)
     {
         List<string> resultList = filePondPluginTypes.Except(_enabledPlugins).ToList();

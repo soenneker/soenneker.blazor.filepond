@@ -1,6 +1,9 @@
 window.filepondinterop = (function () {
     var ponds = {};
     var options = {};
+    var deleted = {};
+
+    var observer;
 
     function create(elementId, options) {
         var pond;
@@ -147,18 +150,18 @@ window.filepondinterop = (function () {
         pond.moveFile(query, index);
     }
 
-    function destroy(elementId, element) {
+    function destroy(elementId) {
         var pond = ponds[elementId];
+        var hasBeenDeleted = deleted[elementId];
 
-        if (pond) {
+        if (pond && !hasBeenDeleted) {
+            deleted[elementId] = true;
+
             pond.destroy();
+
+            delete ponds[elementId];
+            delete options[elementId];
         }
-
-        ponds[elementId] = null;
-        delete ponds[elementId];
-
-        options[elementId] = null;
-        delete options[elementId];
     }
 
     function addEventListener(elementId, eventName, dotNetCallback) {
@@ -313,6 +316,27 @@ window.filepondinterop = (function () {
         return objectJSON;
     }
 
+    function createObserver(elementId) {
+        const target = document.querySelector(`div[blazor-observer-id="${elementId}"]`);
+
+        this.observer = new MutationObserver(function (mutations) {
+            const targetRemoved = mutations.some(function (mutation) {
+                const nodes = Array.from(mutation.removedNodes);
+                return nodes.indexOf(target) !== -1;
+            });
+
+            if (targetRemoved) {
+                destroy(elementId);
+
+                // Disconnect and delete MutationObserver
+                this.observer && this.observer.disconnect();
+                delete this.observer;
+            }
+        });
+
+        this.observer.observe(target.parentNode, { childList: true });
+    }
+
     return {
         create: create,
         setOptions: setOptions,
@@ -334,6 +358,7 @@ window.filepondinterop = (function () {
         addOutputEventListener: addOutputEventListener,
         addEventListener: addEventListener,
         enablePlugins: enablePlugins,
-        getFileAsBlob: getFileAsBlob
+        getFileAsBlob: getFileAsBlob,
+        createObserver: createObserver
     };
-})();
+})(); 

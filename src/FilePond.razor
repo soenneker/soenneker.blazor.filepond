@@ -1,7 +1,6 @@
 ﻿@using System.IO
 @using System.Text.Json
 @using System.Threading
-@using Microsoft.AspNetCore.Components.Routing
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.FilePond.Abstract
 @using Soenneker.Blazor.FilePond.Dtos
@@ -13,10 +12,13 @@
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
 @inject ILogger<FilePond> _logger
-@inject NavigationManager Navigation
+
 
 @implements IFilePond
-<input type="file" @attributes="Attributes" blazor-interop-id="@_elementId" />
+<div blazor-observer-id="@_elementId"></div>
+<div blazor-wrapper-id="@_elementId">
+    <input type="file" @attributes="Attributes" blazor-interop-id="@_elementId" />
+</div>
 
 @code {
     private string _elementId;
@@ -110,8 +112,6 @@
 
     private bool _initialized;
 
-    private IDisposable? _locationChangingHandler;
-
     public FilePond()
     {
         _initialized = false;
@@ -121,23 +121,17 @@
         _silentAddFiles = [];
     }
 
-    private ValueTask OnLocationChanging(LocationChangingContext context)
-    {
-        return DisposeAsync();
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
         {
-            _locationChangingHandler = Navigation.RegisterLocationChangingHandler(OnLocationChanging);
-
             if (Options is {ManualCreate: true})
             {
                 return;
             }
 
             await Create();
+            await FilePondInterop.CreateObserver(_elementId);
         }
     }
 
@@ -322,10 +316,10 @@
         return FilePondInterop.MoveFile(_elementId, query, index, linkedCts.Token);
     }
 
-    public ValueTask Destroy(CancellationToken cancellationToken = default)
+    public async ValueTask Destroy(CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.Destroy(_elementId, linkedCts.Token);
+        await FilePondInterop.Destroy(_elementId, linkedCts.Token);
     }
 
     public ValueTask EnablePlugins(params FilePondPluginType[] filePondPluginTypes)
@@ -755,12 +749,10 @@
 
     public async ValueTask DisposeAsync()
     {
-        _locationChangingHandler?.Dispose();
         Files.Clear();
         _silentAddFiles.Clear();
         await _cTs.CancelAsync();
         InteropEventListener.DisposeForElement(_elementId);
-        await FilePondInterop.Destroy(_elementId);
         _initialized = false;
     }
 
