@@ -110,6 +110,8 @@
 
     private bool _initialized;
 
+    private IDisposable? _locationChangingHandler;
+
     public FilePond()
     {
         _initialized = false;
@@ -117,11 +119,6 @@
         _cTs = new CancellationTokenSource();
         Files = [];
         _silentAddFiles = [];
-    }
-
-    protected override void OnInitialized()
-    {
-        Navigation.RegisterLocationChangingHandler(OnLocationChanging);
     }
 
     private ValueTask OnLocationChanging(LocationChangingContext context)
@@ -133,6 +130,8 @@
     {
         if (firstRender)
         {
+            _locationChangingHandler = Navigation.RegisterLocationChangingHandler(OnLocationChanging);
+
             if (Options is {ManualCreate: true})
             {
                 return;
@@ -756,6 +755,7 @@
 
     public async ValueTask DisposeAsync()
     {
+        _locationChangingHandler?.Dispose();
         Files.Clear();
         _silentAddFiles.Clear();
         await _cTs.CancelAsync();

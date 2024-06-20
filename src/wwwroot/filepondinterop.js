@@ -149,12 +149,16 @@ window.filepondinterop = (function () {
 
     function destroy(elementId, element) {
         var pond = ponds[elementId];
+
         if (pond) {
             pond.destroy();
         }
 
         ponds[elementId] = null;
+        delete ponds[elementId];
+
         options[elementId] = null;
+        delete options[elementId];
     }
 
     function addEventListener(elementId, eventName, dotNetCallback) {
