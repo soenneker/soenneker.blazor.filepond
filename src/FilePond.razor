@@ -121,6 +121,11 @@
         _silentAddFiles = [];
     }
 
+    protected override async Task OnInitializedAsync()
+    {
+        await FilePondInterop.Initialize();
+    }
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -729,12 +734,12 @@
 
     private ValueTask AddEventListener<T>(string eventName, Func<T, ValueTask> callback)
     {
-        return InteropEventListener.Add("filepondinterop.addEventListener", _elementId, eventName, callback, _cTs.Token);
+        return InteropEventListener.Add("FilePondInterop.addEventListener", _elementId, eventName, callback, _cTs.Token);
     }
 
     private ValueTask AddEventListener<TInput, TOutput>(string eventName, Func<TInput, ValueTask<TOutput>> callback)
     {
-        return InteropEventListener.Add("filepondinterop.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
+        return InteropEventListener.Add("FilePondInterop.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
     }
 
     private void AddSilentFileNameFromUri(string uri)

@@ -5,14 +5,17 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using Soenneker.Blazor.Utils.EventListeningInterop.Abstract;
+using System;
 
 namespace Soenneker.Blazor.FilePond.Abstract;
 
 /// <summary>
 /// A Blazor interop library for the file upload library FilePond.
 /// </summary>
-public interface IFilePondInterop : IEventListeningInterop
+public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 {
+    ValueTask Initialize(CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Creates a FilePond instance for the specified HTML element with optional configuration options.
     /// </summary>
