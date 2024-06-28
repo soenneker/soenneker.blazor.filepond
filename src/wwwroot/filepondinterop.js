@@ -1,4 +1,4 @@
-import '../../Soenneker.Blazor.Utils.ResourceLoader/js/resourceloader.js';
+import '../Soenneker.Blazor.Utils.ResourceLoader/resourceloader.js';
 
 export class FilePondInterop {
     constructor() {

@@ -13,6 +13,7 @@ using Soenneker.Extensions.Enumerable;
 using System.Threading;
 using Soenneker.Blazor.Utils.EventListeningInterop;
 using Soenneker.Blazor.Utils.ModuleImport.Abstract;
+using Soenneker.Utils.AsyncSingleton;
 
 namespace Soenneker.Blazor.FilePond;
 
@@ -23,22 +24,38 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
     private readonly List<string> _enabledPlugins = [];
     private readonly IModuleImportUtil _moduleImportUtil;
 
+    private readonly AsyncSingleton<object> _scriptInitializer;
+
     public FilePondInterop(IJSRuntime jSRuntime, ILogger<FilePondInterop> logger, IModuleImportUtil moduleImportUtil) : base(jSRuntime)
     {
         _logger = logger;
         _moduleImportUtil = moduleImportUtil;
+
+        _scriptInitializer = new AsyncSingleton<object>(async objects => {
+
+            var cancellationToken = (CancellationToken)objects[0];
+
+            await _moduleImportUtil.Import("Soenneker.Blazor.FilePond/filepondinterop.js", cancellationToken);
+
+            return new object();
+        });
     }
 
     public async ValueTask Initialize(CancellationToken cancellationToken = default)
     {
-        await _moduleImportUtil.Import("Soenneker.Blazor.FilePond/js/filepondinterop.js", cancellationToken);
+        _ = await _scriptInitializer.Get(cancellationToken);
+    }
+
+    private async ValueTask WaitUntilLoaded(CancellationToken cancellationToken = default)
+    {
+        await _moduleImportUtil.WaitUntilLoadedAndAvailable("Soenneker.Blazor.FilePond/filepondinterop.js", "FilePondInterop", 100, cancellationToken);
     }
 
     public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await _moduleImportUtil.WaitUntilLoaded("Soenneker.Blazor.FilePond/js/filepondinterop.js", cancellationToken);
+        await WaitUntilLoaded(cancellationToken);
 
-        string? json = null;
+        string ? json = null;
 
         if (options != null)
             json = JsonUtil.Serialize(options);
@@ -140,7 +157,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnablePlugins(List<string> filePondPluginTypes, CancellationToken cancellationToken = default)
     {
-        await _moduleImportUtil.WaitUntilLoaded("Soenneker.Blazor.FilePond/js/filepondinterop.js", cancellationToken);
+        await WaitUntilLoaded(cancellationToken);
 
         List<string> resultList = filePondPluginTypes.Except(_enabledPlugins).ToList();
 
@@ -189,6 +206,6 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public ValueTask DisposeAsync()
     {
-        return _moduleImportUtil.DisposeModule("Soenneker.Blazor.FilePond/js/filepondinterop.js");
+        return _moduleImportUtil.DisposeModule("Soenneker.Blazor.FilePond/filepondinterop.js");
     }
 }
