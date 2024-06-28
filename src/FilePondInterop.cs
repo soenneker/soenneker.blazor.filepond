@@ -14,6 +14,7 @@ using System.Threading;
 using Soenneker.Blazor.Utils.EventListeningInterop;
 using Soenneker.Blazor.Utils.ModuleImport.Abstract;
 using Soenneker.Utils.AsyncSingleton;
+using Soenneker.Extensions.ValueTask;
 
 namespace Soenneker.Blazor.FilePond;
 
@@ -46,14 +47,14 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         _ = await _scriptInitializer.Get(cancellationToken);
     }
 
-    private async ValueTask WaitUntilLoaded(CancellationToken cancellationToken = default)
+    private ValueTask WaitUntilLoaded(CancellationToken cancellationToken = default)
     {
-        await _moduleImportUtil.WaitUntilLoadedAndAvailable("Soenneker.Blazor.FilePond/filepondinterop.js", "FilePondInterop", 100, cancellationToken);
+        return _moduleImportUtil.WaitUntilLoadedAndAvailable("Soenneker.Blazor.FilePond/filepondinterop.js", "FilePondInterop", 100, cancellationToken);
     }
 
     public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await WaitUntilLoaded(cancellationToken);
+        await WaitUntilLoaded(cancellationToken).NoSync();
 
         string ? json = null;
 
@@ -157,7 +158,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnablePlugins(List<string> filePondPluginTypes, CancellationToken cancellationToken = default)
     {
-        await WaitUntilLoaded(cancellationToken);
+        await WaitUntilLoaded(cancellationToken).NoSync();
 
         List<string> resultList = filePondPluginTypes.Except(_enabledPlugins).ToList();
 
