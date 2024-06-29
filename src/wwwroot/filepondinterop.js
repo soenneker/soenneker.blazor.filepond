@@ -40,17 +40,34 @@ export class FilePondInterop {
         pond.setOptions(opt);
     }
 
-    addFile(elementId, uri, options) {
-        const pond = this.ponds[elementId];
+    async waitForPond(elementId) {
+        return new Promise((resolve) => {
+            const checkPond = () => {
+                const pond = this.ponds[elementId];
+                if (pond) {
+                    resolve(pond);
+                } else {
+                    setTimeout(checkPond, 100); // Check again after 100 milliseconds
+                }
+            };
+
+            checkPond();
+        });
+    }
+
+    async addFile(elementId, uri, options) {
+        var pond = await this.waitForPond(elementId);
+
         if (!options) {
             pond.addFile(uri);
         } else {
             pond.addFile(uri, options);
         }
     }
-
+    
     async addFileFromStream(elementId, streamRef, options) {
-        const pond = this.ponds[elementId];
+        var pond = await this.waitForPond(elementId);
+
         const readableStream = await streamRef.stream();
         const response = new Response(readableStream);
 
@@ -67,8 +84,9 @@ export class FilePondInterop {
         }
     }
 
-    addFiles(elementId, uris, options) {
-        const pond = this.ponds[elementId];
+    async addFiles(elementId, uris, options) {
+        var pond = await this.waitForPond(elementId);
+
         if (!options) {
             pond.addFiles(uris);
         } else {
