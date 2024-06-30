@@ -1,4 +1,5 @@
 ﻿using Ardalis.SmartEnum;
+// ReSharper disable InconsistentNaming
 
 namespace Soenneker.Blazor.FilePond.Enums;
 

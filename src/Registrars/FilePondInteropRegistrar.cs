@@ -2,7 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
 using Soenneker.Blazor.FilePond.Abstract;
 using Soenneker.Blazor.Utils.InteropEventListener.Registrars;
-using Soenneker.Blazor.Utils.ModuleImport.Registrars;
+using Soenneker.Blazor.Utils.ResourceLoader.Registrars;
 
 namespace Soenneker.Blazor.FilePond.Registrars;
 
@@ -16,7 +16,7 @@ public static class FilePondInteropRegistrar
     /// </summary>
     public static void AddFilePond(this IServiceCollection services)
     {
-        services.AddModuleImportUtil();
+        services.AddResourceLoader();
         services.TryAddSingleton<IFilePondInterop, FilePondInterop>();
         services.AddInteropEventListener();
     }

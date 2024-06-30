@@ -6,6 +6,7 @@ using System.IO;
 using System.Threading;
 using Soenneker.Blazor.Utils.EventListeningInterop.Abstract;
 using System;
+using Soenneker.Blazor.FilePond.Enums;
 
 namespace Soenneker.Blazor.FilePond.Abstract;
 
@@ -161,7 +162,7 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 
     ValueTask CreateObserver(string elementId, CancellationToken cancellationToken = default);
 
-    ValueTask EnablePlugins(List<string> filePondPluginType, CancellationToken cancellationToken = default);
+    ValueTask EnablePlugins(List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance. The stream should be disposed after use.

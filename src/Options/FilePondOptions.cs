@@ -1,6 +1,7 @@
 ﻿using Soenneker.Blazor.FilePond.Options.Create;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Soenneker.Blazor.FilePond.Enums;
 
 namespace Soenneker.Blazor.FilePond.Options;
 
@@ -20,6 +21,9 @@ public class FilePondOptions
     /// </summary>
     [JsonPropertyName("required")]
     public bool Required { get; set; } = false;
+
+    [JsonIgnore]
+    public List<FilePondPluginType>? EnabledPlugins { get; set; }
 
     /// <summary>
     /// If true, "Create" will not get called automatically from OnAfterRenderAsync. This is helpful when Create needs to be called from a component for example.

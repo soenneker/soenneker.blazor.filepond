@@ -7,6 +7,7 @@
 @using Soenneker.Blazor.FilePond.Enums
 @using Soenneker.Blazor.FilePond.Options
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
+@using Soenneker.Extensions.Enumerable
 @using Soenneker.Extensions.List
 @using Soenneker.Utils.Json
 @inject IFilePondInterop FilePondInterop
@@ -133,6 +134,11 @@
             if (Options is {ManualCreate: true})
             {
                 return;
+            }
+
+            if (Options != null && Options.EnabledPlugins.Populated())
+            {
+                await FilePondInterop.EnablePlugins(Options.EnabledPlugins, _cTs.Token);
             }
 
             await Create();
@@ -327,17 +333,17 @@
         await FilePondInterop.Destroy(_elementId, linkedCts.Token);
     }
 
-    public ValueTask EnablePlugins(params FilePondPluginType[] filePondPluginTypes)
-    {
-        List<string> pluginTypes = filePondPluginTypes.Select(c => c.Name).ToList();
+    // public ValueTask EnablePlugins(params FilePondPluginType[] filePondPluginTypes)
+    // {
+    //     List<string> pluginTypes = filePondPluginTypes.Select(c => c.Name).ToList();
 
-        return FilePondInterop.EnablePlugins(pluginTypes, _cTs.Token);
-    }
+    //     return FilePondInterop.EnablePlugins(pluginTypes, _cTs.Token);
+    // }
 
-    public ValueTask EnablePlugins(params string[] filePondPluginTypes)
-    {
-        return FilePondInterop.EnablePlugins(filePondPluginTypes.ToList(), _cTs.Token);
-    }
+    // public ValueTask EnablePlugins(params string[] filePondPluginTypes)
+    // {
+    //     return FilePondInterop.EnablePlugins(filePondPluginTypes.ToList(), _cTs.Token);
+    // }
 
     public async ValueTask ReInitialize(CancellationToken cancellationToken = default)
     {

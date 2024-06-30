@@ -29,7 +29,6 @@
 
 <br />
 <button @onclick="Create" >Create</button>
-<button @onclick="EnableImagePlugin" >EnableImagePlugin</button>
 
 <NavLink href="/" >Navigate to first page</NavLink>
 
@@ -38,10 +37,6 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            await FilePond!.EnablePlugins(FilePondPluginType.ImagePreview);
-        }
     }
 
     private void OnInit()
@@ -52,11 +47,6 @@
     private async Task Create()
     {
         await FilePond!.Create();
-    }
-
-    private async Task EnableImagePlugin()
-    {
-        await FilePond!.EnablePlugins(FilePondPluginType.ImagePreview);
     }
 
     private async Task AddFile()

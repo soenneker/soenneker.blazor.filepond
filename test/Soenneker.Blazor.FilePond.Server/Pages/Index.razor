@@ -35,8 +35,6 @@
     {
         if (firstRender)
         {
-            await FilePond!.EnablePlugins(FilePondPluginType.FileValidateType, FilePondPluginType.ImagePreview, FilePondPluginType.FileRename);
-
             var files = new List<string>
             {
                 GetRandomImageUri(),

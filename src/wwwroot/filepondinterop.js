@@ -1,5 +1,3 @@
-import '../Soenneker.Blazor.Utils.ResourceLoader/resourceloader.js';
-
 export class FilePondInterop {
     constructor() {
         this.ponds = {};
@@ -8,15 +6,7 @@ export class FilePondInterop {
         this.observer = null;
     }
 
-    async loadScriptAndWait() {
-        await ResourceLoader.loadScript('https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.js', "sha256-6yXpr8+sATA4Q2ANTyZmpn4ZGP7grbIRNpe9s0Y+iO0=");
-        await ResourceLoader.waitForVariable("FilePond");
-    }
-
     async create(elementId, options) {
-        await ResourceLoader.loadCss('https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.css', "sha256-a95jYCBL4++k1XyLYgulKmY33bIJIVYMsJO/RNytaJM=");
-        await this.loadScriptAndWait();
-
         let pond;
 
         const selector = `[blazor-interop-id="${elementId}"]`;
@@ -222,8 +212,6 @@ export class FilePondInterop {
     }
 
     async enablePlugins(plugins) {
-        await this.loadScriptAndWait();
-
         plugins.forEach(plugin => {
             const pluginName = `FilePondPlugin${plugin}`;
             const pluginVariable = window[pluginName];

@@ -4,6 +4,7 @@
 @using Microsoft.Extensions.Logging
 @using System.IO
 @using Soenneker.Blazor.FilePond.Enums
+@using Soenneker.Blazor.FilePond.Options
 @using Soenneker.Extensions.String
 @using Soenneker.Utils.Random
 @inject ILogger<Index> Logger
@@ -13,7 +14,7 @@
 <h1>Soenneker.Blazor.FilePond demo</h1>
 <p>This page demonstrates some of the uses of the FilePond component.</p>
 
-<FilePond @ref="FilePond" OnInit="OnInit" OnAddFile="OnAddFile" OnInitFile="OnInitFile" OnBeforeAddFile="OnBeforeAddFile" >
+<FilePond @ref="FilePond" Options="_options" OnInit="OnInit" OnAddFile="OnAddFile" OnInitFile="OnInitFile" OnBeforeAddFile="OnBeforeAddFile" >
 </FilePond>
 
 <button @onclick="AddFile" >AddFile</button>
@@ -30,21 +31,21 @@
 
 <br />
 <button @onclick="Create" >Create</button>
-<button @onclick="EnableImagePlugin" >EnableImagePlugin</button>
 
 <NavLink href="/second" >Navigate to second page</NavLink>
 <br />
-<Anchor To="/second">Navigate to second page</Anchor>
+<Anchor To="/second" >Navigate to second page</Anchor>
 
 @code{
     private FilePond? FilePond { get; set; }
 
+    private readonly FilePondOptions _options = new()
+    {
+        EnabledPlugins = [FilePondPluginType.ImagePreview]
+    };
+
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (firstRender)
-        {
-            await FilePond!.EnablePlugins(FilePondPluginType.ImagePreview);
-        }
     }
 
     private void OnInit()
@@ -55,11 +56,6 @@
     private async Task Create()
     {
         await FilePond!.Create();
-    }
-
-    private async Task EnableImagePlugin()
-    {
-        await FilePond!.EnablePlugins(FilePondPluginType.ImagePreview);
     }
 
     private async Task AddFile()

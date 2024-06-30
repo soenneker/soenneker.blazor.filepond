@@ -37,17 +37,9 @@ public void ConfigureServices(IServiceCollection services)
     private readonly FilePondOptions _options = new()
     {
         MaxFiles = 20,
-        AllowMultiple = true
+        AllowMultiple = true,
+        EnabledPlugins = [FilePondPluginType.ImagePreview]
     };
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            // Add any plugins you want to use
-            //await FilePond!.EnablePlugins(FilePondPluginType.FileValidateType, FilePondPluginType.ImagePreview);
-        }
-    }
 
     private async Task OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
     {
