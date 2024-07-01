@@ -4,11 +4,11 @@
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.FilePond.Abstract
 @using Soenneker.Blazor.FilePond.Dtos
-@using Soenneker.Blazor.FilePond.Enums
 @using Soenneker.Blazor.FilePond.Options
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
 @using Soenneker.Extensions.Enumerable
 @using Soenneker.Extensions.List
+@using Soenneker.Extensions.String
 @using Soenneker.Utils.Json
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
@@ -16,8 +16,8 @@
 
 
 @implements IFilePond
-<div blazor-observer-id="@_elementId"></div>
-<div blazor-wrapper-id="@_elementId">
+<div blazor-observer-id="@_elementId" ></div>
+<div blazor-wrapper-id="@_elementId" >
     <input type="file" @attributes="Attributes" blazor-interop-id="@_elementId" />
 </div>
 
@@ -111,15 +111,20 @@
 
     private List<string> _silentAddFiles;
 
+    private bool _initializing;
     private bool _initialized;
+
+    private readonly List<Func<ValueTask>> _afterInitializationOperations;
 
     public FilePond()
     {
+        _initializing = false;
         _initialized = false;
         _elementId = '_' + Guid.NewGuid().ToString();
         _cTs = new CancellationTokenSource();
         Files = [];
         _silentAddFiles = [];
+        _afterInitializationOperations = [];
     }
 
     protected override async Task OnInitializedAsync()
@@ -148,13 +153,13 @@
 
     public async ValueTask Create(FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (_initialized)
+        if (_initialized || _initializing)
         {
             _logger.LogError("FilePond 'Create' cannot be called multiple times without destroying the instance first");
             return;
         }
 
-        _initialized = true;
+        _initializing = true;
 
         if (options != null)
             Options = options;
@@ -165,6 +170,16 @@
         await FilePondInterop.Create(_elementId, Options, linkedCts.Token);
 
         await AddEventListeners();
+
+        _initialized = true;
+        _initializing = false;
+
+        foreach (Func<ValueTask> valueTaskFunc in _afterInitializationOperations)
+        {
+            await valueTaskFunc();
+        }
+
+        _afterInitializationOperations.Clear();
     }
 
     public ValueTask SetOptions(FilePondOptions options, CancellationToken cancellationToken = default)
@@ -175,78 +190,108 @@
 
     public ValueTask AddFile(string uriOrBase64EncodedData, bool silentAdd, CancellationToken cancellationToken = default)
     {
-        if (silentAdd)
-            AddSilentFileNameFromUri(uriOrBase64EncodedData);
+        return EnqueueOrExecute(() =>
+        {
+            if (silentAdd)
+                AddSilentFileNameFromUri(uriOrBase64EncodedData);
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, null, linkedCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, null, linkedCts.Token);
+        });
     }
 
     public ValueTask AddFile(string uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (options is {SilentAdd: true})
+        return EnqueueOrExecute(() =>
         {
-            AddSilentFileNameFromUri(uriOrBase64EncodedData);
-        }
+            if (options is {SilentAdd: true})
+            {
+                AddSilentFileNameFromUri(uriOrBase64EncodedData);
+            }
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+        });
     }
 
     public ValueTask AddFile(Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.AddFile(_elementId, stream, options, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.AddFile(_elementId, stream, options, linkedCts.Token);
+        });
     }
 
     public ValueTask AddFiles(List<string> uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        if (options is {SilentAdd: true})
+        return EnqueueOrExecute(() =>
         {
-            foreach (string uri in uriOrBase64EncodedData)
+            if (options is {SilentAdd: true})
             {
-                AddSilentFileNameFromUri(uri);
+                foreach (string uri in uriOrBase64EncodedData)
+                {
+                    AddSilentFileNameFromUri(uri);
+                }
             }
-        }
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+        });
     }
 
     public ValueTask RemoveFile(FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.RemoveFile(_elementId, null, options, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.RemoveFile(_elementId, null, options, linkedCts.Token);
+        });
     }
 
     public ValueTask RemoveFile(string fileId, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.RemoveFile(_elementId, fileId, options, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.RemoveFile(_elementId, fileId, options, linkedCts.Token);
+        });
     }
 
     public ValueTask RemoveFile(int index, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.RemoveFile(_elementId, index, options, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.RemoveFile(_elementId, index, options, linkedCts.Token);
+        });
     }
 
     public ValueTask RemoveFiles(object? query = null, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.RemoveFiles(_elementId, query, options, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.RemoveFiles(_elementId, query, options, linkedCts.Token);
+        });
     }
 
-    public async ValueTask ProcessFile(object? query = null, CancellationToken cancellationToken = default)
+    public ValueTask ProcessFile(object? query = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.ProcessFile(_elementId, query, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.ProcessFile(_elementId, query, linkedCts.Token);
+        });
     }
 
-    public async ValueTask ProcessFiles(object? query = null, CancellationToken cancellationToken = default)
+    public ValueTask ProcessFiles(object? query = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.ProcessFiles(_elementId, query, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.ProcessFiles(_elementId, query, linkedCts.Token);
+        });
     }
 
     public ValueTask<object> PrepareFile(object? query = null, CancellationToken cancellationToken = default)
@@ -311,20 +356,29 @@
 
     public ValueTask Browse(CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.Browse(_elementId, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.Browse(_elementId, linkedCts.Token);
+        });
     }
 
     public ValueTask Sort(string compareFunctionName, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.Sort(_elementId, compareFunctionName, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.Sort(_elementId, compareFunctionName, linkedCts.Token);
+        });
     }
 
     public ValueTask MoveFile(object query, int index, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.MoveFile(_elementId, query, index, linkedCts.Token);
+        return EnqueueOrExecute(() =>
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+            return FilePondInterop.MoveFile(_elementId, query, index, linkedCts.Token);
+        });
     }
 
     public async ValueTask Destroy(CancellationToken cancellationToken = default)
@@ -332,18 +386,6 @@
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
         await FilePondInterop.Destroy(_elementId, linkedCts.Token);
     }
-
-    // public ValueTask EnablePlugins(params FilePondPluginType[] filePondPluginTypes)
-    // {
-    //     List<string> pluginTypes = filePondPluginTypes.Select(c => c.Name).ToList();
-
-    //     return FilePondInterop.EnablePlugins(pluginTypes, _cTs.Token);
-    // }
-
-    // public ValueTask EnablePlugins(params string[] filePondPluginTypes)
-    // {
-    //     return FilePondInterop.EnablePlugins(filePondPluginTypes.ToList(), _cTs.Token);
-    // }
 
     public async ValueTask ReInitialize(CancellationToken cancellationToken = default)
     {
@@ -734,7 +776,7 @@
     {
         // Remove first two characters
         string subStr = callback[2..];
-        string result = subStr.ToLowerInvariant();
+        string result = subStr.ToLowerInvariantFast();
         return result;
     }
 
@@ -758,13 +800,23 @@
         _silentAddFiles.Add(fileName);
     }
 
+    private async ValueTask EnqueueOrExecute(Func<ValueTask> taskFunc)
+    {
+        if (_initialized)
+            await taskFunc();
+        else
+            _afterInitializationOperations.Add(taskFunc);
+    }
+
     public async ValueTask DisposeAsync()
     {
         Files.Clear();
         _silentAddFiles.Clear();
+        _afterInitializationOperations.Clear();
         await _cTs.CancelAsync();
         InteropEventListener.DisposeForElement(_elementId);
         _initialized = false;
+        _initializing = false;
     }
 
 }

@@ -46,6 +46,10 @@
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
+        if (firstRender)
+        {
+            await FilePond!.AddFile(GetRandomImageUri());
+        }
     }
 
     private void OnInit()

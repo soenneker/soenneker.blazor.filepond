@@ -41,6 +41,14 @@ public void ConfigureServices(IServiceCollection services)
         EnabledPlugins = [FilePondPluginType.ImagePreview]
     };
 
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await FilePond.AddFile("https://picsum.photos/500/500");
+        }
+    }
+
     private async Task OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
     {
         Logger.LogInformation("OnAddFile fired: Filename: {fileName}", obj.fileItem.Filename);

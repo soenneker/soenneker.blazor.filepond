@@ -1,6 +1,5 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Soenneker.Blazor.FilePond.Dtos;
-using Soenneker.Blazor.FilePond.Enums;
 using Soenneker.Blazor.FilePond.Options;
 using System;
 using System.Collections.Generic;
@@ -302,20 +301,6 @@ public interface IFilePond : IAsyncDisposable
     ValueTask MoveFile(object query, int index, CancellationToken cancellationToken = default);
 
     ValueTask Destroy(CancellationToken cancellationToken = default);
-
-    ///// <summary>
-    ///// Enables the specified FilePond plugins.
-    ///// </summary>
-    ///// <remarks>Needs to be called BEFORE creation of the FilePond instance.</remarks>
-    ///// <param name="filePondPluginTypes">The types of plugins to enable.</param>
-    //ValueTask EnablePlugins(params FilePondPluginType[] filePondPluginTypes);
-
-    ///// <summary>
-    ///// Enables the specified FilePond plugins.
-    ///// </summary>
-    ///// <remarks>Needs to be called BEFORE creation of the FilePond instance.</remarks>
-    ///// <param name="filePondPluginTypes">The types of plugins to enable.</param>
-    //ValueTask EnablePlugins(params string[] filePondPluginTypes);
 
     /// <summary>
     /// Destroys the element and initializes a new one in its place.

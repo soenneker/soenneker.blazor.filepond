@@ -195,6 +195,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
             await _resourceLoader.LoadScript(script.uri, script.integrity, cancellationToken).NoSync();
         }
 
+        // FilePond.js is added after the plugins in all the examples...
         await _scriptInitializer.Get(cancellationToken);
 
         if (resultList.Any())
