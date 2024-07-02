@@ -92,6 +92,12 @@ public sealed class FilePondPluginType : SmartEnum<FilePondPluginType>
     /// </summary>
     public static readonly FilePondPluginType ImageValidateSize = new(nameof(ImageValidateSize), 13);
 
+    public static readonly FilePondPluginType MediaPreview = new(nameof(MediaPreview), 14);
+
+    public static readonly FilePondPluginType ImageOverlay = new(nameof(ImageOverlay), 15);
+
+    public static readonly FilePondPluginType PdfPreview = new(nameof(PdfPreview), 16);
+
     private FilePondPluginType(string name, int value) : base(name, value)
     {
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Soenneker.Blazor.FilePond.Enums;
+using Newtonsoft.Json;
 
 namespace Soenneker.Blazor.FilePond.Options;
 
@@ -22,8 +23,17 @@ public class FilePondOptions
     [JsonPropertyName("required")]
     public bool Required { get; set; } = false;
 
+    /// <summary>
+    /// Enables official/common plugins for FilePond (globally, across the entire session). Any specified here automatically import styles and scripts.
+    /// </summary>
     [JsonIgnore]
     public List<FilePondPluginType>? EnabledPlugins { get; set; }
+
+    /// <summary>
+    /// Enables non-official plugins for FilePond (globally, across the entire session). Any specified here need the scripts and styles to be manually included in the DOM.
+    /// </summary>
+    [JsonIgnore]
+    public List<string>? EnabledOtherPlugins { get; set; }
 
     /// <summary>
     /// If true, "Create" will not get called automatically from OnAfterRenderAsync. This is helpful when Create needs to be called from a component for example.
@@ -1051,4 +1061,42 @@ public class FilePondOptions
     public object? ImageValidateSizeMeasure { get; set; } = null;
 
     #endregion Plugin - ImageValidateSize
+
+    #region Plugin - MediaPreview
+
+    /// <summary>
+    /// Gets or sets a value indicating whether video preview is allowed.
+    /// </summary>
+    [JsonProperty("allowVideoPreview")]
+    public bool AllowVideoPreview { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets a value indicating whether audio preview is allowed.
+    /// </summary>
+    [JsonProperty("allowAudioPreview")]
+    public bool AllowAudioPreview { get; set; } = true;
+
+    #endregion
+
+    #region Plugin - PdfPreview
+
+    /// <summary>
+    /// Gets or sets a value indicating whether PDF preview is allowed.
+    /// </summary>
+    [JsonProperty("allowPdfPreview")]
+    public bool AllowPdfPreview { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the height of the PDF preview.
+    /// </summary>
+    [JsonProperty("pdfPreviewHeight")]
+    public int? PdfPreviewHeight { get; set; }
+
+    /// <summary>
+    /// Gets or sets extra parameters for the PDF component.
+    /// </summary>
+    [JsonProperty("pdfComponentExtraParams")]
+    public string? PdfComponentExtraParams { get; set; }
+
+    #endregion
 }

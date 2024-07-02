@@ -223,6 +223,17 @@ export class FilePondInterop {
         });
     }
 
+    async enableOtherPlugins(plugins) {
+        plugins.forEach(plugin => {
+            const pluginVariable = window[plugin];
+            if (pluginVariable) {
+                FilePond.registerPlugin(pluginVariable);
+            } else {
+                console.error(`Could not load FilePond plugin (${pluginName}), are you sure the necessary script is on the page?`);
+            }
+        });
+    }
+
     getFileAsBlob(elementId, query) {
         const pond = this.ponds[elementId];
         const file = query ? pond.getFile(query).file : pond.getFile().file;

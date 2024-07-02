@@ -24,6 +24,8 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
+⚠ Do not include styles or scripts on the page as they get lazily injected automatically, including most plugins.
+
 ## Usage
 
 ```razor
@@ -58,5 +60,3 @@ public void ConfigureServices(IServiceCollection services)
     }
 }
 ```
-
-⚠️ While 95%+ of the FilePond JS has been implemented, there are a few features not yet supported. If you need assistance or want to request a new feature, please open an issue or submit a pull request.

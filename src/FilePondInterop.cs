@@ -25,6 +25,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 {
     private readonly ILogger<FilePondInterop> _logger;
     private readonly List<FilePondPluginType> _enabledPlugins = [];
+    private readonly List<string> _enabledOtherPlugins = [];
     private readonly IResourceLoader _resourceLoader;
 
     private readonly AsyncSingleton<object> _interopInitializer;
@@ -46,21 +47,21 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
         _styleInitializer = new AsyncSingleton<object>(async objects =>
         {
-            var cancellationToken = (CancellationToken)objects[0];
+            var cancellationToken = (CancellationToken) objects[0];
 
-            (string uri, string integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(null);
+            (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(null);
 
-            await _resourceLoader.LoadStyle(style.uri, style.integrity, cancellationToken).NoSync();
+            await _resourceLoader.LoadStyle(style.uri!, style.integrity, cancellationToken).NoSync();
             return new object();
         });
 
         _scriptInitializer = new AsyncSingleton<object>(async objects =>
         {
-            var cancellationToken = (CancellationToken)objects[0];
+            var cancellationToken = (CancellationToken) objects[0];
 
-            (string uri, string integrity) script = FilePondUtil.GetUriAndIntegrityForScript(null);
+            (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(null);
 
-            await _resourceLoader.LoadScriptAndWaitForVariable(script.uri, "FilePond", script.integrity, cancellationToken);
+            await _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, cancellationToken);
             return new object();
         });
     }
@@ -186,13 +187,15 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
         foreach (FilePondPluginType plugin in resultList)
         {
-            (string uri, string integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(plugin);
+            (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(plugin);
 
-            await _resourceLoader.LoadStyle(style.uri, style.integrity, cancellationToken).NoSync();
+            if (style.uri != null)
+                await _resourceLoader.LoadStyle(style.uri, style.integrity, cancellationToken).NoSync();
 
-            (string uri, string integrity) script = FilePondUtil.GetUriAndIntegrityForScript(plugin);
+            (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(plugin);
 
-            await _resourceLoader.LoadScript(script.uri, script.integrity, cancellationToken).NoSync();
+            if (script.uri != null)
+                await _resourceLoader.LoadScript(script.uri, script.integrity, cancellationToken).NoSync();
         }
 
         // FilePond.js is added after the plugins in all the examples...
@@ -202,6 +205,22 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         {
             List<string> strings = resultList.Select(c => c.Name.ToString()).ToList();
             await JsRuntime.InvokeVoidAsync("FilePondInterop.enablePlugins", cancellationToken, strings);
+        }
+    }
+
+    public async ValueTask EnableOtherPlugins(List<string> filePondOtherPlugins, CancellationToken cancellationToken = default)
+    {
+        await _interopInitializer.Get(cancellationToken).NoSync();
+
+        List<string> resultList = filePondOtherPlugins.Except(_enabledOtherPlugins).ToList();
+
+        _enabledOtherPlugins.AddRange(resultList);
+
+        await _scriptInitializer.Get(cancellationToken);
+
+        if (resultList.Any())
+        {
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.enableOtherPlugins", cancellationToken, resultList);
         }
     }
 

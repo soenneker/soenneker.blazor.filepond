@@ -141,9 +141,13 @@
                 return;
             }
 
-            if (Options != null && Options.EnabledPlugins.Populated())
+            if (Options != null )
             {
-                await FilePondInterop.EnablePlugins(Options.EnabledPlugins, _cTs.Token);
+                if (Options.EnabledPlugins.Populated())
+                    await FilePondInterop.EnablePlugins(Options.EnabledPlugins, _cTs.Token);
+
+                if (Options.EnabledOtherPlugins.Populated())
+                    await FilePondInterop.EnableOtherPlugins(Options.EnabledOtherPlugins, _cTs.Token);
             }
 
             await Create();

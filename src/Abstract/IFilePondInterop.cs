@@ -164,6 +164,8 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 
     ValueTask EnablePlugins(List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default);
 
+    ValueTask EnableOtherPlugins(List<string> filePondOtherPlugins, CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance. The stream should be disposed after use.
     /// </summary>
