@@ -37,45 +37,40 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         _logger = logger;
         _resourceLoader = resourceLoader;
 
-        _interopInitializer = new AsyncSingleton<object>(async objects =>
+        _interopInitializer = new AsyncSingleton<object>(async (token, _) =>
         {
-            var cancellationToken = (CancellationToken) objects[0];
-            await resourceLoader.ImportModuleAndWaitUntilAvailable("Soenneker.Blazor.FilePond/filepondinterop.js", "FilePondInterop", 100, cancellationToken).NoSync();
+            await resourceLoader.ImportModuleAndWaitUntilAvailable("Soenneker.Blazor.FilePond/filepondinterop.js", "FilePondInterop", 100, token).NoSync();
 
             return new object();
         });
 
-        _styleInitializer = new AsyncSingleton<object>(async objects =>
+        _styleInitializer = new AsyncSingleton<object>(async (token, _) =>
         {
-            var cancellationToken = (CancellationToken) objects[0];
-
             (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(null);
 
-            await _resourceLoader.LoadStyle(style.uri!, style.integrity, cancellationToken).NoSync();
+            await _resourceLoader.LoadStyle(style.uri!, style.integrity, token).NoSync();
             return new object();
         });
 
-        _scriptInitializer = new AsyncSingleton<object>(async objects =>
+        _scriptInitializer = new AsyncSingleton<object>(async (token, _) =>
         {
-            var cancellationToken = (CancellationToken) objects[0];
-
             (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(null);
 
-            await _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, cancellationToken);
+            await _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, token);
             return new object();
         });
     }
 
     public async ValueTask Initialize(CancellationToken cancellationToken = default)
     {
-        _ = await _interopInitializer.Get(cancellationToken);
+        _ = await _interopInitializer.Get(cancellationToken, 0);
     }
 
     public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Get(cancellationToken);
-        await _styleInitializer.Get(cancellationToken);
-        await _scriptInitializer.Get(cancellationToken);
+        await _interopInitializer.Get(cancellationToken, 0);
+        await _styleInitializer.Get(cancellationToken, 0);
+        await _scriptInitializer.Get(cancellationToken, 0);
 
         string? json = null;
 
@@ -179,7 +174,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnablePlugins(List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Get(cancellationToken).NoSync();
+        await _interopInitializer.Get(cancellationToken, 0).NoSync();
 
         List<FilePondPluginType> resultList = filePondPluginTypes.Except(_enabledPlugins).ToList();
 
@@ -199,7 +194,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         }
 
         // FilePond.js is added after the plugins in all the examples...
-        await _scriptInitializer.Get(cancellationToken);
+        await _scriptInitializer.Get(cancellationToken, 0);
 
         if (resultList.Any())
         {
@@ -210,13 +205,13 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnableOtherPlugins(List<string> filePondOtherPlugins, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Get(cancellationToken).NoSync();
+        await _interopInitializer.Get(cancellationToken, 0).NoSync();
 
         List<string> resultList = filePondOtherPlugins.Except(_enabledOtherPlugins).ToList();
 
         _enabledOtherPlugins.AddRange(resultList);
 
-        await _scriptInitializer.Get(cancellationToken);
+        await _scriptInitializer.Get(cancellationToken, 0);
 
         if (resultList.Any())
         {
