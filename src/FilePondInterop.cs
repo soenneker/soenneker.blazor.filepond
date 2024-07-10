@@ -48,7 +48,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         {
             (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(null);
 
-            await _resourceLoader.LoadStyle(style.uri!, style.integrity, token).NoSync();
+            await _resourceLoader.LoadStyle(style.uri!, style.integrity, cancellationToken: token).NoSync();
             return new object();
         });
 
@@ -56,7 +56,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         {
             (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(null);
 
-            await _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, token);
+            await _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, cancellationToken: token);
             return new object();
         });
     }
@@ -185,12 +185,12 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
             (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(plugin);
 
             if (style.uri != null)
-                await _resourceLoader.LoadStyle(style.uri, style.integrity, cancellationToken).NoSync();
+                await _resourceLoader.LoadStyle(style.uri, style.integrity, cancellationToken: cancellationToken).NoSync();
 
             (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(plugin);
 
             if (script.uri != null)
-                await _resourceLoader.LoadScript(script.uri, script.integrity, cancellationToken).NoSync();
+                await _resourceLoader.LoadScript(script.uri, script.integrity, cancellationToken: cancellationToken).NoSync();
         }
 
         // FilePond.js is added after the plugins in all the examples...
