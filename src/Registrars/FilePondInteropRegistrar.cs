@@ -17,7 +17,7 @@ public static class FilePondInteropRegistrar
     public static void AddFilePond(this IServiceCollection services)
     {
         services.AddResourceLoader();
-        services.TryAddSingleton<IFilePondInterop, FilePondInterop>();
+        services.TryAddScoped<IFilePondInterop, FilePondInterop>();
         services.AddInteropEventListener();
     }
 }
