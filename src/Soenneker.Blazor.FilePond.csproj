@@ -44,6 +44,6 @@
         <PackageReference Include="Ardalis.SmartEnum.SystemTextJson" Version="8.0.0" />
         <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="2.1.1450" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="2.1.178" />
-        <PackageReference Include="Soenneker.Extensions.List" Version="2.1.342" />
+        <PackageReference Include="Soenneker.Extensions.List" Version="2.1.343" />
     </ItemGroup>
 </Project>
