@@ -9,7 +9,6 @@
 @using Soenneker.Utils.Random
 @inject ILogger<Index> Logger
 
-
 <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png" />
 <h1>Soenneker.Blazor.FilePond demo</h1>
 <p>This page demonstrates some of the uses of the FilePond component.</p>
@@ -41,7 +40,8 @@
 
     private readonly FilePondOptions _options = new()
     {
-            EnabledPlugins = [FilePondPluginType.ImagePreview]
+        EnabledPlugins = [FilePondPluginType.ImagePreview],
+        MaxFileSize = 5000000
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -133,9 +133,22 @@
     }
 
 
-    private void OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
+    private async Task OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
     {
         Logger.LogInformation("OnAddFile fired: Filename: {fileName}", obj.fileItem.Filename);
+
+        Stream? stream = await FilePond!.GetStreamForFile();
+        FilePondFileItem? file = await FilePond.GetFile();
+
+        if (stream == null || file == null)
+        {
+            Logger.LogWarning("Skipping file upload because stream or file was null");
+            return;
+        }
+
+        // do something with the stream
+
+        await stream.DisposeAsync();
     }
 
     private void OnInitFile(FilePondFileItem file)

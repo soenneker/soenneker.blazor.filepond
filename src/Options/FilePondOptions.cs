@@ -582,13 +582,13 @@ public class FilePondOptions
     public bool AllowFileSizeValidation { get; set; } = true;
 
     /// <summary>
-    /// Gets or sets the minimum size of a file, for instance 5MB or 750KB.
+    /// Gets or sets the minimum size of a file.
     /// </summary>
     [JsonPropertyName("minFileSize")]
     public long? MinFileSize { get; set; } = null;
 
     /// <summary>
-    /// Gets or sets the maximum size of a file, for instance 5MB or 750KB.
+    /// Gets or sets the maximum size of a file.
     /// </summary>
     [JsonPropertyName("maxFileSize")]
     public long? MaxFileSize { get; set; } = null;

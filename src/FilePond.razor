@@ -3,6 +3,7 @@
 @using System.Threading
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.FilePond.Abstract
+@using Soenneker.Blazor.FilePond.Constants
 @using Soenneker.Blazor.FilePond.Dtos
 @using Soenneker.Blazor.FilePond.Options
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
@@ -141,7 +142,7 @@
                 return;
             }
 
-            if (Options != null )
+            if (Options != null)
             {
                 if (Options.EnabledPlugins.Populated())
                     await FilePondInterop.EnablePlugins(Options.EnabledPlugins, _cTs.Token);
@@ -398,28 +399,40 @@
         await Create(Options, linkedCts.Token);
     }
 
-    public ValueTask<Stream?> GetStreamForFile(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    public ValueTask<Stream?> GetStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.GetStreamForFile(_elementId, null, maxAllowedSize, linkedCts.Token);
+
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        return FilePondInterop.GetStreamForFile(_elementId, null, maxAllowedSize.Value, linkedCts.Token);
     }
 
-    public ValueTask<Stream?> GetStreamForFile(int index, long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    public ValueTask<Stream?> GetStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.GetStreamForFile(_elementId, index, maxAllowedSize, linkedCts.Token);
+
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        return FilePondInterop.GetStreamForFile(_elementId, index, maxAllowedSize.Value, linkedCts.Token);
     }
 
-    public ValueTask<Stream?> GetStreamForFile(string fileId, long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    public ValueTask<Stream?> GetStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.GetStreamForFile(_elementId, fileId, maxAllowedSize, linkedCts.Token);
+
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        return FilePondInterop.GetStreamForFile(_elementId, fileId, maxAllowedSize.Value, linkedCts.Token);
     }
 
-    public ValueTask<List<Stream>> GetAllStreams(long maxAllowedSize = 512000, CancellationToken cancellationToken = default)
+    public ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.GetAllStreams(_elementId, maxAllowedSize, linkedCts.Token);
+
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        return FilePondInterop.GetAllStreams(_elementId, maxAllowedSize.Value, linkedCts.Token);
     }
 
     private async ValueTask AddEventListeners()
@@ -786,12 +799,12 @@
 
     private ValueTask AddEventListener<T>(string eventName, Func<T, ValueTask> callback)
     {
-        return InteropEventListener.Add("FilePondInterop.addEventListener", _elementId, eventName, callback, _cTs.Token);
+        return InteropEventListener.Add($"{nameof(FilePondInterop)}.addEventListener", _elementId, eventName, callback, _cTs.Token);
     }
 
     private ValueTask AddEventListener<TInput, TOutput>(string eventName, Func<TInput, ValueTask<TOutput>> callback)
     {
-        return InteropEventListener.Add("FilePondInterop.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
+        return InteropEventListener.Add($"{nameof(FilePondInterop)}.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
     }
 
     private void AddSilentFileNameFromUri(string uri)

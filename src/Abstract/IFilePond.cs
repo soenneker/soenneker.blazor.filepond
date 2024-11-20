@@ -312,7 +312,7 @@ public interface IFilePond : IAsyncDisposable
     /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance.
     /// </summary>
     /// <param name="maxAllowedSize">
-    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to 512,000 bytes (500 KB).
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
     /// </param>
     /// <param name="cancellationToken">
     /// (Optional) A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete.
@@ -325,7 +325,7 @@ public interface IFilePond : IAsyncDisposable
     /// Use this method to get a stream for a specific file within a FilePond instance. The stream can be used to
     /// perform additional operations, such as reading the file contents or processing the file in-memory.
     /// </remarks>
-    ValueTask<Stream?> GetStreamForFile(long maxAllowedSize = 512000, CancellationToken cancellationToken = default);
+    ValueTask<Stream?> GetStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file at the specified index within the given FilePond instance.
@@ -334,7 +334,7 @@ public interface IFilePond : IAsyncDisposable
     /// The index of the file for which to retrieve the stream.
     /// </param>
     /// <param name="maxAllowedSize">
-    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to 512,000 bytes (500 KB).
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
     /// </param>
     /// <param name="cancellationToken">
     /// (Optional) A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete.
@@ -347,7 +347,7 @@ public interface IFilePond : IAsyncDisposable
     /// Use this method to get a stream for a specific file within a FilePond instance based on its index. 
     /// The stream can be used to perform additional operations, such as reading the file contents or processing the file in-memory.
     /// </remarks>
-    ValueTask<Stream?> GetStreamForFile(int index, long maxAllowedSize = 512000, CancellationToken cancellationToken = default);
+    ValueTask<Stream?> GetStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance.
@@ -356,7 +356,7 @@ public interface IFilePond : IAsyncDisposable
     /// The unique identifier of the file for which to retrieve the stream.
     /// </param>
     /// <param name="maxAllowedSize">
-    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to 512,000 bytes (500 KB).
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
     /// </param>
     /// <param name="cancellationToken">
     /// (Optional) A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete.
@@ -369,12 +369,14 @@ public interface IFilePond : IAsyncDisposable
     /// Use this method to get a stream for a specific file within a FilePond instance. The stream can be used to
     /// perform additional operations, such as reading the file contents or processing the file in-memory.
     /// </remarks>
-    ValueTask<Stream?> GetStreamForFile(string fileId, long maxAllowedSize = 512000, CancellationToken cancellationToken = default);
+    ValueTask<Stream?> GetStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a list of streams, each representing data, with a total size not exceeding the specified maximum allowed size.
     /// </summary>
-    /// <param name="maxAllowedSize">The maximum allowed size for the total data in bytes. Default is 512,000 bytes.</param>
+    /// <param name="maxAllowedSize">
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
+    /// </param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>
     /// A <see cref="ValueTask"/> representing the asynchronous operation.
@@ -384,5 +386,5 @@ public interface IFilePond : IAsyncDisposable
     /// The method retrieves streams of data with a total size not exceeding the specified maximum allowed size.
     /// The data is segmented into multiple streams to meet the size constraint.
     /// </remarks>
-    ValueTask<List<Stream>> GetAllStreams(long maxAllowedSize = 512000, CancellationToken cancellationToken = default);
+    ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 }

@@ -7,6 +7,7 @@ using System.Threading;
 using Soenneker.Blazor.Utils.EventListeningInterop.Abstract;
 using System;
 using Soenneker.Blazor.FilePond.Enums;
+using Soenneker.Blazor.FilePond.Constants;
 
 namespace Soenneker.Blazor.FilePond.Abstract;
 
@@ -171,15 +172,15 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     /// </summary>
     /// <param name="elementId">The unique identifier of the HTML element associated with the FilePond instance.</param>
     /// <param name="query">The unique identifier of the file for which to retrieve the stream.</param>
-    /// <param name="maxAllowedSize">(Optional) The maximum allowed size of the stream in bytes. Defaults to 512,000 bytes (500 KB).</param>
+    /// <param name="maxAllowedSize">(Optional) The maximum allowed size of the stream in bytes. Defaults to 2MB.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
-    ValueTask<Stream?> GetStreamForFile(string elementId, object? query = null, long maxAllowedSize = 512000, CancellationToken cancellationToken = default);
+    ValueTask<Stream?> GetStreamForFile(string elementId, object? query = null, long maxAllowedSize = FilePondConstants.DefaultMaximumSize, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a list of <see cref="Stream"/> objects for all files within the given FilePond instance. The streams should be disposed after use.
     /// </summary>
     /// <param name="elementId">The unique identifier of the HTML element associated with the FilePond instance.</param>
-    /// <param name="maxAllowedSize">(Optional) The maximum allowed size.</param>
+    /// <param name="maxAllowedSize">(Optional) The maximum allowed size. Defaults to 2MB.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
-    ValueTask<List<Stream>> GetAllStreams(string elementId, long maxAllowedSize = 512000, CancellationToken cancellationToken = default);
+    ValueTask<List<Stream>> GetAllStreams(string elementId, long maxAllowedSize = FilePondConstants.DefaultMaximumSize, CancellationToken cancellationToken = default);
 }

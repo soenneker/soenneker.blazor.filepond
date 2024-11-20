@@ -45,4 +45,8 @@
         <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.2233" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="3.0.598" />
         <PackageReference Include="Soenneker.Extensions.List" Version="3.0.546" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="NewFolder\" />
     </ItemGroup></Project>
