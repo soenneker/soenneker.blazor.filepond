@@ -42,7 +42,7 @@ public class Program
                 .AddBootstrap5Providers()
                 .AddFontAwesomeIcons();
 
-            builder.Services.AddFilePond();
+            builder.Services.AddFilePondInteropAsScoped();
 
             WebAssemblyHost host = builder.Build();
 

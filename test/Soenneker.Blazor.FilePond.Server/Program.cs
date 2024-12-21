@@ -7,7 +7,7 @@ WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-builder.Services.AddFilePond();
+builder.Services.AddFilePondInteropAsScoped();
 
 WebApplication app = builder.Build();
 

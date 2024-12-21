@@ -3,6 +3,8 @@ using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using Soenneker.Fixtures.Unit;
 using Soenneker.Utils.Test;
+using Soenneker.Blazor.MockJsRuntime.Registrars;
+using Soenneker.Blazor.FilePond.Registrars;
 
 namespace Soenneker.Blazor.FilePond.Tests;
 
@@ -11,6 +13,8 @@ public class Fixture : UnitFixture
     public override System.Threading.Tasks.ValueTask InitializeAsync()
     {
         SetupIoC(Services);
+
+        Services.AddMockJsRuntimeAsScoped();
 
         return base.InitializeAsync();
     }
@@ -24,5 +28,7 @@ public class Fixture : UnitFixture
 
         IConfiguration config = TestUtil.BuildConfig();
         services.AddSingleton(config);
+
+        services.AddFilePondInteropAsScoped();
     }
 }

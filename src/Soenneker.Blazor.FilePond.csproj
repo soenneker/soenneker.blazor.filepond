@@ -31,6 +31,13 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>icon.png</PackageIcon>
     </PropertyGroup>
+
+    <ItemGroup>
+      <Compile Remove="NewFolder\**" />
+      <Content Remove="NewFolder\**" />
+      <EmbeddedResource Remove="NewFolder\**" />
+      <None Remove="NewFolder\**" />
+    </ItemGroup>
     
     <ItemGroup>
         <None Include="..\CONTRIBUTING.md" Link="CONTRIBUTING.md" />
@@ -42,11 +49,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.0" />
         <PackageReference Include="Ardalis.SmartEnum.SystemTextJson" Version="8.1.0" />
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.2484" />
-        <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="3.0.721" />
-        <PackageReference Include="Soenneker.Extensions.List" Version="3.0.615" />
-    </ItemGroup>
-
-    <ItemGroup>
-      <Folder Include="NewFolder\" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.2493" />
+        <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="3.0.734" />
+        <PackageReference Include="Soenneker.Extensions.List" Version="3.0.619" />
     </ItemGroup></Project>

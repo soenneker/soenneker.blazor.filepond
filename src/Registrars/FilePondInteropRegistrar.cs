@@ -14,10 +14,12 @@ public static class FilePondInteropRegistrar
     /// <summary>
     /// Adds <see cref="IFilePondInterop"/> as a scoped service. <para/>
     /// </summary>
-    public static void AddFilePond(this IServiceCollection services)
+    public static IServiceCollection AddFilePondInteropAsScoped(this IServiceCollection services)
     {
-        services.AddResourceLoader();
-        services.AddInteropEventListener();
+        services.AddResourceLoaderAsScoped();
+        services.AddInteropEventListenerAsScoped();
         services.TryAddScoped<IFilePondInterop, FilePondInterop>();
+
+        return services;
     }
 }

@@ -8,10 +8,16 @@ namespace Soenneker.Blazor.FilePond.Tests;
 [Collection("Collection")]
 public class FilePondInteropTests : FixturedUnitTest
 {
-    private readonly IFilePondInterop _interop;
+    private readonly IFilePondInterop _util;
 
     public FilePondInteropTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
     {
-        _interop = Resolve<IFilePondInterop>(true);
+        _util = Resolve<IFilePondInterop>(true);
+    }
+
+    [Fact]
+    public void Default()
+    {
+
     }
 }
