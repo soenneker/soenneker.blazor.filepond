@@ -18,6 +18,7 @@ using Soenneker.Blazor.FilePond.Utils;
 using Soenneker.Blazor.FilePond.Enums;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Blazor.FilePond.Constants;
+using Soenneker.Extensions.String;
 
 namespace Soenneker.Blazor.FilePond;
 
@@ -106,6 +107,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public ValueTask RemoveFile(string elementId, object? query = null, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
+        var str = "".ToLowerInvariantFast();
         return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.removeFile", cancellationToken, elementId, query, options);
     }
 
