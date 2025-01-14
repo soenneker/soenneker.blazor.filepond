@@ -71,7 +71,7 @@
     private async Task AddFileFromStream()
     {
         var test = "Hello world";
-        var stream = await test.ToMemoryStream();
+        var stream = test.ToMemoryStream();
         await FilePond!.AddFile(stream);
     }
 
