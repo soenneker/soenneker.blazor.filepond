@@ -7,7 +7,7 @@ internal class FilePondUtil
     public static (string? uri, string? integrity) GetUriAndIntegrityForStyle(FilePondPluginType? type)
     {
         if (type == null)
-            return ("https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.css", "sha256-a95jYCBL4++k1XyLYgulKmY33bIJIVYMsJO/RNytaJM=");
+            return ("https://cdn.jsdelivr.net/npm/filepond@4.32.7/dist/filepond.min.css", "sha256-R/TKiFR8YXiqvCSFSm3ek/rIjgEoFS5PpaAMkv/brg4=");
 
         switch (type.Name)
         {
@@ -31,7 +31,7 @@ internal class FilePondUtil
     public static (string? uri, string? integrity) GetUriAndIntegrityForScript(FilePondPluginType? type)
     {
         if (type == null)
-            return ("https://cdn.jsdelivr.net/npm/filepond@4.31.1/dist/filepond.min.js", "sha256-6yXpr8+sATA4Q2ANTyZmpn4ZGP7grbIRNpe9s0Y+iO0=");
+            return ("https://cdn.jsdelivr.net/npm/filepond@4.32.7/dist/filepond.min.js", "sha256-BRICH2AsAT7Vx36hU5PcHTuKBbusAU4j6fge+/dHO1M=");
 
         switch (type.Name)
         {

@@ -18,7 +18,6 @@ using Soenneker.Blazor.FilePond.Utils;
 using Soenneker.Blazor.FilePond.Enums;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Blazor.FilePond.Constants;
-using Soenneker.Extensions.String;
 
 namespace Soenneker.Blazor.FilePond;
 
@@ -107,7 +106,6 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public ValueTask RemoveFile(string elementId, object? query = null, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var str = "".ToLowerInvariantFast();
         return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.removeFile", cancellationToken, elementId, query, options);
     }
 
@@ -139,15 +137,13 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
     public async ValueTask<FilePondFileItem?> GetFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
         string str = await JsRuntime.InvokeAsync<string>($"{nameof(FilePondInterop)}.getFile", cancellationToken, elementId, query).NoSync();
-        var result = JsonUtil.Deserialize<FilePondFileItem>(str);
-        return result;
+        return JsonUtil.Deserialize<FilePondFileItem>(str);
     }
 
     public async ValueTask<List<FilePondFileItem>?> GetFiles(string elementId, CancellationToken cancellationToken = default)
     {
         string str = await JsRuntime.InvokeAsync<string>($"{nameof(FilePondInterop)}.getFiles", cancellationToken, elementId).NoSync();
-        var result = JsonUtil.Deserialize<List<FilePondFileItem>>(str);
-        return result;
+        return JsonUtil.Deserialize<List<FilePondFileItem>>(str);
     }
 
     public ValueTask Browse(string elementId, CancellationToken cancellationToken = default)
@@ -228,9 +224,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         {
             IJSStreamReference blob = await JsRuntime.InvokeAsync<IJSStreamReference>($"{nameof(FilePondInterop)}.getFileAsBlob", cancellationToken, elementId, query).NoSync();
 
-            Stream stream = await blob.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
-
-            return stream;
+            return await blob.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
         }
         catch (Exception ex)
         {

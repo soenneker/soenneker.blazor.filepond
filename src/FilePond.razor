@@ -10,6 +10,7 @@
 @using Soenneker.Extensions.Enumerable
 @using Soenneker.Extensions.List
 @using Soenneker.Extensions.String
+@using Soenneker.Extensions.Task
 @using Soenneker.Utils.Json
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
@@ -830,7 +831,7 @@
         Files.Clear();
         _silentAddFiles.Clear();
         _afterInitializationOperations.Clear();
-        await _cTs.CancelAsync();
+        await _cTs.CancelAsync().NoSync();
         InteropEventListener.DisposeForElement(_elementId);
         _initialized = false;
         _initializing = false;
