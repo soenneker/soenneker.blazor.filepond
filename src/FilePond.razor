@@ -16,8 +16,8 @@
 @inject IInteropEventListener InteropEventListener
 @inject ILogger<FilePond> _logger
 
-
 @implements IFilePond
+
 <div blazor-observer-id="@_elementId" ></div>
 <div blazor-wrapper-id="@_elementId" >
     <input type="file" @attributes="Attributes" blazor-interop-id="@_elementId" />
@@ -442,16 +442,16 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnInit)),
-                async e => { await OnInit.InvokeAsync(); });
+                async (str, _) => { await OnInit.InvokeAsync(); });
         }
 
         if (OnWarning.HasDelegate)
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnWarning)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     (FilePondError?, FilePondFileItem, string) parameters = (
                         jsonDocument.RootElement[0].Deserialize<FilePondError>(),
                         jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
@@ -465,9 +465,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnError)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     (FilePondError?, FilePondFileItem, string) parameters = (
                         jsonDocument.RootElement[0].Deserialize<FilePondError>(),
                         jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
@@ -481,9 +481,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnInitFile)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnInitFile.InvokeAsync(file);
                 });
@@ -493,9 +493,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnAddFileStart)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnAddFileStart.InvokeAsync(file);
                 });
@@ -505,9 +505,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnAddFileProgress)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     (FilePondFileItem, int) parameters = (
                         jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
                         jsonDocument.RootElement[1].GetInt32()
@@ -519,9 +519,9 @@
 
         await AddEventListener<string>(
             GetJsEventName(nameof(OnAddFile)),
-            async e =>
+            async (str, _) =>
             {
-                JsonDocument jsonDocument = JsonDocument.Parse(e);
+                JsonDocument jsonDocument = JsonDocument.Parse(str);
 
                 var error = jsonDocument.RootElement[0].Deserialize<FilePondError>();
                 var file = jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!;
@@ -544,9 +544,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnProcessFileStart)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnProcessFileStart.InvokeAsync(file);
                 });
@@ -556,9 +556,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnProcessFileProgress)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     (FilePondFileItem, int) parameters = (
                         jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
                         jsonDocument.RootElement[1].GetInt32()
@@ -571,9 +571,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnProcessFileAbort)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnProcessFileAbort.InvokeAsync(file);
                 });
@@ -583,9 +583,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnProcessFileRevert)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnProcessFileRevert.InvokeAsync(file);
                 });
@@ -595,9 +595,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnProcessFile)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
 
                     var parameters = (
                         jsonDocument.RootElement[0].Deserialize<FilePondError>(),
@@ -618,9 +618,9 @@
 
         await AddEventListener<string>(
             GetJsEventName(nameof(OnRemoveFile)),
-            async e =>
+            async (str, _) =>
             {
-                JsonDocument jsonDocument = JsonDocument.Parse(e);
+                JsonDocument jsonDocument = JsonDocument.Parse(str);
 
                 var error = jsonDocument.RootElement[0].Deserialize<FilePondError>();
                 var file = jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!;
@@ -636,9 +636,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnPrepareFile)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var parameters = (
                         jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
                         jsonDocument.RootElement[1].Deserialize<object>()!
@@ -651,9 +651,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnUpdateFiles)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     List<FilePondFileItem> files = jsonDocument.RootElement.EnumerateArray()
                         .Select(item => item.Deserialize<FilePondFileItem>()!)
                         .ToList();
@@ -665,9 +665,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnActivateFile)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnActivateFile.InvokeAsync(file);
                 });
@@ -677,9 +677,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnReorderFiles)),
-                async e =>
+                async (str, _) =>
                 {
-                    JsonDocument jsonDocument = JsonDocument.Parse(e);
+                    JsonDocument jsonDocument = JsonDocument.Parse(str);
                     (List<FilePondFileItem>, int, int) parameters = (
                         jsonDocument.RootElement[0].EnumerateArray()
                             .Select(item => item.Deserialize<FilePondFileItem>()!)
@@ -695,7 +695,7 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnServerLoad)),
-                async e =>
+                async (str, _) =>
                 {
                     // JsonDocument jsonDocument = JsonDocument.Parse(e);
                     // (List<FilePondFileItem>, int, int) parameters = (
@@ -713,7 +713,7 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnServerError)),
-                async e =>
+                async (str, _) =>
                 {
                     // JsonDocument jsonDocument = JsonDocument.Parse(e);
                     // (List<FilePondFileItem>, int, int) parameters = (
@@ -731,7 +731,7 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnServerData)),
-                async e =>
+                async (str, _) =>
                 {
                     // JsonDocument jsonDocument = JsonDocument.Parse(e);
                     // (List<FilePondFileItem>, int, int) parameters = (
@@ -748,44 +748,40 @@
         if (OnBeforeAddFile != null)
         {
             await AddEventListener<string, bool>(nameof(OnBeforeAddFile),
-                async e =>
+                async (str, _) =>
                 {
-                    var file = JsonUtil.Deserialize<FilePondFileItem>(e);
-                    bool result = await OnBeforeAddFile(file!);
-                    return result;
+                    var file = JsonUtil.Deserialize<FilePondFileItem>(str);
+                    return await OnBeforeAddFile(file!);
                 });
         }
 
         if (OnBeforeDropFile != null)
         {
             await AddEventListener<string, bool>(nameof(OnBeforeDropFile),
-                async e =>
+                async (str, _) =>
                 {
-                    var file = JsonUtil.Deserialize<FilePondFileItem>(e);
-                    bool result = await OnBeforeDropFile(file!);
-                    return result;
+                    var file = JsonUtil.Deserialize<FilePondFileItem>(str);
+                   return await OnBeforeDropFile(file!);
                 });
         }
 
         if (OnBeforeRemoveFile != null)
         {
             await AddEventListener<string, bool>(nameof(OnBeforeDropFile),
-                async e =>
+                async (str, _) =>
                 {
-                    var file = JsonUtil.Deserialize<FilePondFileItem>(e);
-                    bool result = await OnBeforeRemoveFile(file!);
-                    return result;
+                    var file = JsonUtil.Deserialize<FilePondFileItem>(str);
+                    return await OnBeforeRemoveFile(file!);
                 });
         }
 
         if (OnFileRename != null)
         {
             await AddEventListener<string, string>(nameof(OnFileRename),
-                async e =>
+                async (str, _) =>
                 {
-                    var file = JsonUtil.Deserialize<FilePondFileRenameInfo>(e);
-                    string result = await OnFileRename(file!);
-                    return result;
+                    var file = JsonUtil.Deserialize<FilePondFileRenameInfo>(str);
+                    return await OnFileRename(file!);
                 });
         }
     }
@@ -794,16 +790,15 @@
     {
         // Remove first two characters
         string subStr = callback[2..];
-        string result = subStr.ToLowerInvariantFast();
-        return result;
+        return subStr.ToLowerInvariantFast();
     }
 
-    private ValueTask AddEventListener<T>(string eventName, Func<T, ValueTask> callback)
+    private ValueTask AddEventListener<T>(string eventName, Func<T, CancellationToken, ValueTask> callback)
     {
         return InteropEventListener.Add($"{nameof(FilePondInterop)}.addEventListener", _elementId, eventName, callback, _cTs.Token);
     }
 
-    private ValueTask AddEventListener<TInput, TOutput>(string eventName, Func<TInput, ValueTask<TOutput>> callback)
+    private ValueTask AddEventListener<TInput, TOutput>(string eventName, Func<TInput, CancellationToken, ValueTask<TOutput>> callback)
     {
         return InteropEventListener.Add($"{nameof(FilePondInterop)}.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
     }
