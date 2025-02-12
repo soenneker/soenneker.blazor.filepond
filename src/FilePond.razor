@@ -11,6 +11,7 @@
 @using Soenneker.Extensions.List
 @using Soenneker.Extensions.String
 @using Soenneker.Extensions.Task
+@using Soenneker.Extensions.ValueTask
 @using Soenneker.Utils.Json
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
@@ -146,14 +147,14 @@
             if (Options != null)
             {
                 if (Options.EnabledPlugins.Populated())
-                    await FilePondInterop.EnablePlugins(Options.EnabledPlugins, _cTs.Token);
+                    await FilePondInterop.EnablePlugins(Options.EnabledPlugins, _cTs.Token).NoSync();
 
                 if (Options.EnabledOtherPlugins.Populated())
-                    await FilePondInterop.EnableOtherPlugins(Options.EnabledOtherPlugins, _cTs.Token);
+                    await FilePondInterop.EnableOtherPlugins(Options.EnabledOtherPlugins, _cTs.Token).NoSync();
             }
 
-            await Create();
-            await FilePondInterop.CreateObserver(_elementId);
+            await Create().NoSync();
+            await FilePondInterop.CreateObserver(_elementId).NoSync();
         }
     }
 
@@ -173,9 +174,9 @@
         InteropEventListener.Initialize(FilePondInterop);
 
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.Create(_elementId, Options, linkedCts.Token);
+        await FilePondInterop.Create(_elementId, Options, linkedCts.Token).NoSync();
 
-        await AddEventListeners();
+        await AddEventListeners().NoSync();
 
         _initialized = true;
         _initializing = false;
@@ -442,7 +443,9 @@
         {
             await AddEventListener<string>(
                 GetJsEventName(nameof(OnInit)),
-                async str => { await OnInit.InvokeAsync(); });
+                async str => { 
+                    await OnInit.InvokeAsync(); 
+                }).NoSync();
         }
 
         if (OnWarning.HasDelegate)
@@ -457,8 +460,9 @@
                         jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
                         jsonDocument.RootElement[2].GetString()!
                     );
-                    await OnWarning.InvokeAsync(parameters);
-                });
+
+                    await OnWarning.InvokeAsync(parameters).NoSync();
+                }).NoSync();
         }
 
         if (OnError.HasDelegate)
@@ -473,8 +477,9 @@
                         jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
                         jsonDocument.RootElement[2].GetString()!
                     );
-                    await OnError.InvokeAsync(parameters);
-                });
+
+                    await OnError.InvokeAsync(parameters).NoSync();
+                }).NoSync();
         }
 
         if (OnInitFile.HasDelegate)
@@ -485,8 +490,8 @@
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
-                    await OnInitFile.InvokeAsync(file);
-                });
+                    await OnInitFile.InvokeAsync(file).NoSync();
+                }).NoSync();
         }
 
         if (OnAddFileStart.HasDelegate)
@@ -497,8 +502,8 @@
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
-                    await OnAddFileStart.InvokeAsync(file);
-                });
+                    await OnAddFileStart.InvokeAsync(file).NoSync();
+                }).NoSync();
         }
 
         if (OnAddFileProgress.HasDelegate)
@@ -513,8 +518,8 @@
                         jsonDocument.RootElement[1].GetInt32()
                     );
 
-                    await OnAddFileProgress.InvokeAsync(parameters);
-                });
+                    await OnAddFileProgress.InvokeAsync(parameters).NoSync();
+                }).NoSync();
         }
 
         await AddEventListener<string>(
@@ -536,9 +541,9 @@
                         return;
                     }
 
-                    await OnAddFile.InvokeAsync((error, file));
+                    await OnAddFile.InvokeAsync((error, file)).NoSync();
                 }
-            });
+            }).NoSync();
 
         if (OnProcessFileStart.HasDelegate)
         {
@@ -548,8 +553,9 @@
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
-                    await OnProcessFileStart.InvokeAsync(file);
-                });
+
+                    await OnProcessFileStart.InvokeAsync(file).NoSync();
+                }).NoSync();
         }
 
         if (OnProcessFileProgress.HasDelegate)
@@ -563,8 +569,9 @@
                         jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
                         jsonDocument.RootElement[1].GetInt32()
                     );
-                    await OnProcessFileProgress.InvokeAsync(parameters);
-                });
+
+                    await OnProcessFileProgress.InvokeAsync(parameters).NoSync();
+                }).NoSync();
         }
 
         if (OnProcessFileAbort.HasDelegate)
@@ -575,8 +582,9 @@
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
-                    await OnProcessFileAbort.InvokeAsync(file);
-                });
+
+                    await OnProcessFileAbort.InvokeAsync(file).NoSync();
+                }).NoSync();
         }
 
         if (OnProcessFileRevert.HasDelegate)
@@ -587,8 +595,9 @@
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
-                    await OnProcessFileRevert.InvokeAsync(file);
-                });
+
+                    await OnProcessFileRevert.InvokeAsync(file).NoSync();
+                }).NoSync();
         }
 
         if (OnProcessFile.HasDelegate)
@@ -603,8 +612,9 @@
                         jsonDocument.RootElement[0].Deserialize<FilePondError>(),
                         jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!
                     );
-                    await OnProcessFile.InvokeAsync(parameters);
-                });
+
+                    await OnProcessFile.InvokeAsync(parameters).NoSync();
+                }).NoSync();
         }
 
         if (OnProcessFiles.HasDelegate)
@@ -628,8 +638,8 @@
                 Files.Remove(c => c.Id == file.Id);
 
                 if (OnRemoveFile.HasDelegate)
-                    await OnRemoveFile.InvokeAsync((error, file));
-            });
+                    await OnRemoveFile.InvokeAsync((error, file)).NoSync();
+            }).NoSync();
 
 
         if (OnPrepareFile.HasDelegate)
@@ -643,8 +653,9 @@
                         jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
                         jsonDocument.RootElement[1].Deserialize<object>()!
                     );
-                    await OnPrepareFile.InvokeAsync(parameters);
-                });
+
+                    await OnPrepareFile.InvokeAsync(parameters).NoSync();
+                }).NoSync();
         }
 
         if (OnUpdateFiles.HasDelegate)
@@ -657,8 +668,8 @@
                     List<FilePondFileItem> files = jsonDocument.RootElement.EnumerateArray()
                         .Select(item => item.Deserialize<FilePondFileItem>()!)
                         .ToList();
-                    await OnUpdateFiles.InvokeAsync(files);
-                });
+                    await OnUpdateFiles.InvokeAsync(files).NoSync();
+                }).NoSync();
         }
 
         if (OnActivateFile.HasDelegate)
@@ -669,8 +680,9 @@
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
-                    await OnActivateFile.InvokeAsync(file);
-                });
+
+                    await OnActivateFile.InvokeAsync(file).NoSync();
+                }).NoSync();
         }
 
         if (OnReorderFiles.HasDelegate)
@@ -687,8 +699,9 @@
                         jsonDocument.RootElement[1].GetInt32(),
                         jsonDocument.RootElement[2].GetInt32()
                     );
-                    await OnReorderFiles.InvokeAsync(parameters);
-                });
+
+                    await OnReorderFiles.InvokeAsync(parameters).NoSync();
+                }).NoSync();
         }
 
         if (OnServerLoad.HasDelegate)
@@ -705,8 +718,8 @@
                     //     jsonDocument.RootElement[1].GetInt32(),
                     //     jsonDocument.RootElement[2].GetInt32()
                     // );
-                    await OnServerLoad.InvokeAsync();
-                });
+                    await OnServerLoad.InvokeAsync().NoSync();
+                }).NoSync();
         }
 
         if (OnServerError.HasDelegate)
@@ -723,8 +736,8 @@
                     //     jsonDocument.RootElement[1].GetInt32(),
                     //     jsonDocument.RootElement[2].GetInt32()
                     // );
-                    await OnServerError.InvokeAsync();
-                });
+                    await OnServerError.InvokeAsync().NoSync();
+                }).NoSync();
         }
 
         if (OnServerData.HasDelegate)
@@ -741,8 +754,8 @@
                     //     jsonDocument.RootElement[1].GetInt32(),
                     //     jsonDocument.RootElement[2].GetInt32()
                     // );
-                    await OnServerData.InvokeAsync();
-                });
+                    await OnServerData.InvokeAsync().NoSync();
+                }).NoSync();
         }
 
         if (OnBeforeAddFile != null)
@@ -751,8 +764,8 @@
                 async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileItem>(str);
-                    return await OnBeforeAddFile(file!);
-                });
+                    return await OnBeforeAddFile(file!).NoSync();
+                }).NoSync();
         }
 
         if (OnBeforeDropFile != null)
@@ -761,8 +774,8 @@
                 async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileItem>(str);
-                   return await OnBeforeDropFile(file!);
-                });
+                    return await OnBeforeDropFile(file!).NoSync();
+                }).NoSync();
         }
 
         if (OnBeforeRemoveFile != null)
@@ -771,8 +784,8 @@
                 async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileItem>(str);
-                    return await OnBeforeRemoveFile(file!);
-                });
+                    return await OnBeforeRemoveFile(file!).NoSync();
+                }).NoSync();
         }
 
         if (OnFileRename != null)
@@ -781,8 +794,8 @@
                 async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileRenameInfo>(str);
-                    return await OnFileRename(file!);
-                });
+                    return await OnFileRename(file!).NoSync();
+                }).NoSync();
         }
     }
 

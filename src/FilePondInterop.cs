@@ -29,22 +29,22 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
     private readonly List<string> _enabledOtherPlugins = [];
     private readonly IResourceLoader _resourceLoader;
 
-    private readonly AsyncSingleton<object> _interopInitializer;
-    private readonly AsyncSingleton<object> _styleInitializer;
-    private readonly AsyncSingleton<object> _scriptInitializer;
+    private readonly AsyncSingleton _interopInitializer;
+    private readonly AsyncSingleton _styleInitializer;
+    private readonly AsyncSingleton _scriptInitializer;
 
     public FilePondInterop(IJSRuntime jSRuntime, ILogger<FilePondInterop> logger, IResourceLoader resourceLoader) : base(jSRuntime)
     {
         _logger = logger;
         _resourceLoader = resourceLoader;
 
-        _interopInitializer = new AsyncSingleton<object>(async (token, _) =>
+        _interopInitializer = new AsyncSingleton(async (token, _) =>
         {
             await resourceLoader.ImportModuleAndWaitUntilAvailable("Soenneker.Blazor.FilePond/filepondinterop.js", nameof(FilePondInterop), 100, token).NoSync();
             return new object();
         });
 
-        _styleInitializer = new AsyncSingleton<object>(async (token, _) =>
+        _styleInitializer = new AsyncSingleton(async (token, _) =>
         {
             (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(null);
 
@@ -52,7 +52,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
             return new object();
         });
 
-        _scriptInitializer = new AsyncSingleton<object>(async (token, _) =>
+        _scriptInitializer = new AsyncSingleton(async (token, _) =>
         {
             (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(null);
 
@@ -61,16 +61,16 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         });
     }
 
-    public async ValueTask Initialize(CancellationToken cancellationToken = default)
+    public ValueTask Initialize(CancellationToken cancellationToken = default)
     {
-        _ = await _interopInitializer.Get(cancellationToken, 0).NoSync();
+        return _interopInitializer.Init(cancellationToken, 0);
     }
 
     public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Get(cancellationToken, 0).NoSync();
-        await _styleInitializer.Get(cancellationToken, 0).NoSync();
-        await _scriptInitializer.Get(cancellationToken, 0).NoSync();
+        await _interopInitializer.Init(cancellationToken, 0).NoSync();
+        await _styleInitializer.Init(cancellationToken, 0).NoSync();
+        await _scriptInitializer.Init(cancellationToken, 0).NoSync();
 
         string? json = null;
 
@@ -172,7 +172,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnablePlugins(List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Get(cancellationToken, 0).NoSync();
+        await _interopInitializer.Init(cancellationToken, 0).NoSync();
 
         List<FilePondPluginType> resultList = filePondPluginTypes.Except(_enabledPlugins).ToList();
 
@@ -192,7 +192,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         }
 
         // FilePond.js is added after the plugins in all the examples...
-        await _scriptInitializer.Get(cancellationToken, 0);
+        await _scriptInitializer.Init(cancellationToken, 0).NoSync();
 
         if (resultList.Count > 0)
         {
@@ -203,13 +203,13 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnableOtherPlugins(List<string> filePondOtherPlugins, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Get(cancellationToken, 0).NoSync();
+        await _interopInitializer.Init(cancellationToken, 0).NoSync();
 
         List<string> resultList = filePondOtherPlugins.Except(_enabledOtherPlugins).ToList();
 
         _enabledOtherPlugins.AddRange(resultList);
 
-        await _scriptInitializer.Get(cancellationToken, 0);
+        await _scriptInitializer.Init(cancellationToken, 0).NoSync();
 
         if (resultList.Count > 0)
         {
@@ -223,11 +223,11 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         {
             IJSStreamReference blob = await JsRuntime.InvokeAsync<IJSStreamReference>($"{nameof(FilePondInterop)}.getFileAsBlob", cancellationToken, elementId, query).NoSync();
 
-            return await blob.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
+            return await blob.OpenReadStreamAsync(maxAllowedSize, cancellationToken).NoSync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unable to get the stream for file");
+            _logger.LogError(ex, "Unable to get the stream for file"); 
             return null;
         }
     }
@@ -252,10 +252,13 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         return streams;
     }
 
-    public ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         GC.SuppressFinalize(this);
 
-        return _resourceLoader.DisposeModule("Soenneker.Blazor.FilePond/filepondinterop.js");
+        await _resourceLoader.DisposeModule("Soenneker.Blazor.FilePond/filepondinterop.js").NoSync();
+        await _interopInitializer.DisposeAsync().NoSync();
+        await _styleInitializer.DisposeAsync().NoSync();
+        await _scriptInitializer.DisposeAsync().NoSync();
     }
 }
