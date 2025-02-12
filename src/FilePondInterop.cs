@@ -63,7 +63,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask Initialize(CancellationToken cancellationToken = default)
     {
-        _ = await _interopInitializer.Get(cancellationToken, 0);
+        _ = await _interopInitializer.Get(cancellationToken, 0).NoSync();
     }
 
     public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
@@ -77,7 +77,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         if (options != null)
             json = JsonUtil.Serialize(options);
 
-        await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.create", cancellationToken, elementId, json);
+        await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.create", cancellationToken, elementId, json).NoSync();
     }
 
     public ValueTask SetOptions(string elementId, FilePondOptions options, CancellationToken cancellationToken = default)
@@ -197,7 +197,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         if (resultList.Count > 0)
         {
             List<string> strings = resultList.Select(c => c.Name.ToString()).ToList();
-            await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.enablePlugins", cancellationToken, strings);
+            await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.enablePlugins", cancellationToken, strings).NoSync();
         }
     }
 
@@ -213,7 +213,7 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
 
         if (resultList.Count > 0)
         {
-            await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.enableOtherPlugins", cancellationToken, resultList);
+            await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.enableOtherPlugins", cancellationToken, resultList).NoSync();
         }
     }
 
