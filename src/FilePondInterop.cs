@@ -41,7 +41,6 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         _interopInitializer = new AsyncSingleton<object>(async (token, _) =>
         {
             await resourceLoader.ImportModuleAndWaitUntilAvailable("Soenneker.Blazor.FilePond/filepondinterop.js", nameof(FilePondInterop), 100, token).NoSync();
-
             return new object();
         });
 

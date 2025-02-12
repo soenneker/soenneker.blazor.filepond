@@ -11,8 +11,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
 using Serilog;
 using Serilog.Debugging;
-using Serilog.Events;
 using Soenneker.Blazor.FilePond.Registrars;
+using Soenneker.Serilog.Sinks.Browser.Blazor.Registrars;
 
 namespace Soenneker.Blazor.FilePond.Demo;
 
@@ -77,14 +77,9 @@ public class Program
 
     private static void SetGlobalLogger(IJSRuntime jsRuntime)
     {
-        var logEventLevel = LogEventLevel.Verbose;
-
         var loggerConfig = new LoggerConfiguration();
-        loggerConfig.MinimumLevel.Is(logEventLevel);
 
-        loggerConfig.Enrich.FromLogContext();
-
-        loggerConfig.WriteTo.BrowserConsole(jsRuntime: jsRuntime, restrictedToMinimumLevel: logEventLevel);
+        loggerConfig.WriteTo.BlazorConsole(jsRuntime: jsRuntime);
 
         Log.Logger = loggerConfig.CreateLogger();
     }

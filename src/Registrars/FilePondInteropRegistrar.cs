@@ -16,9 +16,9 @@ public static class FilePondInteropRegistrar
     /// </summary>
     public static IServiceCollection AddFilePondInteropAsScoped(this IServiceCollection services)
     {
-        services.AddResourceLoaderAsScoped();
-        services.AddInteropEventListenerAsScoped();
-        services.TryAddScoped<IFilePondInterop, FilePondInterop>();
+        services.AddResourceLoaderAsScoped()
+                .AddInteropEventListenerAsScoped()
+                .TryAddScoped<IFilePondInterop, FilePondInterop>();
 
         return services;
     }
