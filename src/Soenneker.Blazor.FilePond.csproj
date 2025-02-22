@@ -47,9 +47,9 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Intellenum" Version="1.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.2" />
-        <PackageReference Include="Ardalis.SmartEnum.SystemTextJson" Version="8.1.0" />
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.3271" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.3274" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="3.0.1215" />
         <PackageReference Include="Soenneker.Extensions.List" Version="3.0.866" />
     </ItemGroup></Project>

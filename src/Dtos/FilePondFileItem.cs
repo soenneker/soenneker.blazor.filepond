@@ -1,5 +1,4 @@
 ﻿using System.Text.Json.Serialization;
-using Ardalis.SmartEnum.SystemTextJson;
 using Soenneker.Blazor.FilePond.Enums;
 
 namespace Soenneker.Blazor.FilePond.Dtos;
@@ -25,14 +24,12 @@ public record FilePondFileItem
     /// Gets or sets the origin of the file, either input (added by user), limbo (temporary server file), or local (existing server file).
     /// </summary>
     [JsonPropertyName("origin")]
-    [JsonConverter(typeof(SmartEnumValueConverter<FilePondFileOrigin, int>))]
     public FilePondFileOrigin? Origin { get; set; }
 
     /// <summary>
     /// Gets or sets the current status of the file. Use the FilePond.FileStatus enum to determine the status.
     /// </summary>
     [JsonPropertyName("status")]
-    [JsonConverter(typeof(SmartEnumValueConverter<FilePondFileStatus, int>))]
     public FilePondFileStatus? Status { get; set; }
 
     /// <summary>
