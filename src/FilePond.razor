@@ -132,7 +132,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await FilePondInterop.Initialize(Options?.UseCdn ?? true).NoSync();
+        await FilePondInterop.Initialize(Options?.UseCdn ?? true, _cTs.Token).NoSync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -153,8 +153,8 @@
                     await FilePondInterop.EnableOtherPlugins(Options.UseCdn, Options.EnabledOtherPlugins, _cTs.Token).NoSync();
             }
 
-            await Create().NoSync();
-            await FilePondInterop.CreateObserver(_elementId).NoSync();
+            await Create(cancellationToken: _cTs.Token).NoSync();
+            await FilePondInterop.CreateObserver(_elementId, _cTs.Token).NoSync();
         }
     }
 
@@ -176,7 +176,7 @@
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
         await FilePondInterop.Create(_elementId, Options, linkedCts.Token).NoSync();
 
-        await AddEventListeners().NoSync();
+        await AddEventListeners(linkedCts.Token).NoSync();
 
         _initialized = true;
         _initializing = false;
@@ -189,27 +189,27 @@
         _afterInitializationOperations.Clear();
     }
 
-    public ValueTask SetOptions(FilePondOptions options, CancellationToken cancellationToken = default)
+    public async ValueTask SetOptions(FilePondOptions options, CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.SetOptions(_elementId, options, linkedCts.Token);
+        await FilePondInterop.SetOptions(_elementId, options, linkedCts.Token).NoSync();
     }
 
     public ValueTask AddFile(string uriOrBase64EncodedData, bool silentAdd, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             if (silentAdd)
                 AddSilentFileNameFromUri(uriOrBase64EncodedData);
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, null, linkedCts.Token);
+            await FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, null, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask AddFile(string uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             if (options is {SilentAdd: true})
             {
@@ -217,22 +217,22 @@
             }
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+            await FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
         });
     }
 
     public ValueTask AddFile(Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.AddFile(_elementId, stream, options, linkedCts.Token);
+            await FilePondInterop.AddFile(_elementId, stream, options, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask AddFiles(List<string> uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             if (options is {SilentAdd: true})
             {
@@ -243,84 +243,83 @@
             }
 
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+            await FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask RemoveFile(FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.RemoveFile(_elementId, null, options, linkedCts.Token);
+            await FilePondInterop.RemoveFile(_elementId, null, options, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask RemoveFile(string fileId, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.RemoveFile(_elementId, fileId, options, linkedCts.Token);
+            await FilePondInterop.RemoveFile(_elementId, fileId, options, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask RemoveFile(int index, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.RemoveFile(_elementId, index, options, linkedCts.Token);
+            await FilePondInterop.RemoveFile(_elementId, index, options, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask RemoveFiles(object? query = null, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.RemoveFiles(_elementId, query, options, linkedCts.Token);
+            await FilePondInterop.RemoveFiles(_elementId, query, options, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask ProcessFile(object? query = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.ProcessFile(_elementId, query, linkedCts.Token);
+            await FilePondInterop.ProcessFile(_elementId, query, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask ProcessFiles(object? query = null, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.ProcessFiles(_elementId, query, linkedCts.Token);
+            await FilePondInterop.ProcessFiles(_elementId, query, linkedCts.Token).NoSync();
         });
     }
 
-    public ValueTask<object> PrepareFile(object? query = null, CancellationToken cancellationToken = default)
+    public async ValueTask<object> PrepareFile(object? query = null, CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.PrepareFile(_elementId, query, linkedCts.Token);
+        return await FilePondInterop.PrepareFile(_elementId, query, linkedCts.Token).NoSync();
     }
 
-    public ValueTask<object[]> PrepareFiles(object? query = null, CancellationToken cancellationToken = default)
+    public async ValueTask<object[]> PrepareFiles(object? query = null, CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return FilePondInterop.PrepareFiles(_elementId, query, linkedCts.Token);
+        return await FilePondInterop.PrepareFiles(_elementId, query, linkedCts.Token).NoSync();
     }
 
-    public ValueTask<FilePondFileItem?> GetFile(bool forceInterop = false, CancellationToken cancellationToken = default)
+    public async ValueTask<FilePondFileItem?> GetFile(bool forceInterop = false, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         if (!forceInterop)
-            return ValueTask.FromResult(Files.FirstOrDefault());
+            return Files.FirstOrDefault();
 
-        return FilePondInterop.GetFile(_elementId, null, linkedCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return await FilePondInterop.GetFile(_elementId, null, linkedCts.Token).NoSync();
     }
 
     public async ValueTask<FilePondFileItem?> GetFile(int index, bool forceInterop = false, CancellationToken cancellationToken = default)
@@ -328,7 +327,7 @@
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
 
         if (forceInterop)
-            return await FilePondInterop.GetFile(_elementId, index, linkedCts.Token);
+            return await FilePondInterop.GetFile(_elementId, index, linkedCts.Token).NoSync();
 
         if (Files.Count > index)
             return Files[index];
@@ -336,24 +335,22 @@
         return null;
     }
 
-    public ValueTask<FilePondFileItem?> GetFile(string fileId, bool forceInterop = false, CancellationToken cancellationToken = default)
+    public async ValueTask<FilePondFileItem?> GetFile(string fileId, bool forceInterop = false, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         if (!forceInterop)
-            return ValueTask.FromResult(Files.FirstOrDefault(c => c.Id == fileId));
+            return Files.FirstOrDefault(c => c.Id == fileId);
 
-        return FilePondInterop.GetFile(_elementId, fileId, linkedCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return await FilePondInterop.GetFile(_elementId, fileId, linkedCts.Token).NoSync();
     }
 
     public async ValueTask<List<FilePondFileItem>?> GetFiles(bool forceInterop = false, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         if (!forceInterop)
             return Files;
 
-        List<FilePondFileItem>? tempFiles = await FilePondInterop.GetFiles(_elementId, linkedCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        List<FilePondFileItem>? tempFiles = await FilePondInterop.GetFiles(_elementId, linkedCts.Token).NoSync();
 
         if (tempFiles != null)
             Files = tempFiles;
@@ -363,168 +360,142 @@
 
     public ValueTask Browse(CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.Browse(_elementId, linkedCts.Token);
+            await FilePondInterop.Browse(_elementId, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask Sort(string compareFunctionName, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.Sort(_elementId, compareFunctionName, linkedCts.Token);
+            await FilePondInterop.Sort(_elementId, compareFunctionName, linkedCts.Token).NoSync();
         });
     }
 
     public ValueTask MoveFile(object query, int index, CancellationToken cancellationToken = default)
     {
-        return EnqueueOrExecute(() =>
+        return EnqueueOrExecute(async () =>
         {
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return FilePondInterop.MoveFile(_elementId, query, index, linkedCts.Token);
+            await FilePondInterop.MoveFile(_elementId, query, index, linkedCts.Token).NoSync();
         });
     }
 
     public async ValueTask Destroy(CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.Destroy(_elementId, linkedCts.Token);
+        await FilePondInterop.Destroy(_elementId, linkedCts.Token).NoSync();
     }
 
     public async ValueTask ReInitialize(CancellationToken cancellationToken = default)
     {
         using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.Destroy(_elementId, linkedCts.Token);
-        await Create(Options, linkedCts.Token);
+        await FilePondInterop.Destroy(_elementId, linkedCts.Token).NoSync();
+        await Create(Options, linkedCts.Token).NoSync();
     }
 
-    public ValueTask<Stream?> GetStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    public async ValueTask<Stream?> GetStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        return FilePondInterop.GetStreamForFile(_elementId, null, maxAllowedSize.Value, linkedCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return await FilePondInterop.GetStreamForFile(_elementId, null, maxAllowedSize.Value, linkedCts.Token).NoSync();
     }
 
-    public ValueTask<Stream?> GetStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    public async ValueTask<Stream?> GetStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        return FilePondInterop.GetStreamForFile(_elementId, index, maxAllowedSize.Value, linkedCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return await FilePondInterop.GetStreamForFile(_elementId, index, maxAllowedSize.Value, linkedCts.Token).NoSync();
     }
 
-    public ValueTask<Stream?> GetStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    public async ValueTask<Stream?> GetStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        return FilePondInterop.GetStreamForFile(_elementId, fileId, maxAllowedSize.Value, linkedCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return await FilePondInterop.GetStreamForFile(_elementId, fileId, maxAllowedSize.Value, linkedCts.Token).NoSync();
     }
 
-    public ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    public async ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        return FilePondInterop.GetAllStreams(_elementId, maxAllowedSize.Value, linkedCts.Token);
+        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
+        return await FilePondInterop.GetAllStreams(_elementId, maxAllowedSize.Value, linkedCts.Token).NoSync();
     }
 
-    private async ValueTask AddEventListeners()
+    private async ValueTask AddEventListeners(CancellationToken cancellationToken)
     {
         if (OnInit.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnInit)),
-                async str => { 
-                    await OnInit.InvokeAsync(); 
-                }).NoSync();
+            await AddEventListener<string>(GetJsEventName(nameof(OnInit)), async str => { await OnInit.InvokeAsync().NoSync(); }, cancellationToken).NoSync();
         }
 
         if (OnWarning.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnWarning)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnWarning)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    (FilePondError?, FilePondFileItem, string) parameters = (
-                        jsonDocument.RootElement[0].Deserialize<FilePondError>(),
-                        jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
-                        jsonDocument.RootElement[2].GetString()!
-                    );
+                    (FilePondError?, FilePondFileItem, string) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondError>(), jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!, jsonDocument.RootElement[2].GetString()!);
 
                     await OnWarning.InvokeAsync(parameters).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnError.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnError)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnError)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    (FilePondError?, FilePondFileItem, string) parameters = (
-                        jsonDocument.RootElement[0].Deserialize<FilePondError>(),
-                        jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!,
-                        jsonDocument.RootElement[2].GetString()!
-                    );
+                    (FilePondError?, FilePondFileItem, string) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondError>(), jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!, jsonDocument.RootElement[2].GetString()!);
 
                     await OnError.InvokeAsync(parameters).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnInitFile.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnInitFile)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnInitFile)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnInitFile.InvokeAsync(file).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnAddFileStart.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnAddFileStart)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnAddFileStart)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
                     await OnAddFileStart.InvokeAsync(file).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnAddFileProgress.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnAddFileProgress)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnAddFileProgress)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    (FilePondFileItem, int) parameters = (
-                        jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
-                        jsonDocument.RootElement[1].GetInt32()
-                    );
+                    (FilePondFileItem, int) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!, jsonDocument.RootElement[1].GetInt32());
 
                     await OnAddFileProgress.InvokeAsync(parameters).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
-        await AddEventListener<string>(
-            GetJsEventName(nameof(OnAddFile)),
-            async str =>
+        await AddEventListener<string>(GetJsEventName(nameof(OnAddFile)), async str =>
             {
                 JsonDocument jsonDocument = JsonDocument.Parse(str);
 
@@ -543,78 +514,68 @@
 
                     await OnAddFile.InvokeAsync((error, file)).NoSync();
                 }
-            }).NoSync();
+            }, cancellationToken)
+            .NoSync();
 
         if (OnProcessFileStart.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnProcessFileStart)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnProcessFileStart)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
 
                     await OnProcessFileStart.InvokeAsync(file).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnProcessFileProgress.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnProcessFileProgress)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnProcessFileProgress)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    (FilePondFileItem, int) parameters = (
-                        jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
-                        jsonDocument.RootElement[1].GetInt32()
-                    );
+                    (FilePondFileItem, int) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!, jsonDocument.RootElement[1].GetInt32());
 
                     await OnProcessFileProgress.InvokeAsync(parameters).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnProcessFileAbort.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnProcessFileAbort)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnProcessFileAbort)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
 
                     await OnProcessFileAbort.InvokeAsync(file).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnProcessFileRevert.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnProcessFileRevert)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnProcessFileRevert)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
 
                     await OnProcessFileRevert.InvokeAsync(file).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnProcessFile.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnProcessFile)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnProcessFile)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
 
-                    var parameters = (
-                        jsonDocument.RootElement[0].Deserialize<FilePondError>(),
-                        jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!
-                    );
+                    var parameters = (jsonDocument.RootElement[0].Deserialize<FilePondError>(), jsonDocument.RootElement[1].Deserialize<FilePondFileItem>()!);
 
                     await OnProcessFile.InvokeAsync(parameters).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnProcessFiles.HasDelegate)
@@ -626,9 +587,7 @@
             // );
         }
 
-        await AddEventListener<string>(
-            GetJsEventName(nameof(OnRemoveFile)),
-            async str =>
+        await AddEventListener<string>(GetJsEventName(nameof(OnRemoveFile)), async str =>
             {
                 JsonDocument jsonDocument = JsonDocument.Parse(str);
 
@@ -639,76 +598,60 @@
 
                 if (OnRemoveFile.HasDelegate)
                     await OnRemoveFile.InvokeAsync((error, file)).NoSync();
-            }).NoSync();
+            }, cancellationToken)
+            .NoSync();
 
 
         if (OnPrepareFile.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnPrepareFile)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnPrepareFile)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    var parameters = (
-                        jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!,
-                        jsonDocument.RootElement[1].Deserialize<object>()!
-                    );
+                    var parameters = (jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!, jsonDocument.RootElement[1].Deserialize<object>()!);
 
                     await OnPrepareFile.InvokeAsync(parameters).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnUpdateFiles.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnUpdateFiles)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnUpdateFiles)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    List<FilePondFileItem> files = jsonDocument.RootElement.EnumerateArray()
-                        .Select(item => item.Deserialize<FilePondFileItem>()!)
-                        .ToList();
+                    List<FilePondFileItem> files = jsonDocument.RootElement.EnumerateArray().Select(item => item.Deserialize<FilePondFileItem>()!).ToList();
                     await OnUpdateFiles.InvokeAsync(files).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnActivateFile.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnActivateFile)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnActivateFile)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
                     var file = jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!;
 
                     await OnActivateFile.InvokeAsync(file).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnReorderFiles.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnReorderFiles)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnReorderFiles)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    (List<FilePondFileItem>, int, int) parameters = (
-                        jsonDocument.RootElement[0].EnumerateArray()
-                            .Select(item => item.Deserialize<FilePondFileItem>()!)
-                            .ToList(),
-                        jsonDocument.RootElement[1].GetInt32(),
-                        jsonDocument.RootElement[2].GetInt32()
-                    );
+                    (List<FilePondFileItem>, int, int) parameters = (jsonDocument.RootElement[0].EnumerateArray().Select(item => item.Deserialize<FilePondFileItem>()!).ToList(), jsonDocument.RootElement[1].GetInt32(), jsonDocument.RootElement[2].GetInt32());
 
                     await OnReorderFiles.InvokeAsync(parameters).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnServerLoad.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnServerLoad)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnServerLoad)), async str =>
                 {
                     // JsonDocument jsonDocument = JsonDocument.Parse(e);
                     // (List<FilePondFileItem>, int, int) parameters = (
@@ -719,14 +662,13 @@
                     //     jsonDocument.RootElement[2].GetInt32()
                     // );
                     await OnServerLoad.InvokeAsync().NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnServerError.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnServerError)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnServerError)), async str =>
                 {
                     // JsonDocument jsonDocument = JsonDocument.Parse(e);
                     // (List<FilePondFileItem>, int, int) parameters = (
@@ -737,14 +679,13 @@
                     //     jsonDocument.RootElement[2].GetInt32()
                     // );
                     await OnServerError.InvokeAsync().NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnServerData.HasDelegate)
         {
-            await AddEventListener<string>(
-                GetJsEventName(nameof(OnServerData)),
-                async str =>
+            await AddEventListener<string>(GetJsEventName(nameof(OnServerData)), async str =>
                 {
                     // JsonDocument jsonDocument = JsonDocument.Parse(e);
                     // (List<FilePondFileItem>, int, int) parameters = (
@@ -755,47 +696,48 @@
                     //     jsonDocument.RootElement[2].GetInt32()
                     // );
                     await OnServerData.InvokeAsync().NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnBeforeAddFile != null)
         {
-            await AddEventListener<string, bool>(nameof(OnBeforeAddFile),
-                async str =>
+            await AddEventListener<string, bool>(nameof(OnBeforeAddFile), async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileItem>(str);
                     return await OnBeforeAddFile(file!).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnBeforeDropFile != null)
         {
-            await AddEventListener<string, bool>(nameof(OnBeforeDropFile),
-                async str =>
+            await AddEventListener<string, bool>(nameof(OnBeforeDropFile), async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileItem>(str);
                     return await OnBeforeDropFile(file!).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnBeforeRemoveFile != null)
         {
-            await AddEventListener<string, bool>(nameof(OnBeforeDropFile),
-                async str =>
+            await AddEventListener<string, bool>(nameof(OnBeforeDropFile), async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileItem>(str);
                     return await OnBeforeRemoveFile(file!).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
 
         if (OnFileRename != null)
         {
-            await AddEventListener<string, string>(nameof(OnFileRename),
-                async str =>
+            await AddEventListener<string, string>(nameof(OnFileRename), async str =>
                 {
                     var file = JsonUtil.Deserialize<FilePondFileRenameInfo>(str);
                     return await OnFileRename(file!).NoSync();
-                }).NoSync();
+                }, cancellationToken)
+                .NoSync();
         }
     }
 
@@ -806,14 +748,16 @@
         return subStr.ToLowerInvariantFast();
     }
 
-    private ValueTask AddEventListener<T>(string eventName, Func<T, ValueTask> callback)
+    private ValueTask AddEventListener<T>(string eventName, Func<T, ValueTask> callback, CancellationToken cancellationToken)
     {
-        return InteropEventListener.Add($"{nameof(FilePondInterop)}.addEventListener", _elementId, eventName, callback, _cTs.Token);
+        // Don't need to link the cancellationToken because it's already been linked
+        return InteropEventListener.Add($"{nameof(FilePondInterop)}.addEventListener", _elementId, eventName, callback, cancellationToken);
     }
 
-    private ValueTask AddEventListener<TInput, TOutput>(string eventName, Func<TInput, ValueTask<TOutput>> callback)
+    private ValueTask AddEventListener<TInput, TOutput>(string eventName, Func<TInput, ValueTask<TOutput>> callback, CancellationToken cancellationToken)
     {
-        return InteropEventListener.Add($"{nameof(FilePondInterop)}.addOutputEventListener", _elementId, eventName, callback, _cTs.Token);
+        // Don't need to link the cancellationToken because it's already been linked
+        return InteropEventListener.Add($"{nameof(FilePondInterop)}.addOutputEventListener", _elementId, eventName, callback, cancellationToken);
     }
 
     private void AddSilentFileNameFromUri(string uri)
@@ -829,7 +773,7 @@
     private async ValueTask EnqueueOrExecute(Func<ValueTask> taskFunc)
     {
         if (_initialized)
-            await taskFunc();
+            await taskFunc().NoSync();
         else
             _afterInitializationOperations.Add(taskFunc);
     }
