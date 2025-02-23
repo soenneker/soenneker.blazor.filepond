@@ -173,6 +173,9 @@ public class FilePondOptions
     [JsonPropertyName("credits")]
     public Dictionary<string, string>? Credits { get; set; }
 
+    [JsonPropertyName("useCdn")]
+    public bool UseCdn { get; set; } = true;
+
     #region Labels
 
     /// <summary>

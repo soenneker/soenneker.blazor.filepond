@@ -132,7 +132,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await FilePondInterop.Initialize();
+        await FilePondInterop.Initialize(Options?.UseCdn ?? true).NoSync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -147,10 +147,10 @@
             if (Options != null)
             {
                 if (Options.EnabledPlugins.Populated())
-                    await FilePondInterop.EnablePlugins(Options.EnabledPlugins, _cTs.Token).NoSync();
+                    await FilePondInterop.EnablePlugins(Options.UseCdn, Options.EnabledPlugins, _cTs.Token).NoSync();
 
                 if (Options.EnabledOtherPlugins.Populated())
-                    await FilePondInterop.EnableOtherPlugins(Options.EnabledOtherPlugins, _cTs.Token).NoSync();
+                    await FilePondInterop.EnableOtherPlugins(Options.UseCdn, Options.EnabledOtherPlugins, _cTs.Token).NoSync();
             }
 
             await Create().NoSync();

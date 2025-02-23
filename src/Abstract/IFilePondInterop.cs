@@ -16,7 +16,7 @@ namespace Soenneker.Blazor.FilePond.Abstract;
 /// </summary>
 public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 {
-    ValueTask Initialize(CancellationToken cancellationToken = default);
+    ValueTask Initialize(bool useCdn, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a FilePond instance for the specified HTML element with optional configuration options.
@@ -163,9 +163,9 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 
     ValueTask CreateObserver(string elementId, CancellationToken cancellationToken = default);
 
-    ValueTask EnablePlugins(List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default);
+    ValueTask EnablePlugins(bool useCdn, List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default);
 
-    ValueTask EnableOtherPlugins(List<string> filePondOtherPlugins, CancellationToken cancellationToken = default);
+    ValueTask EnableOtherPlugins(bool useCdn, List<string> filePondOtherPlugins, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance. The stream should be disposed after use.

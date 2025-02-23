@@ -41,7 +41,8 @@
     private readonly FilePondOptions _options = new()
     {
         EnabledPlugins = [FilePondPluginType.ImagePreview],
-        MaxFileSize = 5000000
+        MaxFileSize = 5000000,
+        UseCdn = false
     };
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

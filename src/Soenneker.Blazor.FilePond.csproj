@@ -34,9 +34,13 @@
 
     <ItemGroup>
       <Compile Remove="NewFolder\**" />
+      <Compile Remove="wwwroot\NewFolder\**" />
       <Content Remove="NewFolder\**" />
+      <Content Remove="wwwroot\NewFolder\**" />
       <EmbeddedResource Remove="NewFolder\**" />
+      <EmbeddedResource Remove="wwwroot\NewFolder\**" />
       <None Remove="NewFolder\**" />
+      <None Remove="wwwroot\NewFolder\**" />
     </ItemGroup>
     
     <ItemGroup>
