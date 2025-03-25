@@ -263,8 +263,9 @@ public class FilePondInterop : EventListeningInterop, IFilePondInterop
         if (files.IsNullOrEmpty())
             return streams;
 
-        foreach (FilePondFileItem file in files)
+        for (var i = 0; i < files.Count; i++)
         {
+            FilePondFileItem file = files[i];
             Stream? stream = await GetStreamForFile(elementId, file.Id, maxAllowedSize, cancellationToken).NoSync();
 
             if (stream != null)

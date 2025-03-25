@@ -25,9 +25,9 @@
 </div>
 
 @code {
-    private string _elementId;
+    private readonly string _elementId;
 
-    private CancellationTokenSource _cTs;
+    private readonly CancellationTokenSource _cTs;
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? Attributes { get; set; }
@@ -112,7 +112,7 @@
 
     public List<FilePondFileItem> Files { get; private set; }
 
-    private List<string> _silentAddFiles;
+    private readonly List<string> _silentAddFiles;
 
     private bool _initializing;
     private bool _initialized;
@@ -324,10 +324,11 @@
 
     public async ValueTask<FilePondFileItem?> GetFile(int index, bool forceInterop = false, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-
         if (forceInterop)
+        {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
             return await FilePondInterop.GetFile(_elementId, index, linkedCts.Token).NoSync();
+        }
 
         if (Files.Count > index)
             return Files[index];
@@ -780,6 +781,8 @@
 
     public async ValueTask DisposeAsync()
     {
+        GC.SuppressFinalize(this);
+
         Files.Clear();
         _silentAddFiles.Clear();
         _afterInitializationOperations.Clear();

@@ -40,8 +40,8 @@
 
     private readonly FilePondOptions _options = new()
     {
-        EnabledPlugins = [FilePondPluginType.ImagePreview],
-        MaxFileSize = 5000000,
+        EnabledPlugins = [FilePondPluginType.ImagePreview, FilePondPluginType.MediaPreview],
+        MaxFileSize = 100_000_000,
         UseCdn = false
     };
 
@@ -132,7 +132,6 @@
     {
         await FilePond!.Destroy();
     }
-
 
     private async Task OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
     {
