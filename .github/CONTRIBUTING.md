@@ -1,4 +1,4 @@
-# Contributing to Soenneker.Blazor.FilePond
+﻿# Contributing to Soenneker.Blazor.FilePond
 
 We're excited that you're interested in contributing!
 
