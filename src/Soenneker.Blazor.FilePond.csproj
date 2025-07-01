@@ -1,4 +1,6 @@
-﻿<?xml version="1.0" encoding="utf-8"?><Project Sdk="Microsoft.NET.Sdk.Razor">
+﻿<?xml version="1.0" encoding="utf-8"?>
+
+<Project Sdk="Microsoft.NET.Sdk.Razor">
 
     <PropertyGroup>
         <TargetFrameworks>net9.0</TargetFrameworks>
@@ -30,21 +32,22 @@
         <LangVersion>latest</LangVersion>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageIcon>icon.png</PackageIcon>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild></PropertyGroup>
+        <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    </PropertyGroup>
 
     <ItemGroup>
-      <Compile Remove="NewFolder\**" />
-      <Compile Remove="wwwroot\NewFolder\**" />
-      <Content Remove="NewFolder\**" />
-      <Content Remove="wwwroot\NewFolder\**" />
-      <EmbeddedResource Remove="NewFolder\**" />
-      <EmbeddedResource Remove="wwwroot\NewFolder\**" />
-      <None Remove="NewFolder\**" />
-      <None Remove="wwwroot\NewFolder\**" />
+        <Compile Remove="NewFolder\**" />
+        <Compile Remove="wwwroot\NewFolder\**" />
+        <Content Remove="NewFolder\**" />
+        <Content Remove="wwwroot\NewFolder\**" />
+        <EmbeddedResource Remove="NewFolder\**" />
+        <EmbeddedResource Remove="wwwroot\NewFolder\**" />
+        <None Remove="NewFolder\**" />
+        <None Remove="wwwroot\NewFolder\**" />
     </ItemGroup>
-    
+
     <ItemGroup>
-        
+
         <None Include="..\README.md" Pack="true" PackagePath="\" />
         <None Include="..\LICENSE" Pack="true" PackagePath="\" />
         <None Include="..\icon.png" Pack="true" PackagePath="\" />
@@ -56,4 +59,5 @@
         <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.3664" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="3.0.1476" />
         <PackageReference Include="Soenneker.Extensions.List" Version="3.0.927" />
-    </ItemGroup></Project>
+    </ItemGroup>
+</Project>

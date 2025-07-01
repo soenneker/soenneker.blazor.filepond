@@ -22,7 +22,7 @@ using Soenneker.Blazor.FilePond.Constants;
 namespace Soenneker.Blazor.FilePond;
 
 /// <inheritdoc cref="IFilePondInterop"/>
-public class FilePondInterop : EventListeningInterop, IFilePondInterop
+public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 {
     private readonly ILogger<FilePondInterop> _logger;
     private readonly List<FilePondPluginType> _enabledPlugins = [];
