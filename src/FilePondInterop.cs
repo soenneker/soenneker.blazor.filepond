@@ -277,8 +277,6 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask DisposeAsync()
     {
-        GC.SuppressFinalize(this);
-
         await _resourceLoader.DisposeModule(_module).NoSync();
         await _interopInitializer.DisposeAsync().NoSync();
         await _styleInitializer.DisposeAsync().NoSync();
