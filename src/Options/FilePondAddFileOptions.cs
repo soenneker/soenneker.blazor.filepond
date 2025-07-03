@@ -5,7 +5,7 @@ namespace Soenneker.Blazor.FilePond.Options;
 /// <summary>
 /// Represents additional options for adding a file to FilePond.
 /// </summary>
-public class FilePondAddFileOptions
+public sealed class FilePondAddFileOptions
 {
     /// <summary>
     /// Sets the index at which the file should be added.

@@ -8,7 +8,7 @@ namespace Soenneker.Blazor.FilePond.Options;
 /// <summary>
 /// Represents the properties of the FilePond instance.
 /// </summary>
-public class FilePondOptions
+public sealed class FilePondOptions
 {
     /// <summary>
     /// Gets or sets an additional CSS class to add to the root element.

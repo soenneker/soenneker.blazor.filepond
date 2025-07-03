@@ -5,7 +5,7 @@ namespace Soenneker.Blazor.FilePond.Options;
 /// <summary>
 /// To be used with the <see cref="FilePondOptions.Server"/> option.
 /// </summary>
-public class FilePondServerEndpointOptions
+public sealed class FilePondServerEndpointOptions
 {
     /// <summary>
     /// Gets or sets the URL, which is the path to the endpoint. Required if the server option is used.

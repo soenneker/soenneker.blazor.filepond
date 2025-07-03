@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Soenneker.Blazor.FilePond.Utils;
 
-internal class FilePondUtil
+internal static class FilePondUtil
 {
     public static (string? uri, string? integrity) GetUriAndIntegrityForStyle(bool useCdn = true, FilePondPluginType? type = null,
         string localBasePath = "_content/Soenneker.Blazor.FilePond/css/")

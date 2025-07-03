@@ -5,7 +5,7 @@ namespace Soenneker.Blazor.FilePond.Options;
 /// <summary>
 /// Represents additional options for removing a file from FilePond.
 /// </summary>
-public class FilePondRemoveFileOptions
+public sealed class FilePondRemoveFileOptions
 {
     /// <summary>
     /// Gets or sets a value indicating whether the file should be reverted after removal.
