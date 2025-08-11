@@ -3,20 +3,23 @@
 @using System.Threading
 @using Microsoft.Extensions.Logging
 @using Soenneker.Blazor.FilePond.Abstract
-@using Soenneker.Blazor.FilePond.Constants
 @using Soenneker.Blazor.FilePond.Dtos
+@using Soenneker.Blazor.FilePond.Constants
 @using Soenneker.Blazor.FilePond.Options
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
-@using Soenneker.Extensions.Enumerable
-@using Soenneker.Extensions.List
-@using Soenneker.Extensions.String
 @using Soenneker.Extensions.Task
 @using Soenneker.Extensions.ValueTask
+@using Soenneker.Extensions.String
+@using Soenneker.Extensions.CancellationTokens
+@using Soenneker.Extensions.Enumerable
 @using Soenneker.Utils.Json
+@using Soenneker.Extensions.List
+
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
-@inject ILogger<FilePond> _logger
+@inject ILogger<FilePond> Logger
 
+@inherits Soenneker.Quark.Components.Cancellable.CancellableComponent
 @implements IFilePond
 
 <div blazor-observer-id="@_elementId" ></div>
@@ -26,8 +29,6 @@
 
 @code {
     private readonly string _elementId;
-
-    private readonly CancellationTokenSource _cTs;
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? Attributes { get; set; }
@@ -124,7 +125,6 @@
         _initializing = false;
         _initialized = false;
         _elementId = '_' + Guid.NewGuid().ToString();
-        _cTs = new CancellationTokenSource();
         Files = [];
         _silentAddFiles = [];
         _afterInitializationOperations = [];
@@ -132,7 +132,7 @@
 
     protected override async Task OnInitializedAsync()
     {
-        await FilePondInterop.Initialize(Options?.UseCdn ?? true, _cTs.Token).NoSync();
+        await FilePondInterop.Initialize(Options?.UseCdn ?? true, CancellationToken).NoSync();
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -147,14 +147,14 @@
             if (Options != null)
             {
                 if (Options.EnabledPlugins.Populated())
-                    await FilePondInterop.EnablePlugins(Options.UseCdn, Options.EnabledPlugins, _cTs.Token).NoSync();
+                    await FilePondInterop.EnablePlugins(Options.UseCdn, Options.EnabledPlugins, CancellationToken).NoSync();
 
                 if (Options.EnabledOtherPlugins.Populated())
-                    await FilePondInterop.EnableOtherPlugins(Options.UseCdn, Options.EnabledOtherPlugins, _cTs.Token).NoSync();
+                    await FilePondInterop.EnableOtherPlugins(Options.UseCdn, Options.EnabledOtherPlugins, CancellationToken).NoSync();
             }
 
-            await Create(cancellationToken: _cTs.Token).NoSync();
-            await FilePondInterop.CreateObserver(_elementId, _cTs.Token).NoSync();
+            await Create(cancellationToken: CancellationToken).NoSync();
+            await FilePondInterop.CreateObserver(_elementId, CancellationToken).NoSync();
         }
     }
 
@@ -162,7 +162,7 @@
     {
         if (_initialized || _initializing)
         {
-            _logger.LogError("FilePond 'Create' cannot be called multiple times without destroying the instance first");
+            Logger.LogError("FilePond 'Create' cannot be called multiple times without destroying the instance first");
             return;
         }
 
@@ -173,10 +173,13 @@
 
         InteropEventListener.Initialize(FilePondInterop);
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.Create(_elementId, Options, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
-        await AddEventListeners(linkedCts.Token).NoSync();
+        using (cts)
+        {
+            await FilePondInterop.Create(_elementId, Options, linked).NoSync();
+            await AddEventListeners(linked).NoSync();
+        }
 
         _initialized = true;
         _initializing = false;
@@ -191,8 +194,10 @@
 
     public async ValueTask SetOptions(FilePondOptions options, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.SetOptions(_elementId, options, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            await FilePondInterop.SetOptions(_elementId, options, linked).NoSync();
     }
 
     public ValueTask AddFile(string uriOrBase64EncodedData, bool silentAdd, CancellationToken cancellationToken = default)
@@ -202,8 +207,10 @@
             if (silentAdd)
                 AddSilentFileNameFromUri(uriOrBase64EncodedData);
 
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, null, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, null, linked).NoSync();
         });
     }
 
@@ -216,8 +223,10 @@
                 AddSilentFileNameFromUri(uriOrBase64EncodedData);
             }
 
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linkedCts.Token);
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.AddFile(_elementId, uriOrBase64EncodedData, options, linked).NoSync();
         });
     }
 
@@ -225,8 +234,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.AddFile(_elementId, stream, options, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.AddFile(_elementId, stream, options, linked).NoSync();
         });
     }
 
@@ -242,8 +253,10 @@
                 }
             }
 
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.AddFiles(_elementId, uriOrBase64EncodedData, options, linked).NoSync();
         });
     }
 
@@ -251,8 +264,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.RemoveFile(_elementId, null, options, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.RemoveFile(_elementId, null, options, linked).NoSync();
         });
     }
 
@@ -260,8 +275,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.RemoveFile(_elementId, fileId, options, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.RemoveFile(_elementId, fileId, options, linked).NoSync();
         });
     }
 
@@ -269,8 +286,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.RemoveFile(_elementId, index, options, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.RemoveFile(_elementId, index, options, linked).NoSync();
         });
     }
 
@@ -278,8 +297,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.RemoveFiles(_elementId, query, options, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.RemoveFiles(_elementId, query, options, linked).NoSync();
         });
     }
 
@@ -287,8 +308,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.ProcessFile(_elementId, query, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.ProcessFile(_elementId, query, linked).NoSync();
         });
     }
 
@@ -296,21 +319,27 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.ProcessFiles(_elementId, query, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.ProcessFiles(_elementId, query, linked).NoSync();
         });
     }
 
     public async ValueTask<object> PrepareFile(object? query = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.PrepareFile(_elementId, query, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.PrepareFile(_elementId, query, linked).NoSync();
     }
 
     public async ValueTask<object[]> PrepareFiles(object? query = null, CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.PrepareFiles(_elementId, query, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.PrepareFiles(_elementId, query, linked).NoSync();
     }
 
     public async ValueTask<FilePondFileItem?> GetFile(bool forceInterop = false, CancellationToken cancellationToken = default)
@@ -318,16 +347,20 @@
         if (!forceInterop)
             return Files.FirstOrDefault();
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.GetFile(_elementId, null, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetFile(_elementId, null, linked).NoSync();
     }
 
     public async ValueTask<FilePondFileItem?> GetFile(int index, bool forceInterop = false, CancellationToken cancellationToken = default)
     {
         if (forceInterop)
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            return await FilePondInterop.GetFile(_elementId, index, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                return await FilePondInterop.GetFile(_elementId, index, linked).NoSync();
         }
 
         if (Files.Count > index)
@@ -341,8 +374,10 @@
         if (!forceInterop)
             return Files.FirstOrDefault(c => c.Id == fileId);
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.GetFile(_elementId, fileId, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetFile(_elementId, fileId, linked).NoSync();
     }
 
     public async ValueTask<List<FilePondFileItem>?> GetFiles(bool forceInterop = false, CancellationToken cancellationToken = default)
@@ -350,11 +385,15 @@
         if (!forceInterop)
             return Files;
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        List<FilePondFileItem>? tempFiles = await FilePondInterop.GetFiles(_elementId, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
-        if (tempFiles != null)
-            Files = tempFiles;
+        using (cts)
+        {
+            List<FilePondFileItem>? tempFiles = await FilePondInterop.GetFiles(_elementId, linked).NoSync();
+
+            if (tempFiles != null)
+                Files = tempFiles;
+        }
 
         return Files;
     }
@@ -363,8 +402,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.Browse(_elementId, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.Browse(_elementId, linked).NoSync();
         });
     }
 
@@ -372,8 +413,10 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.Sort(_elementId, compareFunctionName, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.Sort(_elementId, compareFunctionName, linked).NoSync();
         });
     }
 
@@ -381,54 +424,70 @@
     {
         return EnqueueOrExecute(async () =>
         {
-            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-            await FilePondInterop.MoveFile(_elementId, query, index, linkedCts.Token).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.MoveFile(_elementId, query, index, linked).NoSync();
         });
     }
 
     public async ValueTask Destroy(CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.Destroy(_elementId, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            await FilePondInterop.Destroy(_elementId, linked).NoSync();
     }
 
     public async ValueTask ReInitialize(CancellationToken cancellationToken = default)
     {
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        await FilePondInterop.Destroy(_elementId, linkedCts.Token).NoSync();
-        await Create(Options, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+        {
+            await FilePondInterop.Destroy(_elementId, linked).NoSync();
+            await Create(Options, linked).NoSync();
+        }
     }
 
     public async ValueTask<Stream?> GetStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.GetStreamForFile(_elementId, null, maxAllowedSize.Value, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetStreamForFile(_elementId, null, maxAllowedSize.Value, linked).NoSync();
     }
 
     public async ValueTask<Stream?> GetStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.GetStreamForFile(_elementId, index, maxAllowedSize.Value, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetStreamForFile(_elementId, index, maxAllowedSize.Value, linked).NoSync();
     }
 
     public async ValueTask<Stream?> GetStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.GetStreamForFile(_elementId, fileId, maxAllowedSize.Value, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetStreamForFile(_elementId, fileId, maxAllowedSize.Value, linked).NoSync();
     }
 
     public async ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
 
-        using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, _cTs.Token);
-        return await FilePondInterop.GetAllStreams(_elementId, maxAllowedSize.Value, linkedCts.Token).NoSync();
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetAllStreams(_elementId, maxAllowedSize.Value, linked).NoSync();
     }
 
     private async ValueTask AddEventListeners(CancellationToken cancellationToken)
@@ -779,14 +838,18 @@
             _afterInitializationOperations.Add(taskFunc);
     }
 
-    public async ValueTask DisposeAsync()
+    public override async ValueTask DisposeAsync()
     {
-        GC.SuppressFinalize(this);
+        await base.DisposeAsync().NoSync();
+
+        if (_initialized)
+        {
+            await FilePondInterop.Destroy(_elementId, CancellationToken.None).NoSync();
+        }
 
         Files.Clear();
         _silentAddFiles.Clear();
         _afterInitializationOperations.Clear();
-        await _cTs.CancelAsync().NoSync();
         InteropEventListener.DisposeForElement(_elementId);
         _initialized = false;
         _initializing = false;
