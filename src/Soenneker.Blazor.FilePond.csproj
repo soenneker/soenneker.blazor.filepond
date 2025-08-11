@@ -56,7 +56,7 @@
     <ItemGroup>
         <PackageReference Include="Intellenum" Version="1.0.6" />
         <PackageReference Include="Microsoft.AspNetCore.Components.Web" Version="9.0.8" />
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.3684" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="3.0.3687" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="3.0.1487" />
         <PackageReference Include="Soenneker.Extensions.List" Version="3.0.929" />
     </ItemGroup>
