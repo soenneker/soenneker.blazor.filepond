@@ -1,6 +1,6 @@
 ﻿[![](https://img.shields.io/nuget/v/soenneker.blazor.filepond.svg?style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/soenneker.blazor.filepond/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.blazor.filepond/publish-package.yml?style=for-the-badge&logo=github)](https://github.com/soenneker/soenneker.blazor.filepond/actions/workflows/publish-package.yml)
-[![](https://img.shields.io/nuget/dt/soenneker.blazor.filepond.svg?style=for-the-badge&logo=github)](https://www.nuget.org/packages/soenneker.blazor.filepond/)
+[![](https://img.shields.io/nuget/dt/soenneker.blazor.filepond.svg?style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/soenneker.blazor.filepond/)
 [![](https://img.shields.io/badge/Demo-Live-blueviolet?style=for-the-badge&logo=github)](https://soenneker.github.io/soenneker.blazor.filepond)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Blazor.FilePond
