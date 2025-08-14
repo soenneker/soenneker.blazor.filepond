@@ -101,9 +101,9 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
             json = JsonUtil.Serialize(options);
 
         await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.create", cancellationToken, elementId, json).NoSync();
-        
+
         // Handle global ShowFileSize option
-        if (options is { ShowFileSize: false })
+        if (options is {ShowFileSize: false})
         {
             await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSizeVisibility", cancellationToken, elementId, false).NoSync();
         }
@@ -114,7 +114,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         string json = JsonUtil.Serialize(options)!;
 
         await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setOptions", cancellationToken, elementId, json).NoSync();
-        
+
         await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSizeVisibility", cancellationToken, elementId, options.ShowFileSize).NoSync();
     }
 
@@ -122,8 +122,8 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         CancellationToken cancellationToken = default)
     {
         await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.addFile", cancellationToken, elementId, uriOrBase64EncodedData, options).NoSync();
-        
-        if (options is { ShowFileSize: false })
+
+        if (options is {ShowFileSize: false})
         {
             await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSizeVisibility", cancellationToken, elementId, false).NoSync();
         }
@@ -133,18 +133,19 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
         await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.addFileFromStream", cancellationToken, elementId, streamRef, options).NoSync();
-        
-        if (options is { ShowFileSize: false })
+
+        if (options is {ShowFileSize: false})
         {
             await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSizeVisibility", cancellationToken, elementId, false).NoSync();
         }
     }
 
-    public async ValueTask AddLimboFile(string elementId, string filename, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
+    public async ValueTask AddLimboFile(string elementId, string filename, FilePondAddFileOptions? options = null,
+        CancellationToken cancellationToken = default)
     {
         await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.addLimboFile", cancellationToken, elementId, filename, options).NoSync();
-        
-        if (options is { ShowFileSize: false })
+
+        if (options is {ShowFileSize: false})
         {
             await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSizeVisibility", cancellationToken, elementId, false).NoSync();
         }
@@ -154,8 +155,8 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         CancellationToken cancellationToken = default)
     {
         await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.addFiles", cancellationToken, elementId, uriOrBase64EncodedData, options).NoSync();
-        
-        if (options is { ShowFileSize: false })
+
+        if (options is {ShowFileSize: false})
         {
             await JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSizeVisibility", cancellationToken, elementId, false).NoSync();
         }
@@ -283,9 +284,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         try
         {
             // First check if the file has content (non-zero size)
-            bool hasContent = await JsRuntime
-                .InvokeAsync<bool>($"{nameof(FilePondInterop)}.hasFileContent", cancellationToken, elementId, query)
-                .NoSync();
+            bool hasContent = await JsRuntime.InvokeAsync<bool>($"{nameof(FilePondInterop)}.hasFileContent", cancellationToken, elementId, query).NoSync();
 
             if (!hasContent)
             {
