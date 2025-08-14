@@ -12,7 +12,7 @@ internal static class FilePondUtil
         if (type == null)
         {
             return useCdn
-                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.7/dist/filepond.min.css", "sha256-R/TKiFR8YXiqvCSFSm3ek/rIjgEoFS5PpaAMkv/brg4=")
+                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.8/dist/filepond.min.css", "sha256-rPKREUsGjpXZQAdsZrdB0HLRhdxPetyzFUv45vgbDLs=")
                 : ($"{localBasePath}filepond.min.css", null);
         }
 
@@ -65,7 +65,7 @@ internal static class FilePondUtil
         if (type == null)
         {
             return useCdn
-                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.7/dist/filepond.min.js", "sha256-BRICH2AsAT7Vx36hU5PcHTuKBbusAU4j6fge+/dHO1M=")
+                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.8/dist/filepond.min.js", "sha256-79w3nNtc2CIEF9m4/IxZeF660M0kGLHnJ3v/V9UDLxY=")
                 : ($"{localBasePath}filepond.min.js", null);
         }
 
