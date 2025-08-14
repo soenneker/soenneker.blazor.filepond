@@ -1,0 +1,43 @@
+/* FilePond Validation Error Styles Only */
+
+/* Validation Error Styles - Red border and styling for invalid state */
+.filepond-wrapper.filepond-invalid .filepond--root {
+    border: 2px solid #dc3545 !important;
+    border-radius: 8px !important;
+    box-shadow: 0 0 0 1px #dc3545 !important;
+}
+
+.filepond-wrapper.filepond-invalid .filepond--panel-root {
+    border-color: #dc3545 !important;
+    background-color: rgba(220, 53, 69, 0.05) !important;
+}
+
+.filepond-wrapper.filepond-invalid .filepond--panel-top,
+.filepond-wrapper.filepond-invalid .filepond--panel-center,
+.filepond-wrapper.filepond-invalid .filepond--panel-bottom {
+    border-color: #dc3545 !important;
+}
+
+.filepond-wrapper.filepond-invalid .filepond--drop-label {
+    border-color: #dc3545 !important;
+}
+
+/* Validation error message styling */
+.filepond-validation-error {
+    color: #dc3545;
+    font-size: 0.875rem;
+    margin-top: 0.25rem;
+    font-weight: 500;
+}
+
+/* Focus state for validation */
+.filepond-wrapper.filepond-invalid .filepond--root:focus-within {
+    border-color: #dc3545 !important;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25) !important;
+}
+
+/* Additional specificity to override FilePond defaults for invalid state */
+.filepond-wrapper.filepond-invalid .filepond--root[data-style-panel-layout~=compact] {
+    border: 2px solid #dc3545 !important;
+    border-radius: 8px !important;
+}

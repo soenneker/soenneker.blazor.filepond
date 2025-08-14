@@ -32,6 +32,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     private readonly AsyncSingleton _interopInitializer;
     private readonly AsyncSingleton _styleInitializer;
     private readonly AsyncSingleton _scriptInitializer;
+    private readonly AsyncSingleton _interopStyleInitializer;
 
     private const string _module = "Soenneker.Blazor.FilePond/js/filepondinterop.js";
 
@@ -71,6 +72,12 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
             await _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, cancellationToken: token).NoSync();
             return new object();
         });
+
+        _interopStyleInitializer = new AsyncSingleton(async (token, _) =>
+        {
+            await _resourceLoader.LoadStyle("_content/Soenneker.Blazor.FilePond/css/filepondinterop.css", cancellationToken: token).NoSync();
+            return new object();
+        });
     }
 
     public ValueTask Initialize(bool useCdn, CancellationToken cancellationToken = default)
@@ -82,9 +89,11 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         bool useCdn = options?.UseCdn ?? true;
 
-        await _interopInitializer.Init(cancellationToken, useCdn).NoSync();
+        await _interopInitializer.Init(cancellationToken).NoSync();
         await _styleInitializer.Init(cancellationToken, useCdn).NoSync();
+
         await _scriptInitializer.Init(cancellationToken, useCdn).NoSync();
+        await _interopStyleInitializer.Init(cancellationToken).NoSync();
 
         string? json = null;
 
@@ -319,11 +328,37 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         return streams;
     }
 
+    public ValueTask SetValidationState(string elementId, bool isValid, string? errorMessage = null, CancellationToken cancellationToken = default)
+    {
+        return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setValidationState", cancellationToken, elementId, isValid, errorMessage);
+    }
+
+    public ValueTask SetFileSuccess(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
+    {
+        return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSuccess", cancellationToken, elementId, fileId, isSuccess);
+    }
+
+    public ValueTask SetFileSuccess(string elementId, int fileIndex, bool isSuccess = true, CancellationToken cancellationToken = default)
+    {
+        return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSuccess", cancellationToken, elementId, fileIndex, isSuccess);
+    }
+
+    public ValueTask SetAllFilesSuccess(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default)
+    {
+        return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setAllFilesSuccess", cancellationToken, elementId, isSuccess);
+    }
+
+    public ValueTask SetFileSuccessWhenReady(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
+    {
+        return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSuccessWhenReady", cancellationToken, elementId, fileId, isSuccess);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _resourceLoader.DisposeModule(_module).NoSync();
         await _interopInitializer.DisposeAsync().NoSync();
         await _styleInitializer.DisposeAsync().NoSync();
         await _scriptInitializer.DisposeAsync().NoSync();
+        await _interopStyleInitializer.DisposeAsync().NoSync();
     }
 }

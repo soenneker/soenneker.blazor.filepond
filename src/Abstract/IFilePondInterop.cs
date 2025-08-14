@@ -192,4 +192,48 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     /// <param name="maxAllowedSize">(Optional) The maximum allowed size. Defaults to 2MB.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask<List<Stream>> GetAllStreams(string elementId, long maxAllowedSize = FilePondConstants.DefaultMaximumSize, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the validation state of the FilePond component, showing or hiding error styling and messages.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="isValid">Whether the FilePond is in a valid state.</param>
+    /// <param name="errorMessage">Optional error message to display.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask SetValidationState(string elementId, bool isValid, string? errorMessage = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the success state of a specific file by ID, making it appear green.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="fileId">The ID of the file to set as successful.</param>
+    /// <param name="isSuccess">Whether the file should be marked as successful.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask SetFileSuccess(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the success state of a specific file by index, making it appear green.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="fileIndex">The index of the file to set as successful.</param>
+    /// <param name="isSuccess">Whether the file should be marked as successful.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask SetFileSuccess(string elementId, int fileIndex, bool isSuccess = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the success state of all files in the FilePond, making them appear green.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="isSuccess">Whether all files should be marked as successful.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask SetAllFilesSuccess(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the success state of a specific file by ID when the file is fully processed and ready.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="fileId">The ID of the file to set as successful.</param>
+    /// <param name="isSuccess">Whether the file should be marked as successful.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask SetFileSuccessWhenReady(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default);
 }

@@ -380,6 +380,198 @@ export class FilePondInterop {
         this.fileSizeObservers[elementId] = observer;
     }
 
+    setValidationState(elementId, isValid, errorMessage = null) {
+        const wrapper = document.getElementById(elementId.replace('filepond-', 'filepond-wrapper-'));
+        if (!wrapper) return;
+
+        const pondRoot = wrapper.querySelector('.filepond--root');
+        if (!pondRoot) return;
+
+        // Remove existing error message
+        wrapper.querySelector('.filepond-validation-error')?.remove();
+
+        // Update validation state
+        const invalidClass = 'filepond-invalid';
+        const pondInvalidClass = 'filepond--invalid';
+        
+        if (isValid) {
+            wrapper.classList.remove(invalidClass);
+            pondRoot.classList.remove(pondInvalidClass);
+        } else {
+            wrapper.classList.add(invalidClass);
+            pondRoot.classList.add(pondInvalidClass);
+            
+            // Add error message if provided
+            if (errorMessage) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'filepond-validation-error';
+                errorDiv.textContent = errorMessage;
+                wrapper.appendChild(errorDiv);
+            }
+        }
+    }
+
+    setFileSuccess(elementId, query, isSuccess = true) {
+        const pond = this.ponds[elementId];
+        if (!pond) {
+            console.warn(`Could not find FilePond instance for element: ${elementId}`);
+            return;
+        }
+
+        const file = pond.getFile(query);
+        if (!file) {
+            console.warn(`Could not find file with query: ${query}`);
+            return;
+        }
+
+        // Set metadata first
+        if (isSuccess) {
+            file.setMetadata('success', true);
+        } else {
+            file.setMetadata('success', false);
+        }
+
+        // Try to apply visual styling with retry mechanism
+        const applyStyling = () => {
+            // Find the file element by searching for the filepond--item with the correct ID
+            const fileElement = document.querySelector(`[id*="${file.id}"]`);
+            if (fileElement && fileElement.classList.contains('filepond--item')) {
+                if (isSuccess) {
+                    fileElement.classList.add('filepond--item-success');
+                    // Also set the data attribute to ensure FilePond's default styling is overridden
+                    fileElement.setAttribute('data-filepond-item-state', 'processing-complete');
+                } else {
+                    fileElement.classList.remove('filepond--item-success');
+                    // Remove the data attribute to revert to default state
+                    fileElement.removeAttribute('data-filepond-item-state');
+                }
+                return true;
+            }
+            return false;
+        };
+
+        // Try immediately
+        if (!applyStyling()) {
+            // If element is not ready, retry after a short delay
+            setTimeout(() => {
+                if (!applyStyling()) {
+                    // If still not ready, try one more time after a longer delay
+                    setTimeout(applyStyling, 500);
+                }
+            }, 100);
+        }
+    }
+
+    setFileSuccessWhenReady(elementId, query, isSuccess = true) {
+        const pond = this.ponds[elementId];
+        if (!pond) {
+            console.warn(`Could not find FilePond instance for element: ${elementId}`);
+            return;
+        }
+
+        const file = pond.getFile(query);
+        if (!file) {
+            console.warn(`Could not find file with query: ${query}`);
+            return;
+        }
+
+        // Set metadata first
+        if (isSuccess) {
+            file.setMetadata('success', true);
+        } else {
+            file.setMetadata('success', false);
+        }
+
+        // Wait for the file to be fully processed before applying styling
+        const applyStylingWhenReady = () => {
+            if (file.status === 5) { // 5 = FilePond.FileStatus.PROCESSING_COMPLETE
+                // Find the file element by searching for the filepond--item with the correct ID
+                const fileElement = document.querySelector(`[id*="${file.id}"]`);
+                if (fileElement && fileElement.classList.contains('filepond--item')) {
+                    if (isSuccess) {
+                        fileElement.classList.add('filepond--item-success');
+                        // Also set the data attribute to ensure FilePond's default styling is overridden
+                        fileElement.setAttribute('data-filepond-item-state', 'processing-complete');
+                    } else {
+                        fileElement.classList.remove('filepond--item-success');
+                        // Remove the data attribute to revert to default state
+                        fileElement.removeAttribute('data-filepond-item-state');
+                    }
+                    return true;
+                }
+            }
+            return false;
+        };
+
+        // Try immediately
+        if (!applyStylingWhenReady()) {
+            // Listen for the file to be processed
+            const checkInterval = setInterval(() => {
+                if (applyStylingWhenReady()) {
+                    clearInterval(checkInterval);
+                }
+            }, 100);
+
+            // Stop checking after 10 seconds to prevent infinite loops
+            setTimeout(() => {
+                clearInterval(checkInterval);
+            }, 10000);
+        }
+    }
+
+    setAllFilesSuccess(elementId, isSuccess = true) {
+        const pond = this.ponds[elementId];
+        if (!pond) {
+            console.warn(`Could not find FilePond instance for element: ${elementId}`);
+            return;
+        }
+
+        const files = pond.getFiles();
+        
+        // Set metadata for all files first
+        files.forEach(file => {
+            if (isSuccess) {
+                file.setMetadata('success', true);
+            } else {
+                file.setMetadata('success', false);
+            }
+        });
+
+        // Apply visual styling with retry mechanism
+        const applyStyling = () => {
+            let allStyled = true;
+            files.forEach(file => {
+                // Find the file element by searching for the filepond--item with the correct ID
+                const fileElement = document.querySelector(`[id*="${file.id}"]`);
+                if (fileElement && fileElement.classList.contains('filepond--item')) {
+                    if (isSuccess) {
+                        fileElement.classList.add('filepond--item-success');
+                        // Also set the data attribute to ensure FilePond's default styling is overridden
+                        fileElement.setAttribute('data-filepond-item-state', 'processing-complete');
+                    } else {
+                        fileElement.classList.remove('filepond--item-success');
+                        // Remove the data attribute to revert to default state
+                        fileElement.removeAttribute('data-filepond-item-state');
+                    }
+                } else {
+                    allStyled = false;
+                }
+            });
+            return allStyled;
+        };
+
+        // Try immediately
+        if (!applyStyling()) {
+            // If some elements are not ready, retry after a short delay
+            setTimeout(() => {
+                if (!applyStyling()) {
+                    // If still not ready, try one more time after a longer delay
+                    setTimeout(applyStyling, 500);
+                }
+            }, 100);
+        }
+    }
+
 }
 
 window.FilePondInterop = new FilePondInterop();

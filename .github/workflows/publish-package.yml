@@ -6,9 +6,6 @@ on:
     paths-ignore:
       - 'test/**'
 
-    # Publish `v1.2.3` tags as releases.
-
-
 env:
     "PipelineEnvironment": true
 
@@ -16,7 +13,6 @@ jobs:
   publish-package:
     runs-on: ubuntu-latest
 
-#{Services}
     steps:
       - uses: actions/checkout@v5
       
@@ -83,3 +79,44 @@ jobs:
             -H "Accept: application/vnd.github+json" \
             https://api.github.com/repos/${{ github.repository }}/releases \
             -d "$json_payload"
+
+  deploy-demo:
+    needs: publish-package
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v5
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Install wasm-tools
+        run: |
+          dotnet workload install wasm-tools
+
+      - name: Publish Blazor WebAssembly Demo
+        run: dotnet publish test/Soenneker.Blazor.FilePond.Demo/Soenneker.Blazor.FilePond.Demo.csproj -c Release
+
+      - name: Set Base Href for GitHub Pages
+        run: |
+          cd test/Soenneker.Blazor.FilePond.Demo/bin/Release/net9.0/publish/wwwroot
+          sed -i 's|%BASE_URL%|/soenneker.blazor.tomselect/|g' index.html || exit 1
+
+      - name: Add .nojekyll
+        run: touch test/Soenneker.Blazor.FilePond.Demo/bin/Release/net9.0/publish/wwwroot/.nojekyll
+
+      - name: Upload GitHub Pages Artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: test/Soenneker.Blazor.FilePond.Demo/bin/Release/net9.0/publish/wwwroot
+
+      - name: Deploy to GitHub Pages
+        uses: actions/deploy-pages@v4

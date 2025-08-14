@@ -396,4 +396,49 @@ public interface IFilePond : IAsyncDisposable
     /// The data is segmented into multiple streams to meet the size constraint.
     /// </remarks>
     ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the validation state of the FilePond component.
+    /// </summary>
+    /// <param name="isValid">Whether the component is valid.</param>
+    /// <param name="errorMessage">Optional error message to display.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask SetValidationState(bool isValid, string? errorMessage = null);
+
+    /// <summary>
+    /// Resets the validation state to neutral (not explicitly validated).
+    /// </summary>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask ResetValidationState();
+
+    /// <summary>
+    /// Sets the success state of a specific file.
+    /// </summary>
+    /// <param name="fileId">The ID of the file to set success state for.</param>
+    /// <param name="isSuccess">Whether the file is successful.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask SetFileSuccess(string fileId, bool isSuccess = true);
+
+    /// <summary>
+    /// Sets the success state of a file at a specific index.
+    /// </summary>
+    /// <param name="fileIndex">The index of the file to set success state for.</param>
+    /// <param name="isSuccess">Whether the file is successful.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask SetFileSuccess(int fileIndex, bool isSuccess = true);
+
+    /// <summary>
+    /// Sets the success state of all files.
+    /// </summary>
+    /// <param name="isSuccess">Whether all files are successful.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask SetAllFilesSuccess(bool isSuccess = true);
+
+    /// <summary>
+    /// Sets the success state of a file when it becomes ready.
+    /// </summary>
+    /// <param name="fileId">The ID of the file to set success state for when ready.</param>
+    /// <param name="isSuccess">Whether the file is successful.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask SetFileSuccessWhenReady(string fileId, bool isSuccess = true);
 }
