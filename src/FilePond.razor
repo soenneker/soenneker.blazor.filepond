@@ -22,12 +22,12 @@
 @inherits Soenneker.Quark.Components.Cancellable.CancellableComponent
 @implements IFilePond
 
-<div id="@_observerId"></div>
-<div id="@_wrapperId" class="@GetWrapperCssClass()">
+<div id="@_observerId" ></div>
+<div id="@_wrapperId" class="@GetWrapperCssClass()" >
     <input type="file" @attributes="Attributes" id="@_elementId" />
-    @if (!string.IsNullOrEmpty(ValidationErrorMessage))
+    @if (ValidationErrorMessage.HasContent())
     {
-        <div class="filepond-validation-error">@ValidationErrorMessage</div>
+        <div class="filepond-validation-error" >@ValidationErrorMessage</div>
     }
 </div>
 
@@ -883,8 +883,8 @@
 
     private string GetWrapperCssClass()
     {
-        var classes = new List<string> { "filepond-wrapper" };
-        
+        var classes = new List<string> {"filepond-wrapper"};
+
         if (!IsValid)
         {
             classes.Add("filepond-invalid");
@@ -893,7 +893,7 @@
         {
             classes.Add("filepond-valid");
         }
-        
+
         return string.Join(" ", classes);
     }
 
@@ -902,12 +902,12 @@
         IsValid = isValid;
         ValidationErrorMessage = errorMessage;
         _hasBeenValidated = true;
-        
+
         if (_initialized)
         {
             await FilePondInterop.SetValidationState(_elementId, isValid, errorMessage, CancellationToken).NoSync();
         }
-        
+
         StateHasChanged();
     }
 
@@ -916,12 +916,12 @@
         IsValid = true;
         ValidationErrorMessage = null;
         _hasBeenValidated = false;
-        
+
         if (_initialized)
         {
             await FilePondInterop.SetValidationState(_elementId, true, null, CancellationToken).NoSync();
         }
-        
+
         StateHasChanged();
     }
 
@@ -956,4 +956,5 @@
             await FilePondInterop.SetFileSuccessWhenReady(_elementId, fileId, isSuccess, CancellationToken).NoSync();
         }
     }
+
 }

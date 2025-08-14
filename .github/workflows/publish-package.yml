@@ -108,7 +108,7 @@ jobs:
       - name: Set Base Href for GitHub Pages
         run: |
           cd test/Soenneker.Blazor.FilePond.Demo/bin/Release/net9.0/publish/wwwroot
-          sed -i 's|%BASE_URL%|/soenneker.blazor.tomselect/|g' index.html || exit 1
+          sed -i 's|%BASE_URL%|/soenneker.blazor.filepond/|g' index.html || exit 1
 
       - name: Add .nojekyll
         run: touch test/Soenneker.Blazor.FilePond.Demo/bin/Release/net9.0/publish/wwwroot/.nojekyll
