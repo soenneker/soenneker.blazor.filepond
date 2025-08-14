@@ -506,7 +506,7 @@
 
     private readonly FilePondOptions _options = new()
     {
-        EnabledPlugins = [FilePondPluginType.ImagePreview, FilePondPluginType.MediaPreview],
+        //EnabledPlugins = [FilePondPluginType.ImagePreview, FilePondPluginType.MediaPreview],
         MaxFileSize = 100_000_000,
         UseCdn = false
     };
@@ -532,6 +532,7 @@
     private async Task AddFile()
     {
         await FilePond!.AddFile(GetRandomImageUri());
+
     }
 
     private async Task AddFileSilently()
@@ -558,6 +559,7 @@
     private async Task AddLimboFile()
     {
         await FilePond!.AddLimboFile("test-limbo-file.txt", new FilePondAddFileOptions() { ShowFileSize = false});
+        await FilePond.SetAllFilesSuccessWhenReady();
     }
 
     private async Task AddFiles()

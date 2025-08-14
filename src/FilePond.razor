@@ -897,7 +897,7 @@
         return string.Join(" ", classes);
     }
 
-    public async ValueTask SetValidationState(bool isValid, string? errorMessage = null)
+    public async ValueTask SetValidationState(bool isValid, string? errorMessage = null, CancellationToken cancellationToken = default)
     {
         IsValid = isValid;
         ValidationErrorMessage = errorMessage;
@@ -905,13 +905,16 @@
 
         if (_initialized)
         {
-            await FilePondInterop.SetValidationState(_elementId, isValid, errorMessage, CancellationToken).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.SetValidationState(_elementId, isValid, errorMessage, linked).NoSync();
         }
 
         StateHasChanged();
     }
 
-    public async ValueTask ResetValidationState()
+    public async ValueTask ResetValidationState(CancellationToken cancellationToken = default)
     {
         IsValid = true;
         ValidationErrorMessage = null;
@@ -919,42 +922,67 @@
 
         if (_initialized)
         {
-            await FilePondInterop.SetValidationState(_elementId, true, null, CancellationToken).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.SetValidationState(_elementId, true, null, linked).NoSync();
         }
 
         StateHasChanged();
     }
 
-    public async ValueTask SetFileSuccess(string fileId, bool isSuccess = true)
+    public async ValueTask SetFileSuccess(string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await FilePondInterop.SetFileSuccess(_elementId, fileId, isSuccess, CancellationToken).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.SetFileSuccess(_elementId, fileId, isSuccess, linked).NoSync();
         }
     }
 
-    public async ValueTask SetFileSuccess(int fileIndex, bool isSuccess = true)
+    public async ValueTask SetFileSuccess(int fileIndex, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await FilePondInterop.SetFileSuccess(_elementId, fileIndex, isSuccess, CancellationToken).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.SetFileSuccess(_elementId, fileIndex, isSuccess, linked).NoSync();
         }
     }
 
-    public async ValueTask SetAllFilesSuccess(bool isSuccess = true)
+    public async ValueTask SetAllFilesSuccess(bool isSuccess = true, CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await FilePondInterop.SetAllFilesSuccess(_elementId, isSuccess, CancellationToken).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.SetAllFilesSuccess(_elementId, isSuccess, linked).NoSync();
         }
     }
 
-    public async ValueTask SetFileSuccessWhenReady(string fileId, bool isSuccess = true)
+    public async ValueTask SetFileSuccessWhenReady(string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
         if (_initialized)
         {
-            await FilePondInterop.SetFileSuccessWhenReady(_elementId, fileId, isSuccess, CancellationToken).NoSync();
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.SetFileSuccessWhenReady(_elementId, fileId, isSuccess, linked).NoSync();
         }
     }
 
+    public async ValueTask SetAllFilesSuccessWhenReady(bool isSuccess = true, CancellationToken cancellationToken = default)
+    {
+        if (_initialized)
+        {
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.SetAllFilesSuccessWhenReady(_elementId, isSuccess, linked).NoSync();
+        }
+    }
 }

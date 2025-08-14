@@ -402,43 +402,57 @@ public interface IFilePond : IAsyncDisposable
     /// </summary>
     /// <param name="isValid">Whether the component is valid.</param>
     /// <param name="errorMessage">Optional error message to display.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask SetValidationState(bool isValid, string? errorMessage = null);
+    ValueTask SetValidationState(bool isValid, string? errorMessage = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Resets the validation state to neutral (not explicitly validated).
     /// </summary>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask ResetValidationState();
+    ValueTask ResetValidationState(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the success state of a specific file.
     /// </summary>
     /// <param name="fileId">The ID of the file to set success state for.</param>
     /// <param name="isSuccess">Whether the file is successful.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask SetFileSuccess(string fileId, bool isSuccess = true);
+    ValueTask SetFileSuccess(string fileId, bool isSuccess = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the success state of a file at a specific index.
     /// </summary>
     /// <param name="fileIndex">The index of the file to set success state for.</param>
     /// <param name="isSuccess">Whether the file is successful.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask SetFileSuccess(int fileIndex, bool isSuccess = true);
+    ValueTask SetFileSuccess(int fileIndex, bool isSuccess = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the success state of all files.
     /// </summary>
     /// <param name="isSuccess">Whether all files are successful.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask SetAllFilesSuccess(bool isSuccess = true);
+    ValueTask SetAllFilesSuccess(bool isSuccess = true, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the success state of a file when it becomes ready.
     /// </summary>
     /// <param name="fileId">The ID of the file to set success state for when ready.</param>
     /// <param name="isSuccess">Whether the file is successful.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
-    ValueTask SetFileSuccessWhenReady(string fileId, bool isSuccess = true);
+    ValueTask SetFileSuccessWhenReady(string fileId, bool isSuccess = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the success state of all files when they become ready.
+    /// </summary>
+    /// <param name="isSuccess">Whether all files are successful.</param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
+    ValueTask SetAllFilesSuccessWhenReady(bool isSuccess = true, CancellationToken cancellationToken = default);
 }

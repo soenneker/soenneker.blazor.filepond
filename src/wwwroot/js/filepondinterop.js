@@ -424,6 +424,49 @@ export class FilePondInterop {
             return;
         }
 
+        this._setFileSuccessInternal(file, isSuccess, false);
+    }
+
+    setFileSuccessWhenReady(elementId, query, isSuccess = true) {
+        const pond = this.ponds[elementId];
+        if (!pond) {
+            console.warn(`Could not find FilePond instance for element: ${elementId}`);
+            return;
+        }
+
+        const file = pond.getFile(query);
+        if (!file) {
+            console.warn(`Could not find file with query: ${query}`);
+            return;
+        }
+
+        this._setFileSuccessInternal(file, isSuccess, true);
+    }
+
+    setAllFilesSuccess(elementId, isSuccess = true) {
+        const pond = this.ponds[elementId];
+        if (!pond) {
+            console.warn(`Could not find FilePond instance for element: ${elementId}`);
+            return;
+        }
+
+        const files = pond.getFiles();
+        this._setFilesSuccessInternal(files, isSuccess, false);
+    }
+
+    setAllFilesSuccessWhenReady(elementId, isSuccess = true) {
+        const pond = this.ponds[elementId];
+        if (!pond) {
+            console.warn(`Could not find FilePond instance for element: ${elementId}`);
+            return;
+        }
+
+        const files = pond.getFiles();
+        this._setFilesSuccessInternal(files, isSuccess, true);
+    }
+
+    // Helper method to set success state for a single file
+    _setFileSuccessInternal(file, isSuccess, waitForReady = false) {
         // Set metadata first
         if (isSuccess) {
             file.setMetadata('success', true);
@@ -431,10 +474,31 @@ export class FilePondInterop {
             file.setMetadata('success', false);
         }
 
-        // Try to apply visual styling with retry mechanism
+        // Apply styling function
         const applyStyling = () => {
+            // Check if we need to wait for the file to be ready
+            // File is ready when it's either idle (1), processing queued (2), processing complete (4), or has been processed
+            if (waitForReady && file.status !== 1 && file.status !== 2 && file.status !== 4) { // 1 = Idle, 2 = ProcessingQueued, 4 = ProcessingComplete
+                return false;
+            }
+
             // Find the file element by searching for the filepond--item with the correct ID
-            const fileElement = document.querySelector(`[id*="${file.id}"]`);
+            // Try multiple selectors to find the file element
+            let fileElement = document.querySelector(`[id*="${file.id}"]`);
+            if (!fileElement || !fileElement.classList.contains('filepond--item')) {
+                // Try alternative selectors
+                fileElement = document.querySelector(`[data-filepond-item-id="${file.id}"]`);
+            }
+            if (!fileElement || !fileElement.classList.contains('filepond--item')) {
+                // Try finding by filepond--item class and check if it contains the file ID
+                const items = document.querySelectorAll('.filepond--item');
+                for (const item of items) {
+                    if (item.id && item.id.includes(file.id)) {
+                        fileElement = item;
+                        break;
+                    }
+                }
+            }
             if (fileElement && fileElement.classList.contains('filepond--item')) {
                 if (isSuccess) {
                     fileElement.classList.add('filepond--item-success');
@@ -452,82 +516,33 @@ export class FilePondInterop {
 
         // Try immediately
         if (!applyStyling()) {
-            // If element is not ready, retry after a short delay
-            setTimeout(() => {
-                if (!applyStyling()) {
-                    // If still not ready, try one more time after a longer delay
-                    setTimeout(applyStyling, 500);
-                }
-            }, 100);
-        }
-    }
-
-    setFileSuccessWhenReady(elementId, query, isSuccess = true) {
-        const pond = this.ponds[elementId];
-        if (!pond) {
-            console.warn(`Could not find FilePond instance for element: ${elementId}`);
-            return;
-        }
-
-        const file = pond.getFile(query);
-        if (!file) {
-            console.warn(`Could not find file with query: ${query}`);
-            return;
-        }
-
-        // Set metadata first
-        if (isSuccess) {
-            file.setMetadata('success', true);
-        } else {
-            file.setMetadata('success', false);
-        }
-
-        // Wait for the file to be fully processed before applying styling
-        const applyStylingWhenReady = () => {
-            if (file.status === 5) { // 5 = FilePond.FileStatus.PROCESSING_COMPLETE
-                // Find the file element by searching for the filepond--item with the correct ID
-                const fileElement = document.querySelector(`[id*="${file.id}"]`);
-                if (fileElement && fileElement.classList.contains('filepond--item')) {
-                    if (isSuccess) {
-                        fileElement.classList.add('filepond--item-success');
-                        // Also set the data attribute to ensure FilePond's default styling is overridden
-                        fileElement.setAttribute('data-filepond-item-state', 'processing-complete');
-                    } else {
-                        fileElement.classList.remove('filepond--item-success');
-                        // Remove the data attribute to revert to default state
-                        fileElement.removeAttribute('data-filepond-item-state');
+            if (waitForReady) {
+                // Listen for the file to be processed
+                const checkInterval = setInterval(() => {
+                    if (applyStyling()) {
+                        clearInterval(checkInterval);
                     }
-                    return true;
-                }
-            }
-            return false;
-        };
+                }, 100);
 
-        // Try immediately
-        if (!applyStylingWhenReady()) {
-            // Listen for the file to be processed
-            const checkInterval = setInterval(() => {
-                if (applyStylingWhenReady()) {
+                // Stop checking after 10 seconds to prevent infinite loops
+                setTimeout(() => {
                     clearInterval(checkInterval);
-                }
-            }, 100);
-
-            // Stop checking after 10 seconds to prevent infinite loops
-            setTimeout(() => {
-                clearInterval(checkInterval);
-            }, 10000);
+                    // Try to apply styling one more time even if file isn't ready
+                    applyStyling();
+                }, 10000);
+            } else {
+                // Retry mechanism for immediate styling
+                setTimeout(() => {
+                    if (!applyStyling()) {
+                        setTimeout(applyStyling, 500);
+                    }
+                }, 100);
+            }
         }
     }
 
-    setAllFilesSuccess(elementId, isSuccess = true) {
-        const pond = this.ponds[elementId];
-        if (!pond) {
-            console.warn(`Could not find FilePond instance for element: ${elementId}`);
-            return;
-        }
-
-        const files = pond.getFiles();
-        
+    // Helper method to set success state for multiple files
+    _setFilesSuccessInternal(files, isSuccess, waitForReady = false) {
         // Set metadata for all files first
         files.forEach(file => {
             if (isSuccess) {
@@ -537,12 +552,36 @@ export class FilePondInterop {
             }
         });
 
-        // Apply visual styling with retry mechanism
+        // Apply styling function
         const applyStyling = () => {
+            let allReady = true;
             let allStyled = true;
+            
             files.forEach(file => {
+                // Check if we need to wait for the file to be ready
+                // File is ready when it's either idle (1), processing queued (2), processing complete (4), or has been processed
+                if (waitForReady && file.status !== 1 && file.status !== 2 && file.status !== 4) { // 1 = Idle, 2 = ProcessingQueued, 4 = ProcessingComplete
+                    allReady = false;
+                    return;
+                }
+                
                 // Find the file element by searching for the filepond--item with the correct ID
-                const fileElement = document.querySelector(`[id*="${file.id}"]`);
+                // Try multiple selectors to find the file element
+                let fileElement = document.querySelector(`[id*="${file.id}"]`);
+                if (!fileElement || !fileElement.classList.contains('filepond--item')) {
+                    // Try alternative selectors
+                    fileElement = document.querySelector(`[data-filepond-item-id="${file.id}"]`);
+                }
+                if (!fileElement || !fileElement.classList.contains('filepond--item')) {
+                    // Try finding by filepond--item class and check if it contains the file ID
+                    const items = document.querySelectorAll('.filepond--item');
+                    for (const item of items) {
+                        if (item.id && item.id.includes(file.id)) {
+                            fileElement = item;
+                            break;
+                        }
+                    }
+                }
                 if (fileElement && fileElement.classList.contains('filepond--item')) {
                     if (isSuccess) {
                         fileElement.classList.add('filepond--item-success');
@@ -557,18 +596,34 @@ export class FilePondInterop {
                     allStyled = false;
                 }
             });
-            return allStyled;
+            
+            return waitForReady ? (allReady && allStyled) : allStyled;
         };
 
         // Try immediately
         if (!applyStyling()) {
-            // If some elements are not ready, retry after a short delay
-            setTimeout(() => {
-                if (!applyStyling()) {
-                    // If still not ready, try one more time after a longer delay
-                    setTimeout(applyStyling, 500);
-                }
-            }, 100);
+            if (waitForReady) {
+                // Listen for all files to be processed
+                const checkInterval = setInterval(() => {
+                    if (applyStyling()) {
+                        clearInterval(checkInterval);
+                    }
+                }, 100);
+
+                // Stop checking after 10 seconds to prevent infinite loops
+                setTimeout(() => {
+                    clearInterval(checkInterval);
+                    // Try to apply styling one more time even if files aren't ready
+                    applyStyling();
+                }, 10000);
+            } else {
+                // Retry mechanism for immediate styling
+                setTimeout(() => {
+                    if (!applyStyling()) {
+                        setTimeout(applyStyling, 500);
+                    }
+                }, 100);
+            }
         }
     }
 

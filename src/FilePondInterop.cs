@@ -352,6 +352,11 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setFileSuccessWhenReady", cancellationToken, elementId, fileId, isSuccess);
     }
 
+    public ValueTask SetAllFilesSuccessWhenReady(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default)
+    {
+        return JsRuntime.InvokeVoidAsync($"{nameof(FilePondInterop)}.setAllFilesSuccessWhenReady", cancellationToken, elementId, isSuccess);
+    }
+
     public async ValueTask DisposeAsync()
     {
         await _resourceLoader.DisposeModule(_module).NoSync();

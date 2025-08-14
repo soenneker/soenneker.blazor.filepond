@@ -236,4 +236,12 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     /// <param name="isSuccess">Whether the file should be marked as successful.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask SetFileSuccessWhenReady(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Sets the success state of all files when they are fully processed and ready.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="isSuccess">Whether all files should be marked as successful.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask SetAllFilesSuccessWhenReady(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default);
 }
