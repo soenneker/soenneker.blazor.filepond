@@ -6,7 +6,7 @@ namespace Soenneker.Blazor.FilePond.Enums;
 /// This enum contains the names for the different file origins.
 /// </summary>
 [Intellenum]
-public partial class FilePondFileOrigin
+public sealed partial class FilePondFileOrigin
 {
     /// <summary>
     /// Represents a file item input by the user.

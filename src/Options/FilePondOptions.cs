@@ -104,6 +104,13 @@ public sealed class FilePondOptions
     public bool AllowRemove { get; set; } = true;
 
     /// <summary>
+    /// Gets or sets a value indicating whether to show file size information.
+    /// When set to false, the file size will be hidden by applying CSS display: none to the .filepond--file-info-sub elements.
+    /// </summary>
+    [JsonIgnore]
+    public bool ShowFileSize { get; set; } = true;
+
+    /// <summary>
     /// Gets or sets a value indicating whether the process button is enabled.
     /// </summary>
     [JsonPropertyName("allowProcess")]

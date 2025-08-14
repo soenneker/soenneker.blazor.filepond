@@ -53,6 +53,15 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     ValueTask AddFile(string elementId, Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Adds a limbo file to FilePond. A limbo file is a placeholder file that doesn't contain actual file data.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="filename">The name of the file to be added as a limbo file.</param>
+    /// <param name="options">Additional options for the added file.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask AddLimboFile(string elementId, string filename, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Adds multiple files to FilePond.
     /// </summary>
     /// <param name="elementId">The ID of the FilePond element.</param>

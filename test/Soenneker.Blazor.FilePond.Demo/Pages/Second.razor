@@ -17,6 +17,7 @@
 <button @onclick="AddFile" >AddFile</button>
 <button @onclick="AddFileSilently" >AddFileSilently</button>
 <button @onclick="AddFileFromStream" >AddFileFromStream</button>
+<button @onclick="AddLimboFile" >AddLimboFile</button>
 <button @onclick="AddFiles" >AddFiles</button>
 <button @onclick="Browse" >Browse</button>
 <button @onclick="GetFile" >GetFile</button>
@@ -72,6 +73,11 @@
         var stream = test.ToMemoryStream();
         await FilePond!.AddFile(stream);
         await stream.DisposeAsync();
+    }
+
+    private async Task AddLimboFile()
+    {
+        await FilePond!.AddLimboFile("test-limbo-file.txt");
     }
 
     private async Task AddFiles()

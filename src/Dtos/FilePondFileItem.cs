@@ -6,7 +6,7 @@ namespace Soenneker.Blazor.FilePond.Dtos;
 /// <summary>
 /// Represents a file item used in the FilePond library.
 /// </summary>
-public record FilePondFileItem
+public sealed record FilePondFileItem
 {
     /// <summary>
     /// Gets or sets the id of the file.

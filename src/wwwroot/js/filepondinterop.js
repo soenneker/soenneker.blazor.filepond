@@ -9,8 +9,7 @@ export class FilePondInterop {
     async create(elementId, options) {
         let pond;
 
-        const selector = `[blazor-interop-id="${elementId}"]`;
-        const element = document.querySelector(selector);
+        const element = document.getElementById(elementId);
 
         if (options) {
             const opt = JSON.parse(options);
@@ -71,6 +70,19 @@ export class FilePondInterop {
             });
         } catch (error) {
             console.error('Error adding file from stream:', error);
+        }
+    }
+
+    async addLimboFile(elementId, filename, options) {
+        var pond = await this.waitForPond(elementId);
+
+        // Create a file object with minimal content to avoid zero-length issues
+        const file = new File([''], filename, { type: 'application/octet-stream' });
+        
+        if (!options) {
+            pond.addFile(file);
+        } else {
+            pond.addFile(file, options);
         }
     }
 
@@ -168,6 +180,12 @@ export class FilePondInterop {
             delete this.ponds[elementId];
             delete this.options[elementId];
         }
+
+        // Clean up file size observers
+        if (this.fileSizeObservers && this.fileSizeObservers[elementId]) {
+            this.fileSizeObservers[elementId].disconnect();
+            delete this.fileSizeObservers[elementId];
+        }
     }
 
     addEventListener(elementId, eventName, dotNetCallback) {
@@ -240,6 +258,12 @@ export class FilePondInterop {
         return new Blob([file]);
     }
 
+    hasFileContent(elementId, query) {
+        const pond = this.ponds[elementId];
+        const file = query ? pond.getFile(query).file : pond.getFile().file;
+        return file && file.size > 0;
+    }
+
     getJsonFromArguments(...args) {
         const processedArgs = args.map(arg => (typeof arg === 'object' && arg !== null) ? this.objectToStringifyable(arg) : arg);
         return JSON.stringify(processedArgs);
@@ -278,7 +302,7 @@ export class FilePondInterop {
     }
 
     createObserver(elementId) {
-        const target = document.querySelector(`div[blazor-observer-id="${elementId}"]`);
+        const target = document.getElementById(elementId);
         this.observer = new MutationObserver((mutations) => {
             const targetRemoved = mutations.some(mutation => Array.from(mutation.removedNodes).indexOf(target) !== -1);
 
@@ -292,6 +316,70 @@ export class FilePondInterop {
 
         this.observer.observe(target.parentNode, { childList: true });
     }
+
+    setFileSizeVisibility(elementId, showFileSize = true) {
+        // Find the FilePond element by ID
+        const element = document.getElementById(elementId);
+        
+        if (!element) {
+            console.warn(`Could not find FilePond element with ID: ${elementId}`);
+            return;
+        }
+
+        // Find the FilePond root element
+        let pondRoot = element.closest('.filepond--root');
+        
+        if (!pondRoot) {
+            // If the element itself is the root
+            if (element.classList.contains('filepond--root')) {
+                pondRoot = element;
+            } else {
+                console.warn(`Could not find FilePond root for element: ${elementId}`);
+                return;
+            }
+        }
+
+        // Function to apply file size visibility
+        const applyFileSizeVisibility = () => {
+            const fileInfoSubs = pondRoot.querySelectorAll('.filepond--file-info-sub');
+            fileInfoSubs.forEach(infoSub => {
+                infoSub.style.display = showFileSize ? '' : 'none';
+            });
+        };
+
+        // Apply immediately if elements exist
+        applyFileSizeVisibility();
+
+        // Set up a mutation observer to watch for new file elements being added
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === Node.ELEMENT_NODE) {
+                            // Check if the added node or its children contain file info elements
+                            const fileInfoSubs = node.querySelectorAll ? node.querySelectorAll('.filepond--file-info-sub') : [];
+                            if (fileInfoSubs.length > 0 || node.classList?.contains('filepond--file-info-sub')) {
+                                applyFileSizeVisibility();
+                            }
+                        }
+                    });
+                }
+            });
+        });
+
+        // Start observing the pond root for changes
+        observer.observe(pondRoot, {
+            childList: true,
+            subtree: true
+        });
+
+        // Store the observer so we can disconnect it later if needed
+        if (!this.fileSizeObservers) {
+            this.fileSizeObservers = {};
+        }
+        this.fileSizeObservers[elementId] = observer;
+    }
+
 }
 
 window.FilePondInterop = new FilePondInterop();

@@ -2,7 +2,7 @@
 
 namespace Soenneker.Blazor.FilePond.Dtos;
 
-public record FilePondError
+public sealed record FilePondError
 {
     /// <summary>
     /// The main error information.

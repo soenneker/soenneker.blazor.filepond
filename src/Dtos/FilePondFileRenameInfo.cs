@@ -2,7 +2,7 @@
 
 namespace Soenneker.Blazor.FilePond.Dtos;
 
-public record FilePondFileRenameInfo
+public sealed record FilePondFileRenameInfo
 {
     [JsonPropertyName("basename")]
     public string? BaseName { get; set; }

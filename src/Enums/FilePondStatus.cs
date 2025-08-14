@@ -6,7 +6,7 @@ namespace Soenneker.Blazor.FilePond.Enums;
 /// An enum to use together with the File status property to determine the current file status.
 /// </summary>
 [Intellenum]
-public partial class FilePondStatus 
+public sealed partial class FilePondStatus 
 {
     public static readonly FilePondStatus Empty = new(0);
     public static readonly FilePondStatus Idle = new(1);

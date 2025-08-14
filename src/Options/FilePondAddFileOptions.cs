@@ -23,5 +23,12 @@ public sealed class FilePondAddFileOptions
     [JsonIgnore]
     public bool SilentAdd { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether to show file size information for this specific file.
+    /// When set to false, the file size will be hidden by applying CSS display: none to the file's .filepond--file-info-sub element.
+    /// </summary>
+    [JsonIgnore]
+    public bool ShowFileSize { get; set; } = true;
+
     // TODO: Document other available options for adding a file.
 }

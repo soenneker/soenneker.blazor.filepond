@@ -22,13 +22,15 @@
 @inherits Soenneker.Quark.Components.Cancellable.CancellableComponent
 @implements IFilePond
 
-<div blazor-observer-id="@_elementId" ></div>
-<div blazor-wrapper-id="@_elementId" >
-    <input type="file" @attributes="Attributes" blazor-interop-id="@_elementId" />
+<div id="@_observerId"></div>
+<div id="@_wrapperId">
+    <input type="file" @attributes="Attributes" id="@_elementId" />
 </div>
 
 @code {
     private readonly string _elementId;
+    private readonly string _observerId;
+    private readonly string _wrapperId;
 
     [Parameter(CaptureUnmatchedValues = true)]
     public Dictionary<string, object>? Attributes { get; set; }
@@ -124,7 +126,9 @@
     {
         _initializing = false;
         _initialized = false;
-        _elementId = '_' + Guid.NewGuid().ToString();
+        _elementId = "filepond-" + Guid.NewGuid().ToString("N");
+        _observerId = "filepond-observer-" + Guid.NewGuid().ToString("N");
+        _wrapperId = "filepond-wrapper-" + Guid.NewGuid().ToString("N");
         Files = [];
         _silentAddFiles = [];
         _afterInitializationOperations = [];
@@ -154,7 +158,7 @@
             }
 
             await Create(cancellationToken: CancellationToken).NoSync();
-            await FilePondInterop.CreateObserver(_elementId, CancellationToken).NoSync();
+            await FilePondInterop.CreateObserver(_observerId, CancellationToken).NoSync();
         }
     }
 
@@ -238,6 +242,17 @@
 
             using (cts)
                 await FilePondInterop.AddFile(_elementId, stream, options, linked).NoSync();
+        });
+    }
+
+    public ValueTask AddLimboFile(string filename, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
+    {
+        return EnqueueOrExecute(async () =>
+        {
+            CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+            using (cts)
+                await FilePondInterop.AddLimboFile(_elementId, filename, options, linked).NoSync();
         });
     }
 
