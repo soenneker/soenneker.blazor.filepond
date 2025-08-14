@@ -840,8 +840,6 @@
 
     public override async ValueTask DisposeAsync()
     {
-        await base.DisposeAsync().NoSync();
-
         if (_initialized)
         {
             await FilePondInterop.Destroy(_elementId, CancellationToken.None).NoSync();
@@ -853,6 +851,8 @@
         InteropEventListener.DisposeForElement(_elementId);
         _initialized = false;
         _initializing = false;
+
+        await base.DisposeAsync().NoSync();
     }
 
 }
