@@ -1,4 +1,4 @@
-﻿using Intellenum;
+using Intellenum;
 
 namespace Soenneker.Blazor.FilePond.Enums;
 

@@ -1,4 +1,4 @@
-﻿using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.Components;
 using Soenneker.Blazor.FilePond.Dtos;
 using Soenneker.Blazor.FilePond.Options;
 using System;

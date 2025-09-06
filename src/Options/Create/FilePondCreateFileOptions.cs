@@ -1,4 +1,4 @@
-﻿using Soenneker.Blazor.FilePond.Enums;
+using Soenneker.Blazor.FilePond.Enums;
 using System.Text.Json.Serialization;
 
 namespace Soenneker.Blazor.FilePond.Options.Create;

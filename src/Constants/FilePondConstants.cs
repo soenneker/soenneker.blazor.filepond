@@ -1,4 +1,4 @@
-﻿namespace Soenneker.Blazor.FilePond.Constants;
+namespace Soenneker.Blazor.FilePond.Constants;
 
 internal static class FilePondConstants
 {

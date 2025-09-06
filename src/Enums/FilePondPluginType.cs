@@ -1,4 +1,4 @@
-﻿using Intellenum;
+using Intellenum;
 // ReSharper disable InconsistentNaming
 
 namespace Soenneker.Blazor.FilePond.Enums;
