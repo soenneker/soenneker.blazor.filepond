@@ -57,7 +57,7 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     /// </summary>
     /// <param name="elementId">The ID of the FilePond element.</param>
     /// <param name="filename">The name of the file to be added as a limbo file.</param>
-    /// <param name="options">Additional options for the added file.</param>
+    /// <param name="options">Additional options for the added file, including MimeType.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask AddLimboFile(string elementId, string filename, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);
 

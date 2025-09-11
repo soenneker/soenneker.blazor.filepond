@@ -76,8 +76,11 @@ export class FilePondInterop {
     async addLimboFile(elementId, filename, options) {
         var pond = await this.waitForPond(elementId);
 
+        // Use MIME type from options or default to application/octet-stream
+        const fileType = (options && options.mimeType) || 'application/octet-stream';
+        
         // Create a file object with minimal content to avoid zero-length issues
-        const file = new File([''], filename, { type: 'application/octet-stream' });
+        const file = new File([''], filename, { type: fileType });
         
         if (!options) {
             pond.addFile(file);

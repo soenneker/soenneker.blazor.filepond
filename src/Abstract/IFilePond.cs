@@ -191,7 +191,7 @@ public interface IFilePond : IAsyncDisposable
     /// Adds a limbo file to FilePond. A limbo file is a placeholder file that doesn't contain actual file data.
     /// </summary>
     /// <param name="filename">The name of the file to be added as a limbo file.</param>
-    /// <param name="options">Additional options for the added file.</param>
+    /// <param name="options">Additional options for the added file, including MimeType.</param>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     ValueTask AddLimboFile(string filename, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);

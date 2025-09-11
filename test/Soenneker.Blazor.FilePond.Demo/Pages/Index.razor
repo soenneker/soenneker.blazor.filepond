@@ -217,6 +217,13 @@
                     </svg>
                     Validation Demo
                 </NavLink>
+                <NavLink href="/limbo-file-demo" class="action-btn action-btn--info">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M14 2H6A2 2 0 0 0 4 4V20A2 2 0 0 0 6 22H18A2 2 0 0 0 20 20V8L14 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <polyline points="14,2 14,8 20,8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    Limbo File Demo
+                </NavLink>
             </div>
         </section>
     </div>
@@ -558,7 +565,7 @@
 
     private async Task AddLimboFile()
     {
-        await FilePond!.AddLimboFile("test-limbo-file.txt", new FilePondAddFileOptions() { ShowFileSize = false});
+        await FilePond!.AddLimboFile("test-limbo-file.txt", new FilePondAddFileOptions() { ShowFileSize = false, MimeType = "text/plain"});
         await FilePond.SetAllFilesSuccessWhenReady();
     }
 

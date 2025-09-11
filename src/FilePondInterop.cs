@@ -196,13 +196,13 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask<FilePondFileItem?> GetFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        string str = await JsRuntime.InvokeAsync<string>($"{nameof(FilePondInterop)}.getFile", cancellationToken, elementId, query);
+        var str = await JsRuntime.InvokeAsync<string>($"{nameof(FilePondInterop)}.getFile", cancellationToken, elementId, query);
         return JsonUtil.Deserialize<FilePondFileItem>(str);
     }
 
     public async ValueTask<List<FilePondFileItem>?> GetFiles(string elementId, CancellationToken cancellationToken = default)
     {
-        string str = await JsRuntime.InvokeAsync<string>($"{nameof(FilePondInterop)}.getFiles", cancellationToken, elementId);
+        var str = await JsRuntime.InvokeAsync<string>($"{nameof(FilePondInterop)}.getFiles", cancellationToken, elementId);
         return JsonUtil.Deserialize<List<FilePondFileItem>>(str);
     }
 
@@ -284,7 +284,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         try
         {
             // First check if the file has content (non-zero size)
-            bool hasContent = await JsRuntime.InvokeAsync<bool>($"{nameof(FilePondInterop)}.hasFileContent", cancellationToken, elementId, query);
+            var hasContent = await JsRuntime.InvokeAsync<bool>($"{nameof(FilePondInterop)}.hasFileContent", cancellationToken, elementId, query);
 
             if (!hasContent)
             {
@@ -292,7 +292,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
                 return null;
             }
 
-            IJSStreamReference blob = await JsRuntime
+            var blob = await JsRuntime
                                             .InvokeAsync<IJSStreamReference>($"{nameof(FilePondInterop)}.getFileAsBlob", cancellationToken, elementId, query)
                                             ;
 

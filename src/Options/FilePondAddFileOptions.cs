@@ -30,5 +30,12 @@ public sealed class FilePondAddFileOptions
     [JsonIgnore]
     public bool ShowFileSize { get; set; } = true;
 
+    /// <summary>
+    /// Gets or sets the MIME type for the file. This is particularly useful for limbo files to ensure they pass validation.
+    /// If not specified, limbo files will use 'application/octet-stream' by default.
+    /// </summary>
+    [JsonPropertyName("mimeType")]
+    public string? MimeType { get; set; }
+
     // TODO: Document other available options for adding a file.
 }
