@@ -7,13 +7,12 @@
 @using Soenneker.Blazor.FilePond.Constants
 @using Soenneker.Blazor.FilePond.Options
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
-@using Soenneker.Extensions.Task
-@using Soenneker.Extensions.ValueTask
 @using Soenneker.Extensions.String
 @using Soenneker.Extensions.CancellationTokens
 @using Soenneker.Extensions.Enumerable
 @using Soenneker.Utils.Json
 @using Soenneker.Extensions.List
+@using Soenneker.Quark.Divs
 
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
@@ -22,22 +21,19 @@
 @inherits Soenneker.Quark.Components.Cancellable.CancellableComponent
 @implements IFilePond
 
-<div id="@_observerId" ></div>
-<div id="@_wrapperId" class="@GetWrapperCssClass()" >
+<Div Id="@_observerId" ></Div>
+<Div Id="@_wrapperId" Class="@GetWrapperCssClass()">
     <input type="file" @attributes="Attributes" id="@_elementId" />
     @if (ValidationErrorMessage.HasContent())
     {
-        <div class="filepond-validation-error" >@ValidationErrorMessage</div>
+        <Div Class="filepond-validation-error">@ValidationErrorMessage</Div>
     }
-</div>
+</Div>
 
 @code {
     private readonly string _elementId;
     private readonly string _observerId;
     private readonly string _wrapperId;
-
-    [Parameter(CaptureUnmatchedValues = true)]
-    public Dictionary<string, object>? Attributes { get; set; }
 
     [Parameter]
     public FilePondOptions? Options { get; set; }

@@ -16,7 +16,6 @@ using Soenneker.Utils.AsyncSingleton;
 using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
 using Soenneker.Blazor.FilePond.Utils;
 using Soenneker.Blazor.FilePond.Enums;
-using Soenneker.Extensions.ValueTask;
 using Soenneker.Blazor.FilePond.Constants;
 
 namespace Soenneker.Blazor.FilePond;
