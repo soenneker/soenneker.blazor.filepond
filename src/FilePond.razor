@@ -12,23 +12,22 @@
 @using Soenneker.Extensions.Enumerable
 @using Soenneker.Utils.Json
 @using Soenneker.Extensions.List
-@using Soenneker.Quark.Divs
 
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
 @inject ILogger<FilePond> Logger
 
-@inherits Soenneker.Quark.Components.Cancellable.CancellableComponent
+@inherits Soenneker.Quark.Components.Core.Cancellable.CoreCancellableComponent
 @implements IFilePond
 
-<Div Id="@_observerId" ></Div>
-<Div Id="@_wrapperId" Class="@GetWrapperCssClass()">
+<div id="@_observerId" ></div>
+<div id="@_wrapperId" class="@GetWrapperCssClass()">
     <input type="file" @attributes="Attributes" id="@_elementId" />
     @if (ValidationErrorMessage.HasContent())
     {
-        <Div Class="filepond-validation-error">@ValidationErrorMessage</Div>
+        <div class="filepond-validation-error">@ValidationErrorMessage</div>
     }
-</Div>
+</div>
 
 @code {
     private readonly string _elementId;

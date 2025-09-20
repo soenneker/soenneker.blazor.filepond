@@ -4,21 +4,17 @@ using Soenneker.Blazor.FilePond.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Threading.Tasks;
 using System.Threading;
+using System.Threading.Tasks;
+using Soenneker.Quark.Components.Core.Cancellable.Abstract;
 
 namespace Soenneker.Blazor.FilePond.Abstract;
 
 /// <summary>
 /// Represents a FilePond component in Blazor.
 /// </summary>
-public interface IFilePond : IAsyncDisposable
+public interface IFilePond : ICoreCancellableComponent
 {
-    /// <summary>
-    /// Gets or sets the HTML attributes to apply to the element.
-    /// </summary>
-    Dictionary<string, object>? Attributes { get; set; }
-
     /// <summary>
     /// Gets or sets the options for the FilePond component.
     /// </summary>

@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace Soenneker.Blazor.FilePond.Options.Create;
 
-public class FilePondCreateFileOptions
+public sealed class FilePondCreateFileOptions
 {
     /// <summary>
     /// Set type to 'local' to indicate an already uploaded file
