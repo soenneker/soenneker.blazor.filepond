@@ -255,11 +255,59 @@ export class FilePondInterop {
         });
     }
 
-    getFileAsBlob(elementId, query) {
+    async getFileAsBlob(elementId, query) {
         const pond = this.ponds[elementId];
-        const file = query ? pond.getFile(query).file : pond.getFile().file;
-        return new Blob([file]);
+        const fileItem = query ? pond.getFile(query) : pond.getFile();
+        
+        if (!fileItem) {
+            return new Blob([]);
+        }
+        
+        // Try to get the prepared (transformed) file data first - this is now the default behavior
+        try {
+            const preparedFile = await pond.prepareFile(query);
+            if (preparedFile && preparedFile.output) {
+                // The prepared file output contains the transformed data
+                if (typeof preparedFile.output === 'string') {
+                    // Base64 encoded data
+                    const byteCharacters = atob(preparedFile.output.split(',')[1] || preparedFile.output);
+                    const byteNumbers = new Array(byteCharacters.length);
+                    for (let i = 0; i < byteCharacters.length; i++) {
+                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                    }
+                    const byteArray = new Uint8Array(byteNumbers);
+                    return new Blob([byteArray]);
+                } else if (preparedFile.output instanceof Blob) {
+                    // Already a blob
+                    return preparedFile.output;
+                } else if (preparedFile.output instanceof ArrayBuffer) {
+                    // ArrayBuffer
+                    return new Blob([preparedFile.output]);
+                }
+            }
+        } catch (error) {
+            console.warn('Failed to get prepared file, falling back to original file:', error);
+        }
+        
+        // Fallback to original file
+        const file = fileItem.file;
+        return file ? new Blob([file]) : new Blob([]);
     }
+
+    // New method to explicitly get the original (untransformed) file
+    getOriginalFileAsBlob(elementId, query) {
+        const pond = this.ponds[elementId];
+        const fileItem = query ? pond.getFile(query) : pond.getFile();
+        
+        if (!fileItem) {
+            return new Blob([]);
+        }
+        
+        // Always return the original file
+        const file = fileItem.file;
+        return file ? new Blob([file]) : new Blob([]);
+    }
+
 
     hasFileContent(elementId, query) {
         const pond = this.ponds[elementId];

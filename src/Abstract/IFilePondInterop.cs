@@ -177,13 +177,26 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     ValueTask EnableOtherPlugins(bool useCdn, List<string> filePondOtherPlugins, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance. The stream should be disposed after use.
+    /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance. 
+    /// This method returns the transformed file data when plugins like ImageResize or ImageTransform are used, falling back to the original file if no transformation is available.
+    /// The stream should be disposed after use.
     /// </summary>
     /// <param name="elementId">The unique identifier of the HTML element associated with the FilePond instance.</param>
     /// <param name="query">The unique identifier of the file for which to retrieve the stream.</param>
     /// <param name="maxAllowedSize">(Optional) The maximum allowed size of the stream in bytes. Defaults to 2MB.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask<Stream?> GetStreamForFile(string elementId, object? query = null, long maxAllowedSize = FilePondConstants.DefaultMaximumSize, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a <see cref="Stream"/> for the original (untransformed) file with the specified identifier within the given FilePond instance. 
+    /// This method explicitly returns the original file data, bypassing any transformations applied by plugins.
+    /// The stream should be disposed after use.
+    /// </summary>
+    /// <param name="elementId">The unique identifier of the HTML element associated with the FilePond instance.</param>
+    /// <param name="query">The unique identifier of the file for which to retrieve the original stream.</param>
+    /// <param name="maxAllowedSize">(Optional) The maximum allowed size of the stream in bytes. Defaults to 2MB.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask<Stream?> GetOriginalStreamForFile(string elementId, object? query = null, long maxAllowedSize = FilePondConstants.DefaultMaximumSize, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a list of <see cref="Stream"/> objects for all files within the given FilePond instance. The streams should be disposed after use.

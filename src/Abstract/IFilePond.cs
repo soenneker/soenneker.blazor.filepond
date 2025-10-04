@@ -315,6 +315,7 @@ public interface IFilePond : ICoreCancellableComponent
 
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance.
+    /// This method returns the transformed file data when plugins like ImageResize or ImageTransform are used, falling back to the original file if no transformation is available.
     /// </summary>
     /// <param name="maxAllowedSize">
     /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
@@ -329,11 +330,13 @@ public interface IFilePond : ICoreCancellableComponent
     /// <remarks>
     /// Use this method to get a stream for a specific file within a FilePond instance. The stream can be used to
     /// perform additional operations, such as reading the file contents or processing the file in-memory.
+    /// This method automatically returns transformed file data when plugins are used, making it the preferred method for most use cases.
     /// </remarks>
     ValueTask<Stream?> GetStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file at the specified index within the given FilePond instance.
+    /// This method returns the transformed file data when plugins like ImageResize or ImageTransform are used, falling back to the original file if no transformation is available.
     /// </summary>
     /// <param name="index">
     /// The index of the file for which to retrieve the stream.
@@ -351,11 +354,13 @@ public interface IFilePond : ICoreCancellableComponent
     /// <remarks>
     /// Use this method to get a stream for a specific file within a FilePond instance based on its index. 
     /// The stream can be used to perform additional operations, such as reading the file contents or processing the file in-memory.
+    /// This method automatically returns transformed file data when plugins are used, making it the preferred method for most use cases.
     /// </remarks>
     ValueTask<Stream?> GetStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Retrieves a <see cref="Stream"/> for the file with the specified identifier within the given FilePond instance.
+    /// This method returns the transformed file data when plugins like ImageResize or ImageTransform are used, falling back to the original file if no transformation is available.
     /// </summary>
     /// <param name="fileId">
     /// The unique identifier of the file for which to retrieve the stream.
@@ -373,6 +378,7 @@ public interface IFilePond : ICoreCancellableComponent
     /// <remarks>
     /// Use this method to get a stream for a specific file within a FilePond instance. The stream can be used to
     /// perform additional operations, such as reading the file contents or processing the file in-memory.
+    /// This method automatically returns transformed file data when plugins are used, making it the preferred method for most use cases.
     /// </remarks>
     ValueTask<Stream?> GetStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
@@ -392,6 +398,75 @@ public interface IFilePond : ICoreCancellableComponent
     /// The data is segmented into multiple streams to meet the size constraint.
     /// </remarks>
     ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a <see cref="Stream"/> for the original (untransformed) file with the specified identifier within the given FilePond instance.
+    /// This method explicitly returns the original file data, bypassing any transformations applied by plugins.
+    /// </summary>
+    /// <param name="maxAllowedSize">
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// (Optional) A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValueTask{Stream}"/> representing the asynchronous operation of obtaining a stream for the original file.
+    /// If the file does not exist or if an error occurs, the result may be <c>null</c>.
+    /// </returns>
+    /// <remarks>
+    /// Use this method to get a stream for the original (untransformed) file within a FilePond instance. The stream can be used to
+    /// perform additional operations, such as reading the original file contents or processing the file in-memory.
+    /// This method explicitly bypasses any transformations applied by plugins like ImageResize or ImageTransform.
+    /// </remarks>
+    ValueTask<Stream?> GetOriginalStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a <see cref="Stream"/> for the original (untransformed) file at the specified index within the given FilePond instance.
+    /// This method explicitly returns the original file data, bypassing any transformations applied by plugins.
+    /// </summary>
+    /// <param name="index">
+    /// The index of the file for which to retrieve the original stream.
+    /// </param>
+    /// <param name="maxAllowedSize">
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// (Optional) A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValueTask{Stream}"/> representing the asynchronous operation of obtaining a stream for the original file.
+    /// If the file does not exist or if an error occurs, the result may be <c>null</c>.
+    /// </returns>
+    /// <remarks>
+    /// Use this method to get a stream for the original (untransformed) file within a FilePond instance based on its index. 
+    /// The stream can be used to perform additional operations, such as reading the original file contents or processing the file in-memory.
+    /// This method explicitly bypasses any transformations applied by plugins like ImageResize or ImageTransform.
+    /// </remarks>
+    ValueTask<Stream?> GetOriginalStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a <see cref="Stream"/> for the original (untransformed) file with the specified identifier within the given FilePond instance.
+    /// This method explicitly returns the original file data, bypassing any transformations applied by plugins.
+    /// </summary>
+    /// <param name="fileId">
+    /// The unique identifier of the file for which to retrieve the original stream.
+    /// </param>
+    /// <param name="maxAllowedSize">
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
+    /// </param>
+    /// <param name="cancellationToken">
+    /// (Optional) A <see cref="CancellationToken"/> to observe while waiting for the asynchronous operation to complete.
+    /// </param>
+    /// <returns>
+    /// A <see cref="ValueTask{Stream}"/> representing the asynchronous operation of obtaining a stream for the original file.
+    /// If the file does not exist or if an error occurs, the result may be <c>null</c>.
+    /// </returns>
+    /// <remarks>
+    /// Use this method to get a stream for the original (untransformed) file within a FilePond instance. The stream can be used to
+    /// perform additional operations, such as reading the original file contents or processing the file in-memory.
+    /// This method explicitly bypasses any transformations applied by plugins like ImageResize or ImageTransform.
+    /// </remarks>
+    ValueTask<Stream?> GetOriginalStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Sets the validation state of the FilePond component.

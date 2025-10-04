@@ -1,0 +1,226 @@
+@page "/image-transform-demo"
+@using Soenneker.Blazor.FilePond
+@using Soenneker.Blazor.FilePond.Options
+@using Soenneker.Blazor.FilePond.Enums
+@using Soenneker.Blazor.FilePond.Dtos
+@using System.IO
+@using Microsoft.Extensions.Logging
+@inject ILogger<ImageTransformDemo> Logger
+
+<PageTitle>Image Transform Demo</PageTitle>
+
+<h1>Image Transform Plugin Issue Demo</h1>
+
+<p>This page demonstrates the issue where GetStreamForFile returns the original file instead of the transformed file when using ImageResize and ImageTransform plugins.</p>
+
+<div class="row" >
+    <div class="col-md-6" >
+        <h3>FilePond with Image Transform Plugins</h3>
+        <FilePond @ref="_filePond"
+                  Options="_options"
+                  OnInit="OnInit"
+                  OnAddFile="OnAddFile" />
+
+        <div class="mt-3" >
+            <button class="btn btn-success" @onclick="GetStream" disabled="@(_isProcessing)" >
+                Get Stream (Default - Transformed)
+            </button>
+            <button class="btn btn-secondary" @onclick="GetOriginalStream" disabled="@(_isProcessing)" >
+                Get Original Stream
+            </button>
+        </div>
+    </div>
+
+    <div class="col-md-6" >
+        <h3>Results</h3>
+        <div class="card" >
+            <div class="card-body" >
+                <h5>Stream Information</h5>
+                <p>
+                    <strong>Default Stream Length:</strong> @_defaultStreamLength
+                </p>
+                <p>
+                    <strong>Original Stream Length:</strong> @_originalStreamLength
+                </p>
+                <p>
+                    <strong>Original File Size:</strong> @_originalFileSize
+                </p>
+                <p>
+                    <strong>File Name:</strong> @_fileName
+                </p>
+                <p>
+                    <strong>File Type:</strong> @_fileType
+                </p>
+                <p>
+                    <strong>Status:</strong> @_status
+                </p>
+                @if (!string.IsNullOrEmpty(_errorMessage))
+                {
+                    <div class="alert alert-danger" >@_errorMessage</div>
+                }
+                @if (!string.IsNullOrEmpty(_successMessage))
+                {
+                    <div class="alert alert-success" >@_successMessage</div>
+                }
+            </div>
+        </div>
+
+        <div class="mt-3" >
+            <h5>Instructions:</h5>
+            <ol>
+                <li>Upload an image file (PNG, JPG, etc.)</li>
+                <li>The file should be automatically resized to 100px width and converted to JPEG</li>
+                <li>Click "Get Stream (Default - Transformed)" to see the transformed file size</li>
+                <li>Click "Get Original Stream" to see the original file size</li>
+                <li><strong>Expected:</strong> The default stream should be smaller than the original stream</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+@code {
+    private FilePond? _filePond;
+
+    private readonly FilePondOptions _options = new()
+    {
+        AllowMultiple = false,
+        EnabledPlugins = [FilePondPluginType.ImageResize, FilePondPluginType.ImageTransform, FilePondPluginType.FileValidateType],
+        AllowImageResize = true,
+        AllowImageTransform = true,
+        AllowFileTypeValidation = true,
+        AcceptedFileTypes = ["image/*"],
+        ImageResizeTargetWidth = 100,
+        ImageTransformOutputMimeType = "image/jpeg"
+    };
+
+    private string _defaultStreamLength = "No stream retrieved yet";
+    private string _originalStreamLength = "No stream retrieved yet";
+    private string _originalFileSize = "No file uploaded yet";
+    private string _fileName = "No file uploaded yet";
+    private string _fileType = "No file uploaded yet";
+    private string _status = "Ready";
+    private string _errorMessage = "";
+    private string _successMessage = "";
+    private bool _isProcessing = false;
+
+    private void OnInit()
+    {
+        Logger.LogInformation("FilePond initialized");
+        _status = "FilePond Initialized";
+        StateHasChanged();
+    }
+
+    private void OnAddFile((FilePondError? Error, FilePondFileItem File) args)
+    {
+        (FilePondError? error, FilePondFileItem file) = args;
+
+        if (error != null)
+        {
+            _errorMessage = $"Error adding file: {error.Main} - {error.Sub}";
+            _status = "Error";
+        }
+        else
+        {
+            _originalFileSize = file.FileSize.ToString();
+            _fileName = file.Filename ?? "Unknown";
+            _fileType = file.FileExtension ?? "Unknown";
+            _status = "File Added Successfully";
+            _errorMessage = "";
+            _successMessage = "";
+
+            Logger.LogInformation("File added: {FileName}, Size: {FileSize}, Type: {FileType}", file.Filename, file.FileSize, file.FileExtension);
+        }
+
+        StateHasChanged();
+    }
+
+    private async Task GetStream()
+    {
+        await GetStreamInternal(false);
+    }
+
+    private async Task GetOriginalStream()
+    {
+        await GetStreamInternal(true);
+    }
+
+    private async Task GetStreamInternal(bool isOriginal)
+    {
+        if (_filePond == null)
+        {
+            _errorMessage = "FilePond is not initialized";
+            return;
+        }
+
+        _isProcessing = true;
+        _status = isOriginal ? "Getting original stream..." : "Getting default stream (transformed)...";
+        _errorMessage = "";
+        _successMessage = "";
+        StateHasChanged();
+
+        try
+        {
+            // Get the file info first
+            var file = await _filePond.GetFile(0, forceInterop: true);
+            if (file == null)
+            {
+                _errorMessage = "No file found at index 0";
+                _status = "No File";
+                return;
+            }
+
+            Logger.LogInformation("File info - Original: {OriginalSize}", file.FileSize);
+
+            // Get the stream
+            Stream? result = isOriginal ? await _filePond.GetOriginalStreamForFile(0) : await _filePond.GetStreamForFile(0);
+
+            if (result == null)
+            {
+                _errorMessage = $"Failed to get {(isOriginal ? "original" : "default")} stream for file";
+                _status = "Stream Failed";
+            }
+            else
+            {
+                if (isOriginal)
+                {
+                    _originalStreamLength = result.Length.ToString();
+                }
+                else
+                {
+                    _defaultStreamLength = result.Length.ToString();
+                }
+
+                _status = $"{(isOriginal ? "Original" : "Default")} Stream Retrieved Successfully";
+                _errorMessage = "";
+
+                var comparison = "";
+                if (!string.IsNullOrEmpty(_defaultStreamLength) && !string.IsNullOrEmpty(_originalStreamLength) && _defaultStreamLength != "No stream retrieved yet" && _originalStreamLength != "No stream retrieved yet")
+                {
+                    var defaultSize = long.Parse(_defaultStreamLength);
+                    var originalSize = long.Parse(_originalStreamLength);
+                    var reduction = ((double)(originalSize - defaultSize) / originalSize) * 100;
+                    comparison = $" Size reduction: {reduction:F1}%";
+                }
+
+                _successMessage = $"Stream length: {result.Length:N0} bytes{comparison}";
+
+                Logger.LogInformation("Stream length: {StreamLength}, Original file size: {OriginalSize}", result.Length, file.FileSize);
+
+                // Dispose the stream
+                await result.DisposeAsync();
+            }
+        }
+        catch (Exception ex)
+        {
+            _errorMessage = $"Exception: {ex.Message}";
+            _status = "Exception";
+            Logger.LogError(ex, "Error getting stream for file");
+        }
+        finally
+        {
+            _isProcessing = false;
+            StateHasChanged();
+        }
+    }
+
+}

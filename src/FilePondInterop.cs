@@ -304,6 +304,33 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         }
     }
 
+    public async ValueTask<Stream?> GetOriginalStreamForFile(string elementId, object? query = null, long maxAllowedSize = FilePondConstants.DefaultMaximumSize,
+        CancellationToken cancellationToken = default)
+    {
+        try
+        {
+            // First check if the file has content (non-zero size)
+            var hasContent = await JsRuntime.InvokeAsync<bool>($"{nameof(FilePondInterop)}.hasFileContent", cancellationToken, elementId, query);
+
+            if (!hasContent)
+            {
+                _logger.LogWarning("File has no content (zero length), cannot create stream");
+                return null;
+            }
+
+            var blob = await JsRuntime
+                                            .InvokeAsync<IJSStreamReference>($"{nameof(FilePondInterop)}.getOriginalFileAsBlob", cancellationToken, elementId, query)
+                                            ;
+
+            return await blob.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unable to get the original stream for file");
+            return null;
+        }
+    }
+
     public async ValueTask<List<Stream>> GetAllStreams(string elementId, long maxAllowedSize = FilePondConstants.DefaultMaximumSize,
         CancellationToken cancellationToken = default)
     {

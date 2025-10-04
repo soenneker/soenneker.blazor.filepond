@@ -511,6 +511,36 @@
             return await FilePondInterop.GetAllStreams(_elementId, maxAllowedSize.Value, linked);
     }
 
+    public async ValueTask<Stream?> GetOriginalStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    {
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetOriginalStreamForFile(_elementId, null, maxAllowedSize.Value, linked);
+    }
+
+    public async ValueTask<Stream?> GetOriginalStreamForFile(int index, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    {
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetOriginalStreamForFile(_elementId, index, maxAllowedSize.Value, linked);
+    }
+
+    public async ValueTask<Stream?> GetOriginalStreamForFile(string fileId, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    {
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetOriginalStreamForFile(_elementId, fileId, maxAllowedSize.Value, linked);
+    }
+
     private async ValueTask AddEventListeners(CancellationToken cancellationToken)
     {
         if (OnInit.HasDelegate)
