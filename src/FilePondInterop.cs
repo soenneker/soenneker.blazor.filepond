@@ -20,6 +20,15 @@ using Soenneker.Blazor.FilePond.Constants;
 
 namespace Soenneker.Blazor.FilePond;
 
+/// <summary>
+/// Represents file data returned from JavaScript.
+/// </summary>
+public sealed class FileData
+{
+    public string FileId { get; set; } = default!;
+    public byte[] Data { get; set; } = default!;
+}
+
 /// <inheritdoc cref="IFilePondInterop"/>
 public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 {
@@ -336,21 +345,61 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         List<FilePondFileItem>? files = await GetFiles(elementId, cancellationToken);
 
-        var streams = new List<Stream>();
-
         if (files.IsNullOrEmpty())
-            return streams;
+            return new List<Stream>();
 
-        for (var i = 0; i < files.Count; i++)
+        // Use the new GetStreamsForFiles method to avoid concurrency issues
+        var fileIds = files.Select(f => f.Id).ToList();
+        return await GetStreamsForFiles(elementId, fileIds, maxAllowedSize, cancellationToken);
+    }
+
+    public async ValueTask<List<Stream>> GetStreamsForFiles(string elementId, List<string> fileIds, long maxAllowedSize = FilePondConstants.DefaultMaximumSize,
+        CancellationToken cancellationToken = default)
+    {
+        try
         {
-            FilePondFileItem file = files[i];
-            Stream? stream = await GetStreamForFile(elementId, file.Id, maxAllowedSize, cancellationToken);
+            if (fileIds.IsNullOrEmpty())
+            {
+                _logger.LogWarning("GetStreamsForFiles called with empty fileIds list");
+                return new List<Stream>();
+            }
 
-            if (stream != null)
-                streams.Add(stream);
+            // Get all files as data in a single JavaScript call to avoid concurrency issues
+            var fileData = await JsRuntime.InvokeAsync<FileData[]>($"{nameof(FilePondInterop)}.getFilesAsBlobsSequential", cancellationToken, elementId, fileIds);
+
+            var streams = new List<Stream>();
+
+            if (fileData != null)
+            {
+                for (int i = 0; i < fileData.Length; i++)
+                {
+                    try
+                    {
+                        var data = fileData[i];
+                        if (data.Data != null && data.Data.Length > 0)
+                        {
+                            var stream = new MemoryStream(data.Data);
+                            streams.Add(stream);
+                        }
+                        else
+                        {
+                            _logger.LogWarning("File {FileId} has no data", data.FileId);
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Unable to create stream from file data {Index}", i);
+                        // Continue with other files even if one fails
+                    }
+                }
+            }
+            return streams;
         }
-
-        return streams;
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unable to get streams for files");
+            return new List<Stream>();
+        }
     }
 
     public ValueTask SetValidationState(string elementId, bool isValid, string? errorMessage = null, CancellationToken cancellationToken = default)

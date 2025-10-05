@@ -207,6 +207,17 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     ValueTask<List<Stream>> GetAllStreams(string elementId, long maxAllowedSize = FilePondConstants.DefaultMaximumSize, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a list of <see cref="Stream"/> objects for the specified files within the given FilePond instance. 
+    /// This method is more efficient than calling GetStreamForFile multiple times as it processes all files in a single JavaScript call.
+    /// The streams should be disposed after use.
+    /// </summary>
+    /// <param name="elementId">The unique identifier of the HTML element associated with the FilePond instance.</param>
+    /// <param name="fileIds">The list of file identifiers for which to retrieve streams.</param>
+    /// <param name="maxAllowedSize">(Optional) The maximum allowed size. Defaults to 2MB.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask<List<Stream>> GetStreamsForFiles(string elementId, List<string> fileIds, long maxAllowedSize = FilePondConstants.DefaultMaximumSize, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Sets the validation state of the FilePond component, showing or hiding error styling and messages.
     /// </summary>
     /// <param name="elementId">The ID of the FilePond element.</param>

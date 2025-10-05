@@ -400,6 +400,44 @@ public interface IFilePond : ICoreCancellableComponent
     ValueTask<List<Stream>> GetAllStreams(long? maxAllowedSize = null, CancellationToken cancellationToken = default);
 
     /// <summary>
+    /// Retrieves a list of streams for the specified file identifiers within the FilePond instance.
+    /// This method is more efficient than calling GetStreamForFile multiple times as it processes all files in a single JavaScript call.
+    /// </summary>
+    /// <param name="fileIds">The list of file identifiers for which to retrieve streams.</param>
+    /// <param name="maxAllowedSize">
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> representing the asynchronous operation.
+    /// The result is a list of <see cref="Stream"/> objects, each representing a file's data.
+    /// </returns>
+    /// <remarks>
+    /// This method is designed to handle multiple files efficiently and avoid concurrency issues that can occur
+    /// when calling GetStreamForFile multiple times in quick succession. The streams should be disposed after use.
+    /// </remarks>
+    ValueTask<List<Stream>> GetStreamsForFiles(List<string> fileIds, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Retrieves a list of streams for the specified files within the FilePond instance.
+    /// This method is more efficient than calling GetStreamForFile multiple times as it processes all files in a single JavaScript call.
+    /// </summary>
+    /// <param name="files">The list of FilePondFileItem objects for which to retrieve streams.</param>
+    /// <param name="maxAllowedSize">
+    /// (Optional) The maximum allowed size of the stream in bytes. Defaults to options.MaxFileSize, otherwise defaults to 2MB.
+    /// </param>
+    /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>
+    /// A <see cref="ValueTask"/> representing the asynchronous operation.
+    /// The result is a list of <see cref="Stream"/> objects, each representing a file's data.
+    /// </returns>
+    /// <remarks>
+    /// This method is designed to handle multiple files efficiently and avoid concurrency issues that can occur
+    /// when calling GetStreamForFile multiple times in quick succession. The streams should be disposed after use.
+    /// </remarks>
+    ValueTask<List<Stream>> GetStreamsForFiles(List<FilePondFileItem> files, long? maxAllowedSize = null, CancellationToken cancellationToken = default);
+
+    /// <summary>
     /// Retrieves a <see cref="Stream"/> for the original (untransformed) file with the specified identifier within the given FilePond instance.
     /// This method explicitly returns the original file data, bypassing any transformations applied by plugins.
     /// </summary>

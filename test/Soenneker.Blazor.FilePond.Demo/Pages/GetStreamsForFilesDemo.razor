@@ -1,0 +1,520 @@
+@page "/getstreamsforfiles-demo"
+@using Soenneker.Blazor.FilePond
+@using Soenneker.Blazor.FilePond.Options
+@using Soenneker.Blazor.FilePond.Enums
+@using Soenneker.Blazor.FilePond.Dtos
+@using System.IO
+@inject IJSRuntime JSRuntime
+
+<PageTitle>GetStreamsForFiles Demo</PageTitle>
+
+<div class="container">
+    <h1>GetStreamsForFiles Demo</h1>
+    <p>This page tests the new GetStreamsForFiles method to see if it fixes the hanging issue with multiple files.</p>
+
+    <div class="demo-section">
+        <h2>FilePond Component</h2>
+        <FilePond @ref="FilePond" 
+                  Options="options" 
+                  OnProcessFile="OnProcessFile"
+                  OnAddFile="OnAddFile"
+                  OnRemoveFile="OnRemoveFile" />
+    </div>
+
+    <div class="demo-section">
+        <h2>Test Controls</h2>
+        <div class="button-group">
+            <button @onclick="TestGetAllStreams" class="btn btn-primary" disabled="@isProcessing">
+                Test GetAllStreams
+            </button>
+            <button @onclick="TestGetStreamsForFiles" class="btn btn-success" disabled="@isProcessing">
+                Test GetStreamsForFiles
+            </button>
+            <button @onclick="ClearResults" class="btn btn-secondary">
+                Clear Results
+            </button>
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Files Info</h2>
+        <p>Files count: @(FilePond?.Files?.Count ?? 0)</p>
+        @if (FilePond?.Files != null && FilePond.Files.Any())
+        {
+            <ul>
+                @foreach (var file in FilePond.Files)
+                {
+                    <li>ID: @file.Id, Name: @file.Filename, Size: @file.FileSize bytes</li>
+                }
+            </ul>
+        }
+    </div>
+
+    <div class="demo-section">
+        <h2>Test Results</h2>
+        <div class="results-container">
+            @if (!string.IsNullOrEmpty(lastTestResult))
+            {
+                <div class="alert @(lastTestSuccess ? "alert-success" : "alert-danger")">
+                    <h4>@lastTestName</h4>
+                    <p>@lastTestResult</p>
+                    @if (!string.IsNullOrEmpty(lastTestDetails))
+                    {
+                        <pre>@lastTestDetails</pre>
+                    }
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="demo-section">
+        <h2>Stream Details</h2>
+        @if (lastStreams != null && lastStreams.Any())
+        {
+            <div class="stream-info">
+                <p><strong>Total Streams:</strong> @lastStreams.Count</p>
+                <p><strong>Total Size:</strong> @(lastStreams.Sum(s => s.Length)) bytes</p>
+            </div>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Index</th>
+                        <th>File ID</th>
+                        <th>Length</th>
+                        <th>CanRead</th>
+                        <th>CanSeek</th>
+                        <th>Type</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @for (int i = 0; i < lastStreams.Count; i++)
+                    {
+                        var stream = lastStreams[i];
+                        var fileId = i < (FilePond?.Files?.Count ?? 0) ? FilePond!.Files![i].Id : "Unknown";
+                        var fileName = i < (FilePond?.Files?.Count ?? 0) ? FilePond!.Files![i].Filename : "Unknown";
+                        <tr>
+                            <td>@i</td>
+                            <td>@fileId</td>
+                            <td>@stream.Length bytes</td>
+                            <td>@stream.CanRead</td>
+                            <td>@stream.CanSeek</td>
+                            <td>@(stream is MemoryStream ? "MemoryStream" : stream.GetType().Name)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+            
+            <div class="stream-actions">
+                <h3>Stream Actions</h3>
+                <button @onclick="DownloadStreams" class="btn btn-info" disabled="@(lastStreams == null || !lastStreams.Any())">
+                    Download All Streams as ZIP
+                </button>
+                <button @onclick="ShowStreamContent" class="btn btn-info" disabled="@(lastStreams == null || !lastStreams.Any())">
+                    Show Stream Content Preview
+                </button>
+                <button @onclick="CompareOriginalVsTransformed" class="btn btn-warning" disabled="@(lastStreams == null || !lastStreams.Any())">
+                    Compare Original vs Transformed
+                </button>
+            </div>
+        }
+        else
+        {
+            <p>No streams to display. Upload some files and test the methods above.</p>
+        }
+    </div>
+</div>
+
+<style>
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .demo-section {
+        margin-bottom: 30px;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .button-group {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+    }
+
+    .btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background-color 0.3s;
+    }
+
+    .btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .btn-primary {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background-color: #0056b3;
+    }
+
+    .btn-success {
+        background-color: #28a745;
+        color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+        background-color: #1e7e34;
+    }
+
+    .btn-danger {
+        background-color: #dc3545;
+        color: white;
+    }
+
+    .btn-danger:hover:not(:disabled) {
+        background-color: #c82333;
+    }
+
+    .btn-secondary {
+        background-color: #6c757d;
+        color: white;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+        background-color: #545b62;
+    }
+
+    .btn-info {
+        background-color: #17a2b8;
+        color: white;
+    }
+
+    .btn-info:hover:not(:disabled) {
+        background-color: #138496;
+    }
+
+    .btn-warning {
+        background-color: #ffc107;
+        color: #212529;
+    }
+
+    .btn-warning:hover:not(:disabled) {
+        background-color: #e0a800;
+    }
+
+    .results-container {
+        margin-top: 10px;
+    }
+
+    .alert {
+        padding: 15px;
+        margin-bottom: 20px;
+        border: 1px solid transparent;
+        border-radius: 4px;
+    }
+
+    .alert-success {
+        color: #155724;
+        background-color: #d4edda;
+        border-color: #c3e6cb;
+    }
+
+    .alert-danger {
+        color: #721c24;
+        background-color: #f8d7da;
+        border-color: #f5c6cb;
+    }
+
+    .table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+    }
+
+    .table th,
+    .table td {
+        padding: 8px 12px;
+        text-align: left;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .table th {
+        background-color: #f2f2f2;
+        font-weight: bold;
+    }
+
+    pre {
+        background-color: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        overflow-x: auto;
+        font-size: 12px;
+    }
+
+    .stream-info {
+        background-color: #e9ecef;
+        padding: 15px;
+        border-radius: 4px;
+        margin-bottom: 15px;
+    }
+
+    .stream-actions {
+        margin-top: 20px;
+        padding: 15px;
+        background-color: #f8f9fa;
+        border-radius: 4px;
+    }
+
+    .stream-actions h3 {
+        margin-top: 0;
+        margin-bottom: 15px;
+    }
+</style>
+
+@code {
+    private FilePond? FilePond;
+    private bool isProcessing = false;
+    private string lastTestName = "";
+    private string lastTestResult = "";
+    private string lastTestDetails = "";
+    private bool lastTestSuccess = false;
+    private List<Stream>? lastStreams;
+
+    private FilePondOptions options = new()
+    {
+        AllowMultiple = true,
+        MaxFiles = 5,
+        MaxFileSize = 10 * 1024 * 1024, // 10MB in bytes
+        AllowFileTypeValidation = true,
+        AcceptedFileTypes = new List<string> { "image/*", "application/pdf", "text/*" },
+        ShowFileSize = true,
+        EnabledPlugins = new List<FilePondPluginType> 
+        { 
+            FilePondPluginType.ImageResize,
+            FilePondPluginType.ImageTransform,
+            FilePondPluginType.ImagePreview
+        },
+        // Image Resize Configuration
+        AllowImageResize = true,
+        ImageResizeTargetWidth = 800,
+        ImageResizeTargetHeight = 600,
+        ImageResizeMode = "cover",
+        ImageResizeUpscale = false
+    };
+
+    private async Task OnProcessFile((FilePondError? Error, FilePondFileItem File) parameters)
+    {
+        // File processing callback
+        await Task.CompletedTask;
+    }
+
+    private async Task OnAddFile((FilePondError? Error, FilePondFileItem File) parameters)
+    {
+        // File added callback
+        await Task.CompletedTask;
+    }
+
+    private async Task OnRemoveFile((FilePondError? Error, FilePondFileItem File) parameters)
+    {
+        // File removed callback
+        await Task.CompletedTask;
+    }
+
+    private async Task TestGetAllStreams()
+    {
+        if (FilePond == null) return;
+
+        isProcessing = true;
+        lastTestName = "GetAllStreams Test";
+        lastTestResult = "";
+        lastTestDetails = "";
+        lastTestSuccess = false;
+        lastStreams = null;
+
+        try
+        {
+            var startTime = DateTime.Now;
+            var streams = await FilePond.GetAllStreams();
+            var endTime = DateTime.Now;
+            var duration = endTime - startTime;
+
+            lastStreams = streams;
+            lastTestSuccess = true;
+            lastTestResult = $"Success! Retrieved {streams.Count} streams in {duration.TotalMilliseconds:F2}ms";
+            lastTestDetails = $"Streams retrieved: {streams.Count}\nDuration: {duration.TotalMilliseconds:F2}ms\nFiles in FilePond: {FilePond.Files?.Count ?? 0}";
+        }
+        catch (Exception ex)
+        {
+            lastTestSuccess = false;
+            lastTestResult = $"Error: {ex.Message}";
+            lastTestDetails = $"Exception: {ex.GetType().Name}\nMessage: {ex.Message}\nStack Trace: {ex.StackTrace}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+    private async Task TestGetStreamsForFiles()
+    {
+        if (FilePond == null || FilePond.Files == null || !FilePond.Files.Any()) return;
+
+        isProcessing = true;
+        lastTestName = "GetStreamsForFiles Test";
+        lastTestResult = "";
+        lastTestDetails = "";
+        lastTestSuccess = false;
+        lastStreams = null;
+
+        try
+        {
+            var startTime = DateTime.Now;
+            var streams = await FilePond.GetStreamsForFiles(FilePond.Files);
+            var endTime = DateTime.Now;
+            var duration = endTime - startTime;
+
+            lastStreams = streams;
+            lastTestSuccess = true;
+            lastTestResult = $"Success! Retrieved {streams.Count} streams in {duration.TotalMilliseconds:F2}ms";
+            lastTestDetails = $"Streams retrieved: {streams.Count}\nDuration: {duration.TotalMilliseconds:F2}ms\nFiles processed: {FilePond.Files.Count}";
+        }
+        catch (Exception ex)
+        {
+            lastTestSuccess = false;
+            lastTestResult = $"Error: {ex.Message}";
+            lastTestDetails = $"Exception: {ex.GetType().Name}\nMessage: {ex.Message}\nStack Trace: {ex.StackTrace}";
+        }
+        finally
+        {
+            isProcessing = false;
+        }
+    }
+
+
+    private void ClearResults()
+    {
+        lastTestName = "";
+        lastTestResult = "";
+        lastTestDetails = "";
+        lastTestSuccess = false;
+        lastStreams = null;
+    }
+
+    private async Task DownloadStreams()
+    {
+        if (lastStreams == null || !lastStreams.Any() || FilePond?.Files == null) return;
+
+        try
+        {
+            // Create a simple download for the first stream as an example
+            var firstStream = lastStreams[0];
+            var firstFile = FilePond.Files[0];
+            
+            var bytes = new byte[firstStream.Length];
+            firstStream.Position = 0;
+            await firstStream.ReadAsync(bytes, 0, bytes.Length);
+            
+            var fileName = firstFile.Filename ?? "downloaded_file";
+            await JSRuntime.InvokeVoidAsync("downloadFile", fileName, bytes);
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error downloading streams: {ex.Message}");
+        }
+    }
+
+    private async Task ShowStreamContent()
+    {
+        if (lastStreams == null || !lastStreams.Any()) return;
+
+        try
+        {
+            var content = new List<string>();
+            for (int i = 0; i < Math.Min(lastStreams.Count, 3); i++) // Show first 3 streams
+            {
+                var stream = lastStreams[i];
+                var bytes = new byte[Math.Min(stream.Length, 100)]; // First 100 bytes
+                stream.Position = 0;
+                await stream.ReadAsync(bytes, 0, bytes.Length);
+                
+                var hex = Convert.ToHexString(bytes);
+                content.Add($"Stream {i}: {hex}...");
+            }
+            
+            lastTestDetails = string.Join("\n", content);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error showing stream content: {ex.Message}");
+        }
+    }
+
+    private async Task CompareOriginalVsTransformed()
+    {
+        if (lastStreams == null || !lastStreams.Any() || FilePond?.Files == null) return;
+
+        try
+        {
+            var comparison = new List<string>();
+            comparison.Add("=== Original vs Transformed File Comparison ===");
+            
+            for (int i = 0; i < Math.Min(lastStreams.Count, FilePond.Files.Count); i++)
+            {
+                var stream = lastStreams[i];
+                var file = FilePond.Files[i];
+                
+                // Get original file size from FilePond
+                var originalSize = file.FileSize;
+                var transformedSize = stream.Length;
+                
+                comparison.Add($"File {i} ({file.Filename}):");
+                comparison.Add($"  Original Size: {originalSize:N0} bytes");
+                comparison.Add($"  Transformed Size: {transformedSize:N0} bytes");
+                
+                if (originalSize != transformedSize)
+                {
+                    var difference = transformedSize - originalSize;
+                    var percentChange = (double)difference / originalSize * 100;
+                    comparison.Add($"  Difference: {difference:+0;-0;0} bytes ({percentChange:+0.0;-0.0;0.0}%)");
+                    
+                    if (transformedSize < originalSize)
+                        comparison.Add("  ✅ File was compressed/resized!");
+                    else
+                        comparison.Add("  ⚠️ File size increased");
+                }
+                else
+                {
+                    comparison.Add("  ⚠️ No transformation applied (sizes are identical)");
+                }
+                comparison.Add("");
+            }
+            
+            lastTestDetails = string.Join("\n", comparison);
+            StateHasChanged();
+        }
+        catch (Exception ex)
+        {
+            await JSRuntime.InvokeVoidAsync("console.error", $"Error comparing files: {ex.Message}");
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            await JSRuntime.InvokeVoidAsync("console.log", "GetStreamsForFiles Demo page loaded");
+        }
+    }
+}

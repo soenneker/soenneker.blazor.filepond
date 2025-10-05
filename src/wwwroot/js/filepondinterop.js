@@ -154,7 +154,7 @@ export class FilePondInterop {
     getFiles(elementId) {
         const pond = this.ponds[elementId];
         const files = pond.getFiles();
-        return this.getJsonFromObject(files);
+        return this.getJsonFromObjectOrArray(files);
     }
 
     browse(elementId) {
@@ -263,10 +263,18 @@ export class FilePondInterop {
             return new Blob([]);
         }
         
+        const originalFile = fileItem.file;
+        console.log(`Original file size for ${query}:`, originalFile ? originalFile.size : 'No file');
+        
         // Try to get the prepared (transformed) file data first - this is now the default behavior
         try {
             const preparedFile = await pond.prepareFile(query);
+            console.log(`Prepared file result for ${query}:`, preparedFile);
+            
             if (preparedFile && preparedFile.output) {
+                console.log(`Prepared file output type for ${query}:`, typeof preparedFile.output);
+                console.log(`Prepared file output size for ${query}:`, preparedFile.output.size || 'No size property');
+                
                 // The prepared file output contains the transformed data
                 if (typeof preparedFile.output === 'string') {
                     // Base64 encoded data
@@ -276,22 +284,31 @@ export class FilePondInterop {
                         byteNumbers[i] = byteCharacters.charCodeAt(i);
                     }
                     const byteArray = new Uint8Array(byteNumbers);
-                    return new Blob([byteArray]);
+                    const blob = new Blob([byteArray]);
+                    console.log(`Created blob from base64 for ${query}, size:`, blob.size);
+                    return blob;
                 } else if (preparedFile.output instanceof Blob) {
                     // Already a blob
+                    console.log(`Using prepared blob for ${query}, size:`, preparedFile.output.size);
                     return preparedFile.output;
                 } else if (preparedFile.output instanceof ArrayBuffer) {
                     // ArrayBuffer
-                    return new Blob([preparedFile.output]);
+                    const blob = new Blob([preparedFile.output]);
+                    console.log(`Created blob from ArrayBuffer for ${query}, size:`, blob.size);
+                    return blob;
                 }
+            } else {
+                console.log(`No prepared file output for ${query}, using original file`);
             }
         } catch (error) {
-            console.warn('Failed to get prepared file, falling back to original file:', error);
+            console.warn(`Failed to get prepared file for ${query}, falling back to original file:`, error);
         }
         
         // Fallback to original file
         const file = fileItem.file;
-        return file ? new Blob([file]) : new Blob([]);
+        const fallbackBlob = file ? new Blob([file]) : new Blob([]);
+        console.log(`Using fallback blob for ${query}, size:`, fallbackBlob.size);
+        return fallbackBlob;
     }
 
     // New method to explicitly get the original (untransformed) file
@@ -313,6 +330,41 @@ export class FilePondInterop {
         const pond = this.ponds[elementId];
         const file = query ? pond.getFile(query).file : pond.getFile().file;
         return file && file.size > 0;
+    }
+
+    // New method to get multiple files as blobs efficiently
+    // This method processes files sequentially to avoid concurrency issues
+    async getFilesAsBlobsSequential(elementId, fileIds) {
+        if (!fileIds || fileIds.length === 0) {
+            return [];
+        }
+        
+        // Process files one by one using the existing getFileAsBlob method
+        // This avoids concurrency issues while still being more efficient than multiple interop calls
+        const results = [];
+        for (const fileId of fileIds) {
+            try {
+                const blob = await this.getFileAsBlob(elementId, fileId);
+                
+                // Log transformation info
+                console.log(`File ${fileId}: Original size vs Transformed size:`, blob.size);
+                
+                // Convert blob to array buffer to avoid serialization issues
+                const arrayBuffer = await blob.arrayBuffer();
+                results.push({
+                    fileId: fileId,
+                    data: new Uint8Array(arrayBuffer)
+                });
+            } catch (error) {
+                console.error(`Error processing file ${fileId}:`, error);
+                results.push({
+                    fileId: fileId,
+                    data: new Uint8Array(0)
+                });
+            }
+        }
+        
+        return results;
     }
 
     getJsonFromArguments(...args) {

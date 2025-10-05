@@ -511,6 +511,25 @@
             return await FilePondInterop.GetAllStreams(_elementId, maxAllowedSize.Value, linked);
     }
 
+    public async ValueTask<List<Stream>> GetStreamsForFiles(List<string> fileIds, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    {
+        maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
+
+        CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+
+        using (cts)
+            return await FilePondInterop.GetStreamsForFiles(_elementId, fileIds, maxAllowedSize.Value, linked);
+    }
+
+    public async ValueTask<List<Stream>> GetStreamsForFiles(List<FilePondFileItem> files, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
+    {
+        if (files.IsNullOrEmpty())
+            return new List<Stream>();
+
+        var fileIds = files.Select(f => f.Id).ToList();
+        return await GetStreamsForFiles(fileIds, maxAllowedSize, cancellationToken);
+    }
+
     public async ValueTask<Stream?> GetOriginalStreamForFile(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         maxAllowedSize ??= Options?.MaxFileSize ?? FilePondConstants.DefaultMaximumSize;
