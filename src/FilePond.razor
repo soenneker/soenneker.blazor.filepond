@@ -140,11 +140,6 @@
         _afterInitializationOperations = [];
     }
 
-    protected override async Task OnInitializedAsync()
-    {
-        await FilePondInterop.Initialize(Options?.UseCdn ?? true, CancellationToken);
-    }
-
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {
         if (firstRender)
@@ -153,6 +148,8 @@
             {
                 return;
             }
+
+            await FilePondInterop.Initialize(Options?.UseCdn ?? true, CancellationToken);
 
             if (Options != null)
             {

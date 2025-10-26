@@ -26,6 +26,7 @@
 <button @onclick="RemoveFile" >RemoveFile</button>
 <button @onclick="RemoveFiles" >RemoveFiles</button>
 <button @onclick="GetStreamForFile" >GetStreamForFile</button>
+<button @onclick="GetStreamsForFiles">GetStreamsForFiles</button>
 <button @onclick="NavigateToNext" >NavigateToNext</button>
 
 @code{
@@ -103,6 +104,12 @@
     {
         Stream? stream = await FilePond!.GetStreamForFile();
         await stream!.DisposeAsync();
+    }
+
+    private async Task GetStreamsForFiles()
+    {
+        List<Stream> streams = await FilePond!.GetAllStreams();
+        streams!.ForEach(async void (stream) => await stream.DisposeAsync());
     }
 
     private void NavigateToNext()

@@ -364,35 +364,43 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
                 return new List<Stream>();
             }
 
-            // Get all files as data in a single JavaScript call to avoid concurrency issues
-            var fileData = await JsRuntime.InvokeAsync<FileData[]>($"{nameof(FilePondInterop)}.getFilesAsBlobsSequential", cancellationToken, elementId, fileIds);
+            var streams = new List<Stream>(fileIds.Count);
 
-            var streams = new List<Stream>();
-
-            if (fileData != null)
+            // Sequentially fetch each file as an IJSStreamReference and open a .NET stream
+            foreach (string fileId in fileIds)
             {
-                for (int i = 0; i < fileData.Length; i++)
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                try
                 {
-                    try
+                    // Skip zero-length files to avoid interop exceptions
+                    var hasContent = await JsRuntime.InvokeAsync<bool>($"{nameof(FilePondInterop)}.hasFileContent", cancellationToken, elementId, fileId);
+                    if (!hasContent)
                     {
-                        var data = fileData[i];
-                        if (data.Data != null && data.Data.Length > 0)
-                        {
-                            var stream = new MemoryStream(data.Data);
-                            streams.Add(stream);
-                        }
-                        else
-                        {
-                            _logger.LogWarning("File {FileId} has no data", data.FileId);
-                        }
+                        _logger.LogWarning("File {FileId} has no content (zero length), skipping", fileId);
+                        continue;
                     }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError(ex, "Unable to create stream from file data {Index}", i);
-                        // Continue with other files even if one fails
-                    }
+
+                    var jsStream = await JsRuntime.InvokeAsync<IJSStreamReference>($"{nameof(FilePondInterop)}.getFileAsBlob", cancellationToken, elementId, fileId);
+                    Stream stream = await jsStream.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
+                    streams.Add(stream);
+                }
+                catch (JSException jsex)
+                {
+                    _logger.LogError(jsex, "JS interop failed while getting stream for file {FileId}", fileId);
+                }
+                catch (OperationCanceledException)
+                {
+                    // Respect cancellation
+                    break;
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Unable to open stream for file {FileId}", fileId);
                 }
             }
+
             return streams;
         }
         catch (Exception ex)
