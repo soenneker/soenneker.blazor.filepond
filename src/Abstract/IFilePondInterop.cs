@@ -16,7 +16,7 @@ namespace Soenneker.Blazor.FilePond.Abstract;
 /// </summary>
 public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 {
-    ValueTask Initialize(bool useCdn, CancellationToken cancellationToken = default);
+    ValueTask Initialize(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Creates a FilePond instance for the specified HTML element with optional configuration options.

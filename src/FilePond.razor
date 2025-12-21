@@ -149,7 +149,7 @@
                 return;
             }
 
-            await FilePondInterop.Initialize(Options?.UseCdn ?? true, CancellationToken);
+            await FilePondInterop.Initialize(CancellationToken);
 
             if (Options != null)
             {
