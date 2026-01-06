@@ -46,26 +46,26 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         _interopStyleInitializer = new AsyncInitializer(InitializeInteropStyle);
     }
 
-    private async ValueTask InitializeInterop(CancellationToken token)
+    private ValueTask InitializeInterop(CancellationToken token)
     {
-        await _resourceLoader.ImportModuleAndWaitUntilAvailable(_module, nameof(FilePondInterop), 100, token);
+        return _resourceLoader.ImportModuleAndWaitUntilAvailable(_module, nameof(FilePondInterop), 100, token);
     }
 
-    private async ValueTask InitializeStyle(bool useCdn, CancellationToken token)
+    private ValueTask InitializeStyle(bool useCdn, CancellationToken token)
     {
         (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(useCdn);
-        await _resourceLoader.LoadStyle(style.uri!, style.integrity, cancellationToken: token);
+        return _resourceLoader.LoadStyle(style.uri!, style.integrity, cancellationToken: token);
     }
 
-    private async ValueTask InitializeScript(bool useCdn, CancellationToken token)
+    private ValueTask InitializeScript(bool useCdn, CancellationToken token)
     {
         (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(useCdn);
-        await _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, cancellationToken: token);
+        return _resourceLoader.LoadScriptAndWaitForVariable(script.uri!, "FilePond", script.integrity, cancellationToken: token);
     }
 
-    private async ValueTask InitializeInteropStyle(CancellationToken token)
+    private ValueTask InitializeInteropStyle(CancellationToken token)
     {
-        await _resourceLoader.LoadStyle("_content/Soenneker.Blazor.FilePond/css/filepondinterop.css", cancellationToken: token);
+        return _resourceLoader.LoadStyle("_content/Soenneker.Blazor.FilePond/css/filepondinterop.css", cancellationToken: token);
     }
 
     public ValueTask Initialize(CancellationToken cancellationToken = default)
