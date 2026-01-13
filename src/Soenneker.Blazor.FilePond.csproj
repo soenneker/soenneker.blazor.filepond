@@ -42,7 +42,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.3814" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.3815" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1568" />
         <PackageReference Include="Soenneker.Extensions.List" Version="4.0.948" />
         <PackageReference Include="Soenneker.Extensions.CancellationTokens" Version="4.0.7" />
