@@ -17,6 +17,8 @@ using Soenneker.Blazor.Utils.ResourceLoader.Abstract;
 using Soenneker.Blazor.FilePond.Utils;
 using Soenneker.Blazor.FilePond.Enums;
 using Soenneker.Blazor.FilePond.Constants;
+using Soenneker.Extensions.CancellationTokens;
+using Soenneker.Utils.CancellationScopes;
 
 namespace Soenneker.Blazor.FilePond;
 
@@ -34,6 +36,8 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     private readonly AsyncInitializer _interopStyleInitializer;
 
     private const string _module = "Soenneker.Blazor.FilePond/js/filepondinterop.js";
+
+    private readonly CancellationScope _cancellationScope = new();
 
     public FilePondInterop(IJSRuntime jSRuntime, ILogger<FilePondInterop> logger, IResourceLoader resourceLoader) : base(jSRuntime)
     {
@@ -70,199 +74,284 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public ValueTask Initialize(CancellationToken cancellationToken = default)
     {
-        return _interopInitializer.Init(cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return _interopInitializer.Init(linked);
     }
 
     public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
-        bool useCdn = options?.UseCdn ?? true;
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        await _interopInitializer.Init(cancellationToken);
-        await _styleInitializer.Init(useCdn, cancellationToken);
-
-        await _scriptInitializer.Init(useCdn, cancellationToken);
-        await _interopStyleInitializer.Init(cancellationToken);
-
-        string? json = null;
-
-        if (options != null)
-            json = JsonUtil.Serialize(options);
-
-        await JsRuntime.InvokeVoidAsync("FilePondInterop.create", cancellationToken, elementId, json);
-
-        // Handle global ShowFileSize option
-        if (options is {ShowFileSize: false})
+        using (source)
         {
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", cancellationToken, elementId, false);
+            bool useCdn = options?.UseCdn ?? true;
+
+            await _interopInitializer.Init(linked);
+            await _styleInitializer.Init(useCdn, linked);
+
+            await _scriptInitializer.Init(useCdn, linked);
+            await _interopStyleInitializer.Init(linked);
+
+            string? json = null;
+
+            if (options != null)
+                json = JsonUtil.Serialize(options);
+
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.create", linked, elementId, json);
+
+            // Handle global ShowFileSize option
+            if (options is {ShowFileSize: false})
+            {
+                await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", linked, elementId, false);
+            }
         }
     }
 
     public async ValueTask SetOptions(string elementId, FilePondOptions options, CancellationToken cancellationToken = default)
     {
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
         string json = JsonUtil.Serialize(options)!;
 
-        await JsRuntime.InvokeVoidAsync("FilePondInterop.setOptions", cancellationToken, elementId, json);
+        using (source)
+        {
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.setOptions", linked, elementId, json);
 
-        await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", cancellationToken, elementId, options.ShowFileSize);
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", linked, elementId, options.ShowFileSize);
+        }
     }
 
     public async ValueTask AddFile(string elementId, string uriOrBase64EncodedData, FilePondAddFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        await JsRuntime.InvokeVoidAsync("FilePondInterop.addFile", cancellationToken, elementId, uriOrBase64EncodedData, options);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        if (options is {ShowFileSize: false})
+        using (source)
         {
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", cancellationToken, elementId, false);
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.addFile", linked, elementId, uriOrBase64EncodedData, options);
+
+            if (options is {ShowFileSize: false})
+            {
+                await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", linked, elementId, false);
+            }
         }
     }
 
     public async ValueTask AddFile(string elementId, Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
         using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
-        await JsRuntime.InvokeVoidAsync("FilePondInterop.addFileFromStream", cancellationToken, elementId, streamRef, options);
 
-        if (options is {ShowFileSize: false})
+        using (source)
         {
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", cancellationToken, elementId, false);
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.addFileFromStream", linked, elementId, streamRef, options);
+
+            if (options is {ShowFileSize: false})
+            {
+                await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", linked, elementId, false);
+            }
         }
     }
 
     public async ValueTask AddLimboFile(string elementId, string filename, FilePondAddFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        await JsRuntime.InvokeVoidAsync("FilePondInterop.addLimboFile", cancellationToken, elementId, filename, options);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        if (options is {ShowFileSize: false})
+        using (source)
         {
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", cancellationToken, elementId, false);
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.addLimboFile", linked, elementId, filename, options);
+
+            if (options is {ShowFileSize: false})
+            {
+                await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", linked, elementId, false);
+            }
         }
     }
 
     public async ValueTask AddFiles(string elementId, List<string> uriOrBase64EncodedData, FilePondAddFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        await JsRuntime.InvokeVoidAsync("FilePondInterop.addFiles", cancellationToken, elementId, uriOrBase64EncodedData, options);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        if (options is {ShowFileSize: false})
+        using (source)
         {
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", cancellationToken, elementId, false);
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.addFiles", linked, elementId, uriOrBase64EncodedData, options);
+
+            if (options is {ShowFileSize: false})
+            {
+                await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", linked, elementId, false);
+            }
         }
     }
 
     public ValueTask RemoveFile(string elementId, object? query = null, FilePondRemoveFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.removeFile", cancellationToken, elementId, query, options);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.removeFile", linked, elementId, query, options);
     }
 
     public ValueTask RemoveFiles(string elementId, object? query = null, FilePondRemoveFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.removeFiles", cancellationToken, elementId, query);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.removeFiles", linked, elementId, query);
     }
 
     public ValueTask ProcessFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.processFile", cancellationToken, elementId, query);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.processFile", linked, elementId, query);
     }
 
     public ValueTask ProcessFiles(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.processFiles", cancellationToken, elementId, query);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.processFiles", linked, elementId, query);
     }
 
     public ValueTask<object> PrepareFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeAsync<object>("FilePondInterop.prepareFile", cancellationToken, elementId, query);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeAsync<object>("FilePondInterop.prepareFile", linked, elementId, query);
     }
 
     public ValueTask<object[]> PrepareFiles(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeAsync<object[]>("FilePondInterop.prepareFiles", cancellationToken, elementId, query);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeAsync<object[]>("FilePondInterop.prepareFiles", linked, elementId, query);
     }
 
     public async ValueTask<FilePondFileItem?> GetFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        var str = await JsRuntime.InvokeAsync<string>("FilePondInterop.getFile", cancellationToken, elementId, query);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+        {
+            var str = await JsRuntime.InvokeAsync<string>("FilePondInterop.getFile", linked, elementId, query);
         return JsonUtil.Deserialize<FilePondFileItem>(str);
+        }
     }
 
     public async ValueTask<List<FilePondFileItem>?> GetFiles(string elementId, CancellationToken cancellationToken = default)
     {
-        var str = await JsRuntime.InvokeAsync<string>("FilePondInterop.getFiles", cancellationToken, elementId);
-        return JsonUtil.Deserialize<List<FilePondFileItem>>(str);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+        {
+            var str = await JsRuntime.InvokeAsync<string>("FilePondInterop.getFiles", linked, elementId);
+            return JsonUtil.Deserialize<List<FilePondFileItem>>(str);
+        }
     }
 
     public ValueTask Browse(string elementId, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.browse", cancellationToken, elementId);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.browse", linked, elementId);
     }
 
     public ValueTask Sort(string elementId, string compareFunctionName, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.sort", cancellationToken, elementId, compareFunctionName);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.sort", linked, elementId, compareFunctionName);
     }
 
     public ValueTask MoveFile(string elementId, object query, int index, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.moveFile", cancellationToken, elementId, query, index);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.moveFile", linked, elementId, query, index);
     }
 
     public ValueTask Destroy(string elementId, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.destroy", cancellationToken, elementId);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.destroy", linked, elementId);
     }
 
     public ValueTask CreateObserver(string elementId, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.createObserver", cancellationToken, elementId);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.createObserver", linked, elementId);
     }
 
     public async ValueTask EnablePlugins(bool useCdn, List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Init(cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        List<FilePondPluginType> resultList = filePondPluginTypes.Except(_enabledPlugins).ToList();
-
-        _enabledPlugins.AddRange(resultList);
-
-        foreach (FilePondPluginType plugin in resultList)
+        using (source)
         {
-            (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(useCdn, plugin);
+            await _interopInitializer.Init(linked);
 
-            if (style.uri != null)
-                await _resourceLoader.LoadStyle(style.uri, style.integrity, cancellationToken: cancellationToken);
+            List<FilePondPluginType> resultList = filePondPluginTypes.Except(_enabledPlugins).ToList();
 
-            (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(useCdn, plugin);
+            _enabledPlugins.AddRange(resultList);
 
-            if (script.uri != null)
-                await _resourceLoader.LoadScript(script.uri, script.integrity, cancellationToken: cancellationToken);
-        }
+            foreach (FilePondPluginType plugin in resultList)
+            {
+                (string? uri, string? integrity) style = FilePondUtil.GetUriAndIntegrityForStyle(useCdn, plugin);
 
-        // FilePond.js is added after the plugins in all the examples...
-        await _scriptInitializer.Init(useCdn, cancellationToken);
+                if (style.uri != null)
+                    await _resourceLoader.LoadStyle(style.uri, style.integrity, cancellationToken: linked);
 
-        if (resultList.Count > 0)
-        {
-            List<string> strings = resultList.Select(c => c.Name.ToString()).ToList();
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.enablePlugins", cancellationToken, strings);
+                (string? uri, string? integrity) script = FilePondUtil.GetUriAndIntegrityForScript(useCdn, plugin);
+
+                if (script.uri != null)
+                    await _resourceLoader.LoadScript(script.uri, script.integrity, cancellationToken: linked);
+            }
+
+            // FilePond.js is added after the plugins in all the examples...
+            await _scriptInitializer.Init(useCdn, linked);
+
+            if (resultList.Count > 0)
+            {
+                List<string> strings = resultList.Select(c => c.Name.ToString()).ToList();
+                await JsRuntime.InvokeVoidAsync("FilePondInterop.enablePlugins", linked, strings);
+            }
         }
     }
 
     public async ValueTask EnableOtherPlugins(bool useCdn, List<string> filePondOtherPlugins, CancellationToken cancellationToken = default)
     {
-        await _interopInitializer.Init(cancellationToken);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-        List<string> resultList = filePondOtherPlugins.Except(_enabledOtherPlugins).ToList();
-
-        _enabledOtherPlugins.AddRange(resultList);
-
-        await _scriptInitializer.Init(useCdn, cancellationToken);
-
-        if (resultList.Count > 0)
+        using (source)
         {
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.enableOtherPlugins", cancellationToken, resultList);
+            await _interopInitializer.Init(linked);
+
+            List<string> resultList = filePondOtherPlugins.Except(_enabledOtherPlugins).ToList();
+
+            _enabledOtherPlugins.AddRange(resultList);
+
+            await _scriptInitializer.Init(useCdn, linked);
+
+            if (resultList.Count > 0)
+            {
+                await JsRuntime.InvokeVoidAsync("FilePondInterop.enableOtherPlugins", linked, resultList);
+            }
         }
     }
 
@@ -271,20 +360,25 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         try
         {
-            // First check if the file has content (non-zero size)
-            var hasContent = await JsRuntime.InvokeAsync<bool>("FilePondInterop.hasFileContent", cancellationToken, elementId, query);
+            var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-            if (!hasContent)
+            using (source)
             {
-                _logger.LogWarning("File has no content (zero length), cannot create stream");
-                return null;
+                // First check if the file has content (non-zero size)
+                var hasContent = await JsRuntime.InvokeAsync<bool>("FilePondInterop.hasFileContent", linked, elementId, query);
+
+                if (!hasContent)
+                {
+                    _logger.LogWarning("File has no content (zero length), cannot create stream");
+                    return null;
+                }
+
+                var blob = await JsRuntime
+                                                .InvokeAsync<IJSStreamReference>("FilePondInterop.getFileAsBlob", linked, elementId, query)
+                                                ;
+
+                return await blob.OpenReadStreamAsync(maxAllowedSize, linked);
             }
-
-            var blob = await JsRuntime
-                                            .InvokeAsync<IJSStreamReference>("FilePondInterop.getFileAsBlob", cancellationToken, elementId, query)
-                                            ;
-
-            return await blob.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -298,20 +392,25 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         try
         {
-            // First check if the file has content (non-zero size)
-            var hasContent = await JsRuntime.InvokeAsync<bool>("FilePondInterop.hasFileContent", cancellationToken, elementId, query);
+            var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
 
-            if (!hasContent)
+            using (source)
             {
-                _logger.LogWarning("File has no content (zero length), cannot create stream");
-                return null;
+                // First check if the file has content (non-zero size)
+                var hasContent = await JsRuntime.InvokeAsync<bool>("FilePondInterop.hasFileContent", linked, elementId, query);
+
+                if (!hasContent)
+                {
+                    _logger.LogWarning("File has no content (zero length), cannot create stream");
+                    return null;
+                }
+
+                var blob = await JsRuntime
+                                                .InvokeAsync<IJSStreamReference>("FilePondInterop.getOriginalFileAsBlob", linked, elementId, query)
+                                                ;
+
+                return await blob.OpenReadStreamAsync(maxAllowedSize, linked);
             }
-
-            var blob = await JsRuntime
-                                            .InvokeAsync<IJSStreamReference>("FilePondInterop.getOriginalFileAsBlob", cancellationToken, elementId, query)
-                                            ;
-
-            return await blob.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
         }
         catch (Exception ex)
         {
@@ -338,50 +437,55 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         try
         {
-            if (fileIds.IsNullOrEmpty())
+            var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+            using (source)
             {
-                _logger.LogWarning("GetStreamsForFiles called with empty fileIds list");
-                return new List<Stream>();
-            }
-
-            var streams = new List<Stream>(fileIds.Count);
-
-            // Sequentially fetch each file as an IJSStreamReference and open a .NET stream
-            foreach (string fileId in fileIds)
-            {
-                if (cancellationToken.IsCancellationRequested)
-                    break;
-
-                try
+                if (fileIds.IsNullOrEmpty())
                 {
-                    // Skip zero-length files to avoid interop exceptions
-                    var hasContent = await JsRuntime.InvokeAsync<bool>("FilePondInterop.hasFileContent", cancellationToken, elementId, fileId);
-                    if (!hasContent)
+                    _logger.LogWarning("GetStreamsForFiles called with empty fileIds list");
+                    return new List<Stream>();
+                }
+
+                var streams = new List<Stream>(fileIds.Count);
+
+                // Sequentially fetch each file as an IJSStreamReference and open a .NET stream
+                foreach (string fileId in fileIds)
+                {
+                    if (linked.IsCancellationRequested)
+                        break;
+
+                    try
                     {
-                        _logger.LogWarning("File {FileId} has no content (zero length), skipping", fileId);
-                        continue;
+                        // Skip zero-length files to avoid interop exceptions
+                        var hasContent = await JsRuntime.InvokeAsync<bool>("FilePondInterop.hasFileContent", linked, elementId, fileId);
+                        if (!hasContent)
+                        {
+                            _logger.LogWarning("File {FileId} has no content (zero length), skipping", fileId);
+                            continue;
+                        }
+
+                        var jsStream = await JsRuntime.InvokeAsync<IJSStreamReference>("FilePondInterop.getFileAsBlob", linked, elementId, fileId);
+                        Stream stream = await jsStream.OpenReadStreamAsync(maxAllowedSize, linked);
+                        streams.Add(stream);
                     }
+                    catch (JSException jsex)
+                    {
+                        _logger.LogError(jsex, "JS interop failed while getting stream for file {FileId}", fileId);
+                    }
+                    catch (OperationCanceledException)
+                    {
+                        // Respect cancellation
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Unable to open stream for file {FileId}", fileId);
+                    }
+                }
 
-                    var jsStream = await JsRuntime.InvokeAsync<IJSStreamReference>("FilePondInterop.getFileAsBlob", cancellationToken, elementId, fileId);
-                    Stream stream = await jsStream.OpenReadStreamAsync(maxAllowedSize, cancellationToken);
-                    streams.Add(stream);
-                }
-                catch (JSException jsex)
-                {
-                    _logger.LogError(jsex, "JS interop failed while getting stream for file {FileId}", fileId);
-                }
-                catch (OperationCanceledException)
-                {
-                    // Respect cancellation
-                    break;
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Unable to open stream for file {FileId}", fileId);
-                }
+                return streams;
             }
-
-            return streams;
         }
         catch (Exception ex)
         {
@@ -392,32 +496,50 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public ValueTask SetValidationState(string elementId, bool isValid, string? errorMessage = null, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.setValidationState", cancellationToken, elementId, isValid, errorMessage);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.setValidationState", linked, elementId, isValid, errorMessage);
     }
 
     public ValueTask SetFileSuccess(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccess", cancellationToken, elementId, fileId, isSuccess);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccess", linked, elementId, fileId, isSuccess);
     }
 
     public ValueTask SetFileSuccess(string elementId, int fileIndex, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccess", cancellationToken, elementId, fileIndex, isSuccess);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccess", linked, elementId, fileIndex, isSuccess);
     }
 
     public ValueTask SetAllFilesSuccess(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.setAllFilesSuccess", cancellationToken, elementId, isSuccess);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.setAllFilesSuccess", linked, elementId, isSuccess);
     }
 
     public ValueTask SetFileSuccessWhenReady(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccessWhenReady", cancellationToken, elementId, fileId, isSuccess);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccessWhenReady", linked, elementId, fileId, isSuccess);
     }
 
     public ValueTask SetAllFilesSuccessWhenReady(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        return JsRuntime.InvokeVoidAsync("FilePondInterop.setAllFilesSuccessWhenReady", cancellationToken, elementId, isSuccess);
+        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+
+        using (source)
+            return JsRuntime.InvokeVoidAsync("FilePondInterop.setAllFilesSuccessWhenReady", linked, elementId, isSuccess);
     }
 
     public async ValueTask DisposeAsync()
@@ -427,5 +549,6 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         await _styleInitializer.DisposeAsync();
         await _scriptInitializer.DisposeAsync();
         await _interopStyleInitializer.DisposeAsync();
+        await _cancellationScope.DisposeAsync();
     }
 }
