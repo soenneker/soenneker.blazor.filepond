@@ -161,7 +161,7 @@
         try
         {
             // Get the file info first
-            var file = await _filePond.GetFile(0, forceInterop: true);
+            FilePondFileItem? file = await _filePond.GetFile(0, forceInterop: true);
             if (file == null)
             {
                 _errorMessage = "No file found at index 0";
@@ -196,9 +196,9 @@
                 var comparison = "";
                 if (!string.IsNullOrEmpty(_defaultStreamLength) && !string.IsNullOrEmpty(_originalStreamLength) && _defaultStreamLength != "No stream retrieved yet" && _originalStreamLength != "No stream retrieved yet")
                 {
-                    var defaultSize = long.Parse(_defaultStreamLength);
-                    var originalSize = long.Parse(_originalStreamLength);
-                    var reduction = ((double)(originalSize - defaultSize) / originalSize) * 100;
+                    long defaultSize = long.Parse(_defaultStreamLength);
+                    long originalSize = long.Parse(_originalStreamLength);
+                    double reduction = ((double)(originalSize - defaultSize) / originalSize) * 100;
                     comparison = $" Size reduction: {reduction:F1}%";
                 }
 

@@ -1,11 +1,11 @@
-using Intellenum;
+using Soenneker.Gen.EnumValues;
 
 namespace Soenneker.Blazor.FilePond.Enums;
 
 /// <summary>
 /// This enum contains the names for the different file origins.
 /// </summary>
-[Intellenum]
+[EnumValue]
 public sealed partial class FilePondFileOrigin
 {
     /// <summary>

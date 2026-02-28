@@ -1,4 +1,4 @@
-using Intellenum;
+using Soenneker.Gen.EnumValues;
 // ReSharper disable InconsistentNaming
 
 namespace Soenneker.Blazor.FilePond.Enums;
@@ -6,7 +6,7 @@ namespace Soenneker.Blazor.FilePond.Enums;
 /// <summary>
 /// This enum contains the names for the different file origins.
 /// </summary>
-[Intellenum<string>]
+[EnumValue<string>]
 public sealed partial class FilePondPluginType
 {
     /// <summary>

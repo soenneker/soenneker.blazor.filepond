@@ -1,11 +1,11 @@
-using Intellenum;
+using Soenneker.Gen.EnumValues;
 
 namespace Soenneker.Blazor.FilePond.Enums;
 
 /// <summary>
 /// An enum to use together with the File status property to determine the current file status.
 /// </summary>
-[Intellenum]
+[EnumValue]
 public sealed partial class FilePondStatus 
 {
     public static readonly FilePondStatus Empty = new(0);

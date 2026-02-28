@@ -1,11 +1,11 @@
-using Intellenum;
+using Soenneker.Gen.EnumValues;
 
 namespace Soenneker.Blazor.FilePond.Enums;
 
 /// <summary>
 /// An enum to use together with the FilePond status property to determine the current filepond instance status. <para/>
 /// </summary>
-[Intellenum]
+[EnumValue]
 public sealed partial class FilePondFileStatus
 {
     /// <summary>

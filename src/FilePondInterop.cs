@@ -74,7 +74,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask Initialize(CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await _interopInitializer.Init(linked);
@@ -82,7 +82,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -111,7 +111,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask SetOptions(string elementId, FilePondOptions options, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
         string json = JsonUtil.Serialize(options)!;
 
         using (source)
@@ -125,7 +125,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     public async ValueTask AddFile(string elementId, string uriOrBase64EncodedData, FilePondAddFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -140,7 +140,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask AddFile(string elementId, Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
         using var streamRef = new DotNetStreamReference(stream, leaveOpen: true);
 
         using (source)
@@ -157,7 +157,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     public async ValueTask AddLimboFile(string elementId, string filename, FilePondAddFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -173,7 +173,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     public async ValueTask AddFiles(string elementId, List<string> uriOrBase64EncodedData, FilePondAddFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -189,7 +189,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     public async ValueTask RemoveFile(string elementId, object? query = null, FilePondRemoveFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.removeFile", linked, elementId, query, options);
@@ -198,7 +198,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     public async ValueTask RemoveFiles(string elementId, object? query = null, FilePondRemoveFileOptions? options = null,
         CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.removeFiles", linked, elementId, query);
@@ -206,7 +206,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask ProcessFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.processFile", linked, elementId, query);
@@ -214,7 +214,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask ProcessFiles(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.processFiles", linked, elementId, query);
@@ -222,7 +222,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask<object> PrepareFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             return await JsRuntime.InvokeAsync<object>("FilePondInterop.prepareFile", linked, elementId, query);
@@ -230,7 +230,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask<object[]> PrepareFiles(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             return await JsRuntime.InvokeAsync<object[]>("FilePondInterop.prepareFiles", linked, elementId, query);
@@ -238,7 +238,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask<FilePondFileItem?> GetFile(string elementId, object? query = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -249,7 +249,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask<List<FilePondFileItem>?> GetFiles(string elementId, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -260,7 +260,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask Browse(string elementId, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.browse", linked, elementId);
@@ -268,7 +268,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask Sort(string elementId, string compareFunctionName, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.sort", linked, elementId, compareFunctionName);
@@ -276,7 +276,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask MoveFile(string elementId, object query, int index, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.moveFile", linked, elementId, query, index);
@@ -284,7 +284,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask Destroy(string elementId, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.destroy", linked, elementId);
@@ -292,7 +292,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask CreateObserver(string elementId, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.createObserver", linked, elementId);
@@ -300,7 +300,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnablePlugins(bool useCdn, List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -336,7 +336,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask EnableOtherPlugins(bool useCdn, List<string> filePondOtherPlugins, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
         {
@@ -360,7 +360,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         try
         {
-            var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+            CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
             using (source)
             {
@@ -392,7 +392,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         try
         {
-            var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+            CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
             using (source)
             {
@@ -428,7 +428,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
             return new List<Stream>();
 
         // Use the new GetStreamsForFiles method to avoid concurrency issues
-        var fileIds = files.Select(f => f.Id).ToList();
+        List<string> fileIds = files.Select(f => f.Id).ToList();
         return await GetStreamsForFiles(elementId, fileIds, maxAllowedSize, cancellationToken);
     }
 
@@ -437,7 +437,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     {
         try
         {
-            var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+            CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
             using (source)
             {
@@ -496,7 +496,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask SetValidationState(string elementId, bool isValid, string? errorMessage = null, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setValidationState", linked, elementId, isValid, errorMessage);
@@ -504,7 +504,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask SetFileSuccess(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccess", linked, elementId, fileId, isSuccess);
@@ -512,7 +512,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask SetFileSuccess(string elementId, int fileIndex, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccess", linked, elementId, fileIndex, isSuccess);
@@ -520,7 +520,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask SetAllFilesSuccess(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setAllFilesSuccess", linked, elementId, isSuccess);
@@ -528,7 +528,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask SetFileSuccessWhenReady(string elementId, string fileId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSuccessWhenReady", linked, elementId, fileId, isSuccess);
@@ -536,7 +536,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
 
     public async ValueTask SetAllFilesSuccessWhenReady(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default)
     {
-        var linked = _cancellationScope.CancellationToken.Link(cancellationToken, out var source);
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setAllFilesSuccessWhenReady", linked, elementId, isSuccess);

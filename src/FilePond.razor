@@ -523,7 +523,7 @@
         if (files.IsNullOrEmpty())
             return new List<Stream>();
 
-        var fileIds = files.Select(f => f.Id).ToList();
+        List<string> fileIds = files.Select(f => f.Id).ToList();
         return await GetStreamsForFiles(fileIds, maxAllowedSize, cancellationToken);
     }
 

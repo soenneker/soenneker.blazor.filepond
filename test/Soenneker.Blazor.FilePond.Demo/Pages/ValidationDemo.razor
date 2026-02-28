@@ -464,7 +464,7 @@
 
     private async Task SetFirstFileSuccessWhenReady()
     {
-        var files = await FilePond!.GetFiles();
+        List<FilePondFileItem>? files = await FilePond!.GetFiles();
         if (files?.Count > 0)
         {
             await FilePond.SetFileSuccessWhenReady(files[0].Id, true);

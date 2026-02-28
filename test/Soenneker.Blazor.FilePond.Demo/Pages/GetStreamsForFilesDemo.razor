@@ -42,7 +42,7 @@
         @if (FilePond?.Files != null && FilePond.Files.Any())
         {
             <ul>
-                @foreach (var file in FilePond.Files)
+                @foreach (FilePondFileItem file in FilePond.Files)
                 {
                     <li>ID: @file.Id, Name: @file.Filename, Size: @file.FileSize bytes</li>
                 }
@@ -89,9 +89,9 @@
                 <tbody>
                     @for (int i = 0; i < lastStreams.Count; i++)
                     {
-                        var stream = lastStreams[i];
-                        var fileId = i < (FilePond?.Files?.Count ?? 0) ? FilePond!.Files![i].Id : "Unknown";
-                        var fileName = i < (FilePond?.Files?.Count ?? 0) ? FilePond!.Files![i].Filename : "Unknown";
+                        Stream stream = lastStreams[i];
+                        string fileId = i < (FilePond?.Files?.Count ?? 0) ? FilePond!.Files![i].Id : "Unknown";
+                        string? fileName = i < (FilePond?.Files?.Count ?? 0) ? FilePond!.Files![i].Filename : "Unknown";
                         <tr>
                             <td>@i</td>
                             <td>@fileId</td>
@@ -344,10 +344,10 @@
 
         try
         {
-            var startTime = DateTime.Now;
-            var streams = await FilePond.GetAllStreams();
-            var endTime = DateTime.Now;
-            var duration = endTime - startTime;
+            DateTime startTime = DateTime.Now;
+            List<Stream> streams = await FilePond.GetAllStreams();
+            DateTime endTime = DateTime.Now;
+            TimeSpan duration = endTime - startTime;
 
             lastStreams = streams;
             lastTestSuccess = true;
@@ -379,10 +379,10 @@
 
         try
         {
-            var startTime = DateTime.Now;
-            var streams = await FilePond.GetStreamsForFiles(FilePond.Files);
-            var endTime = DateTime.Now;
-            var duration = endTime - startTime;
+            DateTime startTime = DateTime.Now;
+            List<Stream> streams = await FilePond.GetStreamsForFiles(FilePond.Files);
+            DateTime endTime = DateTime.Now;
+            TimeSpan duration = endTime - startTime;
 
             lastStreams = streams;
             lastTestSuccess = true;
@@ -418,14 +418,14 @@
         try
         {
             // Create a simple download for the first stream as an example
-            var firstStream = lastStreams[0];
-            var firstFile = FilePond.Files[0];
+            Stream firstStream = lastStreams[0];
+            FilePondFileItem firstFile = FilePond.Files[0];
             
             var bytes = new byte[firstStream.Length];
             firstStream.Position = 0;
             await firstStream.ReadAsync(bytes, 0, bytes.Length);
             
-            var fileName = firstFile.Filename ?? "downloaded_file";
+            string fileName = firstFile.Filename ?? "downloaded_file";
             await JSRuntime.InvokeVoidAsync("downloadFile", fileName, bytes);
         }
         catch (Exception ex)
@@ -443,12 +443,12 @@
             var content = new List<string>();
             for (int i = 0; i < Math.Min(lastStreams.Count, 3); i++) // Show first 3 streams
             {
-                var stream = lastStreams[i];
+                Stream stream = lastStreams[i];
                 var bytes = new byte[Math.Min(stream.Length, 100)]; // First 100 bytes
                 stream.Position = 0;
                 await stream.ReadAsync(bytes, 0, bytes.Length);
                 
-                var hex = Convert.ToHexString(bytes);
+                string hex = Convert.ToHexString(bytes);
                 content.Add($"Stream {i}: {hex}...");
             }
             
@@ -472,12 +472,12 @@
             
             for (int i = 0; i < Math.Min(lastStreams.Count, FilePond.Files.Count); i++)
             {
-                var stream = lastStreams[i];
-                var file = FilePond.Files[i];
+                Stream stream = lastStreams[i];
+                FilePondFileItem file = FilePond.Files[i];
                 
                 // Get original file size from FilePond
-                var originalSize = file.FileSize;
-                var transformedSize = stream.Length;
+                long originalSize = file.FileSize;
+                long transformedSize = stream.Length;
                 
                 comparison.Add($"File {i} ({file.Filename}):");
                 comparison.Add($"  Original Size: {originalSize:N0} bytes");
@@ -485,8 +485,8 @@
                 
                 if (originalSize != transformedSize)
                 {
-                    var difference = transformedSize - originalSize;
-                    var percentChange = (double)difference / originalSize * 100;
+                    long difference = transformedSize - originalSize;
+                    double percentChange = (double)difference / originalSize * 100;
                     comparison.Add($"  Difference: {difference:+0;-0;0} bytes ({percentChange:+0.0;-0.0;0.0}%)");
                     
                     if (transformedSize < originalSize)
