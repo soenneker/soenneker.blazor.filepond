@@ -1,7 +1,8 @@
-﻿[![](https://img.shields.io/nuget/v/soenneker.blazor.filepond.svg?style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/soenneker.blazor.filepond/)
+[![](https://img.shields.io/nuget/v/soenneker.blazor.filepond.svg?style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/soenneker.blazor.filepond/)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.blazor.filepond/publish-package.yml?style=for-the-badge&logo=github)](https://github.com/soenneker/soenneker.blazor.filepond/actions/workflows/publish-package.yml)
 [![](https://img.shields.io/nuget/dt/soenneker.blazor.filepond.svg?style=for-the-badge&logo=nuget)](https://www.nuget.org/packages/soenneker.blazor.filepond/)
 [![](https://img.shields.io/badge/Demo-Live-blueviolet?style=for-the-badge&logo=github)](https://soenneker.github.io/soenneker.blazor.filepond)
+[![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.blazor.filepond/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.blazor.filepond/actions/workflows/codeql.yml)
 
 # ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Blazor.FilePond
 ### A Blazor interop library for the file upload library [FilePond](https://pqina.nl/filepond/)
@@ -25,7 +26,7 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
-⚠ Do not include styles or scripts on the page as they get lazily injected automatically, including most plugins.
+? Do not include styles or scripts on the page as they get lazily injected automatically, including most plugins.
 
 ## Usage
 
