@@ -50,9 +50,9 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         _interopStyleInitializer = new AsyncInitializer(InitializeInteropStyle);
     }
 
-    private ValueTask InitializeInterop(CancellationToken token)
+    private async ValueTask InitializeInterop(CancellationToken token)
     {
-        return _resourceLoader.ImportModuleAndWaitUntilAvailable(_module, nameof(FilePondInterop), 100, token);
+        _ = await _resourceLoader.ImportModule(_module, token);
     }
 
     private ValueTask InitializeStyle(bool useCdn, CancellationToken token)
