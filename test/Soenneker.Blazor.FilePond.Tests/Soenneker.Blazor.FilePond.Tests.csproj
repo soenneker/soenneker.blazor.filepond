@@ -28,7 +28,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\src\Soenneker.Blazor.FilePond.csproj" />
+        <ProjectReference Include="..\..\src\Soenneker.Blazor.FilePond\Soenneker.Blazor.FilePond.csproj" />
     </ItemGroup>
 
     <ItemGroup>
