@@ -3,28 +3,41 @@ export class FilePondInterop {
         this.ponds = {};
         this.options = {};
         this.deleted = {};
+        this.serverProcesses = {};
         this.observer = null;
     }
 
-    async create(elementId, options) {
+    async create(elementId, options, dotNetCallback, useBlazorServerProcess = false) {
         let pond;
 
         const element = document.getElementById(elementId);
 
         if (options) {
             const opt = JSON.parse(options);
+            if (useBlazorServerProcess) {
+                opt.server = opt.server || {};
+                opt.server.process = this.createBlazorServerProcessHandler(elementId, dotNetCallback);
+            }
             pond = FilePond.create(element, opt);
             this.options[elementId] = opt;
         } else {
-            pond = FilePond.create(element);
+            const opt = useBlazorServerProcess ? { server: { process: this.createBlazorServerProcessHandler(elementId, dotNetCallback) } } : undefined;
+            pond = FilePond.create(element, opt);
+            if (opt) {
+                this.options[elementId] = opt;
+            }
         }
 
         this.ponds[elementId] = pond;
     }
 
-    setOptions(elementId, options) {
+    setOptions(elementId, options, dotNetCallback, useBlazorServerProcess = false) {
         const pond = this.ponds[elementId];
         const opt = JSON.parse(options);
+        if (useBlazorServerProcess) {
+            opt.server = opt.server || {};
+            opt.server.process = this.createBlazorServerProcessHandler(elementId, dotNetCallback);
+        }
         this.options[elementId] = opt;
         pond.setOptions(opt);
     }
@@ -189,6 +202,123 @@ export class FilePondInterop {
             this.fileSizeObservers[elementId].disconnect();
             delete this.fileSizeObservers[elementId];
         }
+
+        Object.keys(this.serverProcesses)
+            .filter(processId => this.serverProcesses[processId]?.elementId === elementId)
+            .forEach(processId => delete this.serverProcesses[processId]);
+    }
+
+    createBlazorServerProcessHandler(elementId, dotNetCallback) {
+        return (fieldName, file, metadata, load, error, progress, abort) => {
+            const processId = this.createProcessId();
+            const fileItem = this.findFileItemForProcess(elementId, file);
+
+            if (!fileItem || !fileItem.id) {
+                error('Could not resolve the FilePond file item for Blazor server.process');
+                return {
+                    abort: () => { }
+                };
+            }
+
+            this.serverProcesses[processId] = {
+                elementId,
+                progress,
+                load,
+                error,
+                abort,
+                fileSize: file?.size ?? 0
+            };
+
+            const metadataJson = metadata == null ? null : JSON.stringify(metadata);
+
+            dotNetCallback.invokeMethodAsync("ProcessFileJs", elementId, processId, fieldName, this.getJsonFromObjectOrArray(fileItem), metadataJson)
+                .then((serverId) => {
+                    const serverProcess = this.serverProcesses[processId];
+                    if (!serverProcess) {
+                        return;
+                    }
+
+                    if (serverProcess.fileSize > 0) {
+                        serverProcess.progress(true, serverProcess.fileSize, serverProcess.fileSize);
+                    }
+
+                    serverProcess.load(serverId ?? '');
+                    delete this.serverProcesses[processId];
+                })
+                .catch((processError) => {
+                    const serverProcess = this.serverProcesses[processId];
+                    if (!serverProcess) {
+                        return;
+                    }
+
+                    serverProcess.error(this.getErrorMessage(processError));
+                    delete this.serverProcesses[processId];
+                });
+
+            return {
+                abort: () => {
+                    const serverProcess = this.serverProcesses[processId];
+                    if (!serverProcess) {
+                        return;
+                    }
+
+                    dotNetCallback.invokeMethodAsync("AbortServerProcessJs", elementId, processId)
+                        .catch((abortError) => console.warn('Error aborting Blazor server.process', abortError));
+
+                    serverProcess.abort();
+                    delete this.serverProcesses[processId];
+                }
+            };
+        };
+    }
+
+    reportServerProcessProgress(elementId, processId, isLengthComputable, loaded, total) {
+        const serverProcess = this.serverProcesses[processId];
+
+        if (!serverProcess || serverProcess.elementId !== elementId) {
+            return;
+        }
+
+        serverProcess.progress(isLengthComputable, loaded, total);
+    }
+
+    findFileItemForProcess(elementId, file) {
+        const pond = this.ponds[elementId];
+
+        if (!pond) {
+            return null;
+        }
+
+        const files = pond.getFiles();
+        let fileItem = files.find(item => item.file === file);
+
+        if (fileItem) {
+            return fileItem;
+        }
+
+        return files.find(item =>
+            item.filename === file?.name &&
+            item.fileSize === (file?.size ?? 0));
+    }
+
+    createProcessId() {
+        if (window.crypto?.randomUUID) {
+            return window.crypto.randomUUID();
+        }
+
+        return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
+    }
+
+    getErrorMessage(error) {
+        if (!error) {
+            return 'Upload failed';
+        }
+
+        if (typeof error === 'string') {
+            return error;
+        }
+
+        return error.message || error.toString() || 'Upload failed';
     }
 
     addEventListener(elementId, eventName, dotNetCallback) {

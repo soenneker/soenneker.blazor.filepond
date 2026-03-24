@@ -63,6 +63,42 @@ public void ConfigureServices(IServiceCollection services)
 }
 ```
 
+## Blazor-Driven `server.process`
+
+Use `OnServerProcess` when you want Blazor to own FilePond's `server.process` flow while still updating FilePond's built-in upload progress UI.
+
+```razor
+@using Soenneker.Blazor.FilePond
+@using Soenneker.Blazor.FilePond.Dtos
+
+<FilePond @ref="FilePond" Options="_options" OnServerProcess="UploadAsync"></FilePond>
+
+@code {
+    private FilePond? FilePond { get; set; }
+
+    private readonly FilePondOptions _options = new()
+    {
+        InstantUpload = true
+    };
+
+    private async ValueTask<string> UploadAsync(FilePondServerProcessRequest request, CancellationToken cancellationToken)
+    {
+        await using Stream? stream = await request.GetStream(cancellationToken: cancellationToken);
+
+        if (stream == null)
+            throw new InvalidOperationException("Could not open the FilePond upload stream.");
+
+        // Wire this to your real HTTP upload progress callback.
+        await request.ReportProgress(true, stream.Length, stream.Length, cancellationToken);
+
+        // Return the server file id that FilePond should store.
+        return "server-file-id";
+    }
+}
+```
+
+`request.GetStream()` returns the same file data FilePond would normally upload, and `request.ReportProgress(...)` pushes progress back into FilePond so the upload bar stays in sync with your Blazor-driven upload.
+
 ## Validation Features
 
 The FilePond component supports validation states with visual feedback and error messages.

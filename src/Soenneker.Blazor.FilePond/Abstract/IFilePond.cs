@@ -120,6 +120,12 @@ public interface IFilePond : ICoreCancellableComponent
     EventCallback<FilePondFileItem> OnServerData { get; set; }
 
     /// <summary>
+    /// Handles FilePond's <c>server.process</c> callback in Blazor, enabling async uploads with progress reporting.
+    /// Return the server file id that FilePond should store for the uploaded file.
+    /// </summary>
+    Func<FilePondServerProcessRequest, CancellationToken, ValueTask<string>>? OnServerProcess { get; set; }
+
+    /// <summary>
     /// FilePond is about to allow this item to be dropped, it can be a URL or a File object. Return true or false depending on if you want to allow the item to be dropped.
     /// </summary>
     Func<FilePondFileItem, ValueTask<bool>>? OnBeforeDropFile { get; set; }

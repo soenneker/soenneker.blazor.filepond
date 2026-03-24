@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using Soenneker.Blazor.FilePond.Abstract;
 using Microsoft.Extensions.Logging;
@@ -18,7 +19,9 @@ using Soenneker.Blazor.FilePond.Utils;
 using Soenneker.Blazor.FilePond.Enums;
 using Soenneker.Blazor.FilePond.Constants;
 using Soenneker.Extensions.CancellationTokens;
+using Soenneker.Extensions.String;
 using Soenneker.Utils.CancellationScopes;
+using System.Text.Json;
 
 namespace Soenneker.Blazor.FilePond;
 
@@ -29,6 +32,8 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     private readonly List<FilePondPluginType> _enabledPlugins = [];
     private readonly List<string> _enabledOtherPlugins = [];
     private readonly IResourceLoader _resourceLoader;
+    private readonly ConcurrentDictionary<string, ServerProcessRegistration> _serverProcessRegistrations = new();
+    private readonly ConcurrentDictionary<string, ServerProcessContext> _activeServerProcesses = new();
 
     private readonly AsyncInitializer _interopInitializer;
     private readonly AsyncInitializer<bool> _styleInitializer;
@@ -38,6 +43,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
     private const string _module = "Soenneker.Blazor.FilePond/js/filepondinterop.js";
 
     private readonly CancellationScope _cancellationScope = new();
+    private DotNetObjectReference<FilePondInterop>? _dotNetReference;
 
     public FilePondInterop(IJSRuntime jSRuntime, ILogger<FilePondInterop> logger, IResourceLoader resourceLoader) : base(jSRuntime)
     {
@@ -80,7 +86,7 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
             await _interopInitializer.Init(linked);
     }
 
-    public async ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default)
+    public async ValueTask Create(string elementId, FilePondOptions? options = null, bool useBlazorServerProcess = false, CancellationToken cancellationToken = default)
     {
         CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
@@ -99,7 +105,9 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
             if (options != null)
                 json = JsonUtil.Serialize(options);
 
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.create", linked, elementId, json);
+            object? dotNetReference = useBlazorServerProcess ? GetOrCreateDotNetReference() : null;
+
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.create", linked, elementId, json, dotNetReference, useBlazorServerProcess);
 
             // Handle global ShowFileSize option
             if (options is {ShowFileSize: false})
@@ -109,14 +117,16 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
         }
     }
 
-    public async ValueTask SetOptions(string elementId, FilePondOptions options, CancellationToken cancellationToken = default)
+    public async ValueTask SetOptions(string elementId, FilePondOptions options, bool useBlazorServerProcess = false, CancellationToken cancellationToken = default)
     {
         CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
         string json = JsonUtil.Serialize(options)!;
 
         using (source)
         {
-            await JsRuntime.InvokeVoidAsync("FilePondInterop.setOptions", linked, elementId, json);
+            object? dotNetReference = useBlazorServerProcess ? GetOrCreateDotNetReference() : null;
+
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.setOptions", linked, elementId, json, dotNetReference, useBlazorServerProcess);
 
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setFileSizeVisibility", linked, elementId, options.ShowFileSize);
         }
@@ -542,13 +552,109 @@ public sealed class FilePondInterop : EventListeningInterop, IFilePondInterop
             await JsRuntime.InvokeVoidAsync("FilePondInterop.setAllFilesSuccessWhenReady", linked, elementId, isSuccess);
     }
 
+    public async ValueTask ReportServerProcessProgress(string elementId, string processId, bool isLengthComputable, long loaded, long total,
+        CancellationToken cancellationToken = default)
+    {
+        CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
+
+        using (source)
+            await JsRuntime.InvokeVoidAsync("FilePondInterop.reportServerProcessProgress", linked, elementId, processId, isLengthComputable, loaded, total);
+    }
+
+    public void RegisterServerProcessHandler(string elementId, Func<FilePondServerProcessRequest, CancellationToken, ValueTask<string>> handler,
+        CancellationToken cancellationToken = default)
+    {
+        _serverProcessRegistrations[elementId] = new ServerProcessRegistration(handler, cancellationToken);
+    }
+
+    public void UnregisterServerProcessHandler(string elementId)
+    {
+        _serverProcessRegistrations.TryRemove(elementId, out _);
+
+        foreach (KeyValuePair<string, ServerProcessContext> kvp in _activeServerProcesses.Where(kvp => kvp.Value.ElementId == elementId).ToList())
+        {
+            if (_activeServerProcesses.TryRemove(kvp.Key, out ServerProcessContext? context))
+            {
+                context.CancellationTokenSource.Cancel();
+                context.CancellationTokenSource.Dispose();
+            }
+        }
+    }
+
+    [JSInvokable("ProcessFileJs")]
+    public async Task<string> ProcessFileJs(string elementId, string processId, string fieldName, string fileJson, string? metadataJson)
+    {
+        if (!_serverProcessRegistrations.TryGetValue(elementId, out ServerProcessRegistration? registration))
+            throw new InvalidOperationException($"No Blazor server.process handler registered for FilePond element '{elementId}'.");
+
+        FilePondFileItem? file = JsonUtil.Deserialize<FilePondFileItem>(fileJson);
+
+        if (file == null || !file.Id.HasContent())
+            throw new InvalidOperationException("Unable to resolve the FilePond file item for Blazor-driven server.process");
+
+        FilePondFileItem resolvedFile = file;
+
+        JsonElement? metadata = null;
+
+        if (metadataJson.HasContent())
+        {
+            using JsonDocument metadataDocument = JsonDocument.Parse(metadataJson!);
+            metadata = metadataDocument.RootElement.Clone();
+        }
+
+        var processCancellationTokenSource = CancellationTokenSource.CreateLinkedTokenSource(_cancellationScope.CancellationToken, registration.CancellationToken);
+        _activeServerProcesses[processId] = new ServerProcessContext(elementId, processCancellationTokenSource);
+
+        try
+        {
+            var request = new FilePondServerProcessRequest(processId, fieldName, resolvedFile, metadata,
+                (maxAllowedSize, cancellationToken) => GetStreamForFile(elementId, resolvedFile.Id, maxAllowedSize ?? FilePondConstants.DefaultMaximumSize, cancellationToken),
+                (isLengthComputable, loaded, total, cancellationToken) => ReportServerProcessProgress(elementId, processId, isLengthComputable, loaded, total, cancellationToken));
+
+            return await registration.Handler(request, processCancellationTokenSource.Token);
+        }
+        finally
+        {
+            if (_activeServerProcesses.TryRemove(processId, out ServerProcessContext? context))
+                context.CancellationTokenSource.Dispose();
+        }
+    }
+
+    [JSInvokable("AbortServerProcessJs")]
+    public Task AbortServerProcessJs(string elementId, string processId)
+    {
+        if (_activeServerProcesses.TryGetValue(processId, out ServerProcessContext? context) && context.ElementId == elementId &&
+            _activeServerProcesses.TryRemove(processId, out context))
+        {
+            context.CancellationTokenSource.Cancel();
+            context.CancellationTokenSource.Dispose();
+        }
+
+        return Task.CompletedTask;
+    }
+
     public async ValueTask DisposeAsync()
     {
+        foreach (ServerProcessContext context in _activeServerProcesses.Values)
+        {
+            context.CancellationTokenSource.Cancel();
+            context.CancellationTokenSource.Dispose();
+        }
+
+        _activeServerProcesses.Clear();
+        _serverProcessRegistrations.Clear();
+        _dotNetReference?.Dispose();
         await _resourceLoader.DisposeModule(_module);
         await _interopInitializer.DisposeAsync();
         await _styleInitializer.DisposeAsync();
         await _scriptInitializer.DisposeAsync();
         await _interopStyleInitializer.DisposeAsync();
         await _cancellationScope.DisposeAsync();
+    }
+
+    private DotNetObjectReference<FilePondInterop> GetOrCreateDotNetReference()
+    {
+        _dotNetReference ??= DotNetObjectReference.Create(this);
+        return _dotNetReference;
     }
 }

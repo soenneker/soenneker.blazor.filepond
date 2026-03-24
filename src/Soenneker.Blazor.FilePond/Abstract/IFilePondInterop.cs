@@ -23,16 +23,18 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     /// </summary>
     /// <param name="elementId">The unique identifier for the HTML element, used to associate the FilePond instance with the element.</param>
     /// <param name="options">(Optional) Configuration options for customizing the behavior of the FilePond instance.</param>
+    /// <param name="useBlazorServerProcess">Whether FilePond should install the Blazor-driven server.process bridge.</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
-    ValueTask Create(string elementId, FilePondOptions? options = null, CancellationToken cancellationToken = default);
+    ValueTask Create(string elementId, FilePondOptions? options = null, bool useBlazorServerProcess = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Overrides multiple options at once.
     /// </summary>
     /// <param name="elementId">The ID of the FilePond element.</param>
     /// <param name="options">An object containing the options to override.</param>
+    /// <param name="useBlazorServerProcess">Whether FilePond should install the Blazor-driven server.process bridge.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
-    ValueTask SetOptions(string elementId, FilePondOptions options, CancellationToken cancellationToken = default);
+    ValueTask SetOptions(string elementId, FilePondOptions options, bool useBlazorServerProcess = false, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Adds a file to FilePond.
@@ -268,4 +270,31 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     /// <param name="isSuccess">Whether all files should be marked as successful.</param>
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask SetAllFilesSuccessWhenReady(string elementId, bool isSuccess = true, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Reports progress for an active Blazor-driven <c>server.process</c> callback.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="processId">The unique ID for the active process callback.</param>
+    /// <param name="isLengthComputable">Whether the upload length can be computed.</param>
+    /// <param name="loaded">The number of bytes uploaded so far.</param>
+    /// <param name="total">The total number of bytes to upload.</param>
+    /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
+    ValueTask ReportServerProcessProgress(string elementId, string processId, bool isLengthComputable, long loaded, long total,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Registers a Blazor-driven <c>server.process</c> handler for the specified FilePond element.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    /// <param name="handler">The handler that should process uploads for this FilePond instance.</param>
+    /// <param name="cancellationToken">A token associated with the owning component lifecycle.</param>
+    void RegisterServerProcessHandler(string elementId, Func<FilePondServerProcessRequest, CancellationToken, ValueTask<string>> handler,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes the Blazor-driven <c>server.process</c> handler for the specified FilePond element and cancels active uploads.
+    /// </summary>
+    /// <param name="elementId">The ID of the FilePond element.</param>
+    void UnregisterServerProcessHandler(string elementId);
 }

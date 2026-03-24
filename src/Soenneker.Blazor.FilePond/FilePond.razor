@@ -107,6 +107,9 @@
     public EventCallback<FilePondFileItem> OnServerData { get; set; }
 
     [Parameter]
+    public Func<FilePondServerProcessRequest, CancellationToken, ValueTask<string>>? OnServerProcess { get; set; }
+
+    [Parameter]
     public Func<FilePondFileItem, ValueTask<bool>>? OnBeforeDropFile { get; set; }
 
     [Parameter]
@@ -178,13 +181,24 @@
         if (options != null)
             Options = options;
 
+        bool useBlazorServerProcess = OnServerProcess != null;
+
+        if (useBlazorServerProcess)
+        {
+            Options ??= new FilePondOptions();
+            Options.Server ??= new FilePondServerOptions {Url = string.Empty};
+            FilePondInterop.RegisterServerProcessHandler(_elementId, OnServerProcess!, CancellationToken);
+        }
+        else
+            FilePondInterop.UnregisterServerProcessHandler(_elementId);
+
         InteropEventListener.Initialize(FilePondInterop);
 
         CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
 
         using (cts)
         {
-            await FilePondInterop.Create(_elementId, Options, linked);
+            await FilePondInterop.Create(_elementId, Options, useBlazorServerProcess, linked);
             await AddEventListeners(linked);
         }
 
@@ -202,9 +216,18 @@
     public async ValueTask SetOptions(FilePondOptions options, CancellationToken cancellationToken = default)
     {
         CancellationToken linked = CancellationToken.Link(cancellationToken, out CancellationTokenSource? cts);
+        bool useBlazorServerProcess = OnServerProcess != null;
+
+        if (useBlazorServerProcess)
+        {
+            options.Server ??= new FilePondServerOptions {Url = string.Empty};
+            FilePondInterop.RegisterServerProcessHandler(_elementId, OnServerProcess!, CancellationToken);
+        }
+        else
+            FilePondInterop.UnregisterServerProcessHandler(_elementId);
 
         using (cts)
-            await FilePondInterop.SetOptions(_elementId, options, linked);
+            await FilePondInterop.SetOptions(_elementId, options, useBlazorServerProcess, linked);
     }
 
     public ValueTask AddFile(string uriOrBase64EncodedData, bool silentAdd, CancellationToken cancellationToken = default)
@@ -615,7 +638,8 @@
             await AddEventListener<string>(GetJsEventName(nameof(OnAddFileProgress)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    (FilePondFileItem, int) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!, jsonDocument.RootElement[1].GetInt32());
+                    int progress = (int)Math.Round(jsonDocument.RootElement[1].GetDouble());
+                    (FilePondFileItem, int) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!, progress);
 
                     await OnAddFileProgress.InvokeAsync(parameters);
                 }, cancellationToken)
@@ -633,7 +657,7 @@
 
                 if (OnAddFile.HasDelegate)
                 {
-                    if (_silentAddFiles.Contains(file.Filename))
+                    if (file.Filename != null && _silentAddFiles.Contains(file.Filename))
                     {
                         _silentAddFiles.Remove(file.Filename);
                         return;
@@ -661,7 +685,8 @@
             await AddEventListener<string>(GetJsEventName(nameof(OnProcessFileProgress)), async str =>
                 {
                     JsonDocument jsonDocument = JsonDocument.Parse(str);
-                    (FilePondFileItem, int) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!, jsonDocument.RootElement[1].GetInt32());
+                    int progress = (int)Math.Round(jsonDocument.RootElement[1].GetDouble());
+                    (FilePondFileItem, int) parameters = (jsonDocument.RootElement[0].Deserialize<FilePondFileItem>()!, progress);
 
                     await OnProcessFileProgress.InvokeAsync(parameters);
                 }, cancellationToken)
@@ -915,6 +940,7 @@
         Files.Clear();
         _silentAddFiles.Clear();
         _afterInitializationOperations.Clear();
+        FilePondInterop.UnregisterServerProcessHandler(_elementId);
         InteropEventListener.DisposeForElement(_elementId);
         _initialized = false;
         _initializing = false;
