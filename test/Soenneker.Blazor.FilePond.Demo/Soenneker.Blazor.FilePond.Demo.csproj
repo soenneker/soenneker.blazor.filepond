@@ -17,4 +17,16 @@
         <ProjectReference Include="..\..\src\Soenneker.Blazor.FilePond\Soenneker.Blazor.FilePond.csproj" />
     </ItemGroup>
 
+  <PropertyGroup>
+    <TailwindGeneratorBuildEnabled>true</TailwindGeneratorBuildEnabled>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Soenneker.Quark.Gen.Tailwind" Version="4.0.95">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Soenneker.Quark.Suite" Version="4.0.701" />
+  </ItemGroup>
+
 </Project>

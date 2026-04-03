@@ -30,3 +30,273 @@ h1:focus {
     .blazor-error-boundary::after {
         content: "An error has occurred."
     }
+/* Quark demo baseline */
+html,
+body {
+    min-height: 100%;
+}
+
+body {
+    margin: 0;
+    font-family: Inter, ""Segoe UI"", sans-serif;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+}
+
+#app {
+    min-height: 100vh;
+}
+
+a {
+    color: inherit;
+}
+
+img {
+    max-width: 100%;
+}
+
+.container,
+.container-fluid {
+    width: 100%;
+    margin-inline: auto;
+    padding-inline: 1rem;
+}
+
+.container {
+    max-width: 72rem;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+}
+
+.row > [class*=""col-""],
+.row > [class^=""col-""] {
+    flex: 1 1 0%;
+    min-width: 0;
+}
+
+.col-md-3,
+.col-md-4,
+.col-md-6,
+.col-md-8,
+.col-md-12 {
+    min-width: 0;
+}
+
+@media (min-width: 768px) {
+    .col-md-3 {
+        flex: 0 0 calc(25% - 0.75rem);
+    }
+
+    .col-md-4 {
+        flex: 0 0 calc(33.333% - 0.75rem);
+    }
+
+    .col-md-6 {
+        flex: 0 0 calc(50% - 0.5rem);
+    }
+
+    .col-md-8 {
+        flex: 0 0 calc(66.667% - 0.5rem);
+    }
+
+    .col-md-12 {
+        flex: 0 0 100%;
+    }
+}
+
+.card,
+.glass-card,
+.demo-card,
+.feature-card,
+.demo-surface {
+    border-radius: 1rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--card));
+    color: hsl(var(--card-foreground));
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.card-header,
+.card-glass__header {
+    padding: 1.25rem 1.25rem 0;
+}
+
+.card-body,
+.card-glass__body,
+.card-glass__footer {
+    padding: 1.25rem;
+}
+
+.card-title,
+.demo-card-title {
+    margin: 0;
+}
+
+.btn,
+.demo-btn,
+button:not(.navbar-toggler) {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+    padding: 0.625rem 0.95rem;
+    color: hsl(var(--foreground));
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 150ms ease, color 150ms ease, border-color 150ms ease, opacity 150ms ease;
+    cursor: pointer;
+}
+
+.btn:hover,
+.demo-btn:hover,
+button:not(.navbar-toggler):hover {
+    background: hsl(var(--accent));
+    color: hsl(var(--accent-foreground));
+}
+
+.btn-primary,
+.demo-btn-primary,
+.btn-success {
+    border-color: hsl(var(--primary));
+    background: hsl(var(--primary));
+    color: hsl(var(--primary-foreground));
+}
+
+.btn-secondary,
+.btn-outline,
+.btn-outline-secondary,
+.btn-outline-dark,
+.btn-outline-light,
+.demo-btn-secondary {
+    background: hsl(var(--secondary));
+    color: hsl(var(--secondary-foreground));
+    border-color: hsl(var(--secondary));
+}
+
+.btn-danger,
+.demo-btn-danger {
+    border-color: hsl(var(--destructive));
+    background: hsl(var(--destructive));
+    color: white;
+}
+
+.btn-info {
+    border-color: hsl(199 89% 48%);
+    background: hsl(199 89% 48%);
+    color: white;
+}
+
+.w-50 {
+    width: calc(50% - 0.5rem);
+}
+
+.w-100 {
+    width: 100%;
+}
+
+.form-control,
+.form-select,
+input:not([type=""checkbox""]):not([type=""radio""]),
+textarea,
+select {
+    width: 100%;
+    box-sizing: border-box;
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--input));
+    background: hsl(var(--background));
+    padding: 0.625rem 0.75rem;
+    color: hsl(var(--foreground));
+}
+
+.form-control:focus,
+.form-select:focus,
+input:focus,
+textarea:focus,
+select:focus {
+    outline: none;
+    border-color: hsl(var(--ring));
+    box-shadow: 0 0 0 3px hsl(var(--ring) / 0.15);
+}
+
+.alert {
+    border-radius: 0.875rem;
+    border: 1px solid hsl(var(--border));
+    padding: 0.9rem 1rem;
+}
+
+.alert-info {
+    background: hsl(var(--muted));
+    color: hsl(var(--foreground));
+}
+
+.navbar,
+.site-header,
+.top-row {
+    border-bottom: 1px solid hsl(var(--border));
+    background: hsl(var(--background));
+}
+
+.navbar-brand {
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.table,
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.table th,
+.table td,
+table th,
+table td {
+    border-bottom: 1px solid hsl(var(--border));
+    padding: 0.75rem 0.875rem;
+    text-align: left;
+}
+
+.table-striped tbody tr:nth-child(even) {
+    background: hsl(var(--muted) / 0.35);
+}
+
+.shadow-sm {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.text-center {
+    text-align: center;
+}
+
+#blazor-error-ui {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    left: 1rem;
+    z-index: 1000;
+    display: none;
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--destructive));
+    background: hsl(var(--background));
+    padding: 1rem 1.25rem;
+    color: hsl(var(--foreground));
+}
+
+#blazor-error-ui .dismiss {
+    position: absolute;
+    top: 0.6rem;
+    right: 0.8rem;
+    cursor: pointer;
+}
+
+#blazor-error-ui .reload {
+    color: inherit;
+    font-weight: 700;
+}

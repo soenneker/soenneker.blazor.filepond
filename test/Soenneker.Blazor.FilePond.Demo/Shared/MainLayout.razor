@@ -1,7 +1,46 @@
 @inherits LayoutComponentBase
 
-<div class="main">
-    <div class="content px-4">
-        @Body
-    </div>
-</div>
+<Div Class="min-h-screen bg-background text-foreground">
+    <header class="border-b border-border bg-background/95">
+        <Div Class="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 md:px-6">
+            <Div Class="flex items-center gap-3">
+                <img src="https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png"
+                     alt="Soenneker"
+                     class="h-10 w-10 rounded-xl border border-border bg-card object-contain p-2 shadow-sm" />
+                <Div Class="space-y-1">
+                    <Span Class="text-[0.7rem] font-medium uppercase tracking-[0.22em] text-muted-foreground">Soenneker Quark Suite</Span>
+                    <Div Class="text-sm font-semibold">@DemoTitle</Div>
+                </Div>
+            </Div>
+
+            <a href="/"
+               class="inline-flex items-center rounded-lg border border-border bg-background px-3 py-2 text-sm font-medium text-foreground shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground">
+                Demo Home
+            </a>
+        </Div>
+    </header>
+
+    <main class="mx-auto flex w-full max-w-6xl flex-1 flex-col gap-6 px-4 py-6 md:px-6 md:py-8">
+        <Div Class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            <Div Class="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <Div Class="space-y-1">
+                    <Span Class="inline-flex rounded-full border border-border px-3 py-1 text-xs font-medium text-muted-foreground">
+                        Quark Default Shell
+                    </Span>
+                    <H1 Class="text-2xl font-semibold tracking-tight">@DemoTitle</H1>
+                    <Paragraph Class="text-sm leading-7 text-muted-foreground">
+                        This demo uses Soenneker Quark Suite as the default host styling and shared UI shell.
+                    </Paragraph>
+                </Div>
+            </Div>
+        </Div>
+
+        <Div Class="rounded-2xl border border-border bg-card p-5 shadow-sm">
+            @Body
+        </Div>
+    </main>
+</Div>
+
+@code {
+    private static string DemoTitle => typeof(MainLayout).Assembly.GetName().Name ?? "Soenneker Demo";
+}
