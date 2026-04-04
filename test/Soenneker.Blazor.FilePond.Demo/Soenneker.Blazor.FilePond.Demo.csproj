@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Soenneker.Quark.Gen.Tailwind" Version="4.0.97">
+    <PackageReference Include="Soenneker.Quark.Gen.Tailwind" Version="4.0.98">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
