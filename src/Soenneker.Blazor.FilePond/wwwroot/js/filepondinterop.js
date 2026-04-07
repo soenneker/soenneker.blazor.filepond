@@ -1,13 +1,11 @@
-export class FilePondInterop {
-    constructor() {
-        this.ponds = {};
-        this.options = {};
-        this.deleted = {};
-        this.serverProcesses = {};
-        this.observer = null;
-    }
+const ponds = {};
+const fpOptions = {};
+const deletedFlags = {};
+const serverProcesses = {};
+let pondMutationObserver = null;
+let fileSizeObservers;
 
-    async create(elementId, options, dotNetCallback, useBlazorServerProcess = false) {
+export async function create(elementId, options, dotNetCallback, useBlazorServerProcess = false) {
         let pond;
 
         const element = document.getElementById(elementId);
@@ -16,36 +14,34 @@ export class FilePondInterop {
             const opt = JSON.parse(options);
             if (useBlazorServerProcess) {
                 opt.server = opt.server || {};
-                opt.server.process = this.createBlazorServerProcessHandler(elementId, dotNetCallback);
+                opt.server.process = createBlazorServerProcessHandler(elementId, dotNetCallback);
             }
             pond = FilePond.create(element, opt);
-            this.options[elementId] = opt;
+            fpOptions[elementId] = opt;
         } else {
-            const opt = useBlazorServerProcess ? { server: { process: this.createBlazorServerProcessHandler(elementId, dotNetCallback) } } : undefined;
+            const opt = useBlazorServerProcess ? { server: { process: createBlazorServerProcessHandler(elementId, dotNetCallback) } } : undefined;
             pond = FilePond.create(element, opt);
             if (opt) {
-                this.options[elementId] = opt;
+                fpOptions[elementId] = opt;
             }
         }
 
-        this.ponds[elementId] = pond;
-    }
-
-    setOptions(elementId, options, dotNetCallback, useBlazorServerProcess = false) {
-        const pond = this.ponds[elementId];
+        ponds[elementId] = pond;
+}
+export function setOptions(elementId, options, dotNetCallback, useBlazorServerProcess = false) {
+        const pond = ponds[elementId];
         const opt = JSON.parse(options);
         if (useBlazorServerProcess) {
             opt.server = opt.server || {};
-            opt.server.process = this.createBlazorServerProcessHandler(elementId, dotNetCallback);
+            opt.server.process = createBlazorServerProcessHandler(elementId, dotNetCallback);
         }
-        this.options[elementId] = opt;
+        fpOptions[elementId] = opt;
         pond.setOptions(opt);
-    }
-
-    async waitForPond(elementId) {
+}
+export async function waitForPond(elementId) {
         return new Promise((resolve) => {
             const checkPond = () => {
-                const pond = this.ponds[elementId];
+                const pond = ponds[elementId];
                 if (pond) {
                     resolve(pond);
                 } else {
@@ -55,20 +51,18 @@ export class FilePondInterop {
 
             checkPond();
         });
-    }
-
-    async addFile(elementId, uri, options) {
-        var pond = await this.waitForPond(elementId);
+}
+export async function addFile(elementId, uri, options) {
+        var pond = await waitForPond(elementId);
 
         if (!options) {
             pond.addFile(uri);
         } else {
             pond.addFile(uri, options);
         }
-    }
-    
-    async addFileFromStream(elementId, streamRef, options) {
-        var pond = await this.waitForPond(elementId);
+}
+export async function addFileFromStream(elementId, streamRef, options) {
+        var pond = await waitForPond(elementId);
 
         const readableStream = await streamRef.stream();
         const response = new Response(readableStream);
@@ -84,10 +78,9 @@ export class FilePondInterop {
         } catch (error) {
             console.error('Error adding file from stream:', error);
         }
-    }
-
-    async addLimboFile(elementId, filename, options) {
-        var pond = await this.waitForPond(elementId);
+}
+export async function addLimboFile(elementId, filename, options) {
+        var pond = await waitForPond(elementId);
 
         // Use MIME type from options or default to application/octet-stream
         const fileType = (options && options.mimeType) || 'application/octet-stream';
@@ -100,118 +93,104 @@ export class FilePondInterop {
         } else {
             pond.addFile(file, options);
         }
-    }
-
-    async addFiles(elementId, uris, options) {
-        var pond = await this.waitForPond(elementId);
+}
+export async function addFiles(elementId, uris, options) {
+        var pond = await waitForPond(elementId);
 
         if (!options) {
             pond.addFiles(uris);
         } else {
             pond.addFiles(uris, options);
         }
-    }
-
-    removeFile(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function removeFile(elementId, query) {
+        const pond = ponds[elementId];
         if (!query) {
             pond.removeFile();
         } else {
             pond.removeFile(query);
         }
-    }
-
-    removeFiles(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function removeFiles(elementId, query) {
+        const pond = ponds[elementId];
         if (!query) {
             pond.removeFiles();
         } else {
             pond.removeFiles(query);
         }
-    }
-
-    processFile(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function processFile(elementId, query) {
+        const pond = ponds[elementId];
         if (!query) {
             pond.processFile();
         } else {
             pond.processFile(query);
         }
-    }
-
-    processFiles(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function processFiles(elementId, query) {
+        const pond = ponds[elementId];
         if (!query) {
             pond.processFiles();
         } else {
             pond.processFiles(query);
         }
-    }
-
-    prepareFile(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function prepareFile(elementId, query) {
+        const pond = ponds[elementId];
         return pond.prepareFile(query);
-    }
-
-    prepareFiles(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function prepareFiles(elementId, query) {
+        const pond = ponds[elementId];
         return pond.prepareFiles(query);
-    }
-
-    getFile(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function getFile(elementId, query) {
+        const pond = ponds[elementId];
         const file = pond.getFile(query);
-        return this.getJsonFromObjectOrArray(file);
-    }
-
-    getFiles(elementId) {
-        const pond = this.ponds[elementId];
+        return getJsonFromObjectOrArray(file);
+}
+export function getFiles(elementId) {
+        const pond = ponds[elementId];
         const files = pond.getFiles();
-        return this.getJsonFromObjectOrArray(files);
-    }
-
-    browse(elementId) {
-        const pond = this.ponds[elementId];
+        return getJsonFromObjectOrArray(files);
+}
+export function browse(elementId) {
+        const pond = ponds[elementId];
         pond.browse();
-    }
-
-    sort(elementId, compare) {
-        const pond = this.ponds[elementId];
+}
+export function sort(elementId, compare) {
+        const pond = ponds[elementId];
         const compareFn = window[compare];
         pond.getFiles().sort(compareFn);
-    }
-
-    moveFile(elementId, query, index) {
-        const pond = this.ponds[elementId];
+}
+export function moveFile(elementId, query, index) {
+        const pond = ponds[elementId];
         pond.moveFile(query, index);
-    }
-
-    destroy(elementId) {
-        const pond = this.ponds[elementId];
-        const hasBeenDeleted = this.deleted[elementId];
+}
+export function destroy(elementId) {
+        const pond = ponds[elementId];
+        const hasBeenDeleted = deletedFlags[elementId];
 
         if (pond && !hasBeenDeleted) {
-            this.deleted[elementId] = true;
+            deletedFlags[elementId] = true;
             pond.destroy();
-            delete this.ponds[elementId];
-            delete this.options[elementId];
+            delete ponds[elementId];
+            delete fpOptions[elementId];
         }
 
         // Clean up file size observers
-        if (this.fileSizeObservers && this.fileSizeObservers[elementId]) {
-            this.fileSizeObservers[elementId].disconnect();
-            delete this.fileSizeObservers[elementId];
+        if (fileSizeObservers && fileSizeObservers[elementId]) {
+            fileSizeObservers[elementId].disconnect();
+            delete fileSizeObservers[elementId];
         }
 
-        Object.keys(this.serverProcesses)
-            .filter(processId => this.serverProcesses[processId]?.elementId === elementId)
-            .forEach(processId => delete this.serverProcesses[processId]);
-    }
-
-    createBlazorServerProcessHandler(elementId, dotNetCallback) {
+        Object.keys(serverProcesses)
+            .filter(processId => serverProcesses[processId]?.elementId === elementId)
+            .forEach(processId => delete serverProcesses[processId]);
+}
+export function createBlazorServerProcessHandler(elementId, dotNetCallback) {
         return (fieldName, file, metadata, load, error, progress, abort) => {
-            const processId = this.createProcessId();
-            const fileItem = this.findFileItemForProcess(elementId, file);
+            const processId = createProcessId();
+            const fileItem = findFileItemForProcess(elementId, file);
 
             if (!fileItem || !fileItem.id) {
                 error('Could not resolve the FilePond file item for Blazor server.process');
@@ -220,7 +199,7 @@ export class FilePondInterop {
                 };
             }
 
-            this.serverProcesses[processId] = {
+            serverProcesses[processId] = {
                 elementId,
                 progress,
                 load,
@@ -231,9 +210,9 @@ export class FilePondInterop {
 
             const metadataJson = metadata == null ? null : JSON.stringify(metadata);
 
-            dotNetCallback.invokeMethodAsync("ProcessFileJs", elementId, processId, fieldName, this.getJsonFromObjectOrArray(fileItem), metadataJson)
+            dotNetCallback.invokeMethodAsync("ProcessFileJs", elementId, processId, fieldName, getJsonFromObjectOrArray(fileItem), metadataJson)
                 .then((serverId) => {
-                    const serverProcess = this.serverProcesses[processId];
+                    const serverProcess = serverProcesses[processId];
                     if (!serverProcess) {
                         return;
                     }
@@ -243,21 +222,21 @@ export class FilePondInterop {
                     }
 
                     serverProcess.load(serverId ?? '');
-                    delete this.serverProcesses[processId];
+                    delete serverProcesses[processId];
                 })
                 .catch((processError) => {
-                    const serverProcess = this.serverProcesses[processId];
+                    const serverProcess = serverProcesses[processId];
                     if (!serverProcess) {
                         return;
                     }
 
-                    serverProcess.error(this.getErrorMessage(processError));
-                    delete this.serverProcesses[processId];
+                    serverProcess.error(getErrorMessage(processError));
+                    delete serverProcesses[processId];
                 });
 
             return {
                 abort: () => {
-                    const serverProcess = this.serverProcesses[processId];
+                    const serverProcess = serverProcesses[processId];
                     if (!serverProcess) {
                         return;
                     }
@@ -266,24 +245,22 @@ export class FilePondInterop {
                         .catch((abortError) => console.warn('Error aborting Blazor server.process', abortError));
 
                     serverProcess.abort();
-                    delete this.serverProcesses[processId];
+                    delete serverProcesses[processId];
                 }
             };
         };
-    }
-
-    reportServerProcessProgress(elementId, processId, isLengthComputable, loaded, total) {
-        const serverProcess = this.serverProcesses[processId];
+}
+export function reportServerProcessProgress(elementId, processId, isLengthComputable, loaded, total) {
+        const serverProcess = serverProcesses[processId];
 
         if (!serverProcess || serverProcess.elementId !== elementId) {
             return;
         }
 
         serverProcess.progress(isLengthComputable, loaded, total);
-    }
-
-    findFileItemForProcess(elementId, file) {
-        const pond = this.ponds[elementId];
+}
+export function findFileItemForProcess(elementId, file) {
+        const pond = ponds[elementId];
 
         if (!pond) {
             return null;
@@ -299,17 +276,15 @@ export class FilePondInterop {
         return files.find(item =>
             item.filename === file?.name &&
             item.fileSize === (file?.size ?? 0));
-    }
-
-    createProcessId() {
+}
+export function createProcessId() {
         if (window.crypto?.randomUUID) {
             return window.crypto.randomUUID();
         }
 
         return `${Date.now()}-${Math.random().toString(36).slice(2, 11)}`;
-    }
-
-    getErrorMessage(error) {
+}
+export function getErrorMessage(error) {
         if (!error) {
             return 'Upload failed';
         }
@@ -319,21 +294,19 @@ export class FilePondInterop {
         }
 
         return error.message || error.toString() || 'Upload failed';
-    }
-
-    addEventListener(elementId, eventName, dotNetCallback) {
-        const pond = this.ponds[elementId];
+}
+export function addEventListener(elementId, eventName, dotNetCallback) {
+        const pond = ponds[elementId];
         pond.on(eventName, (...args) => {
-            const json = this.getJsonFromArguments(...args);
+            const json = getJsonFromArguments(...args);
             return dotNetCallback.invokeMethodAsync("Invoke", json);
         });
-    }
-
-    addOutputEventListener(elementId, eventName, dotNetCallback) {
-        const pond = this.ponds[elementId];
+}
+export function addOutputEventListener(elementId, eventName, dotNetCallback) {
+        const pond = ponds[elementId];
 
         const handleFileEvent = (file) => {
-            const filePondItemJson = this.getJsonFromObjectOrArray(file);
+            const filePondItemJson = getJsonFromObjectOrArray(file);
             return dotNetCallback.invokeMethodAsync("InvokeWithOutput", filePondItemJson).then((data) => data);
         };
 
@@ -353,16 +326,15 @@ export class FilePondInterop {
                 pond.beforeRemoveFile = handleFileEvent;
                 break;
             case "OnFileRename":
-                let existingOptions = this.options[elementId];
+                let existingOptions = fpOptions[elementId];
                 if (!existingOptions) existingOptions = {};
                 existingOptions.fileRenameFunction = handleRenameEvent;
                 pond.setOptions(existingOptions);
-                this.options[elementId] = existingOptions;
+                fpOptions[elementId] = existingOptions;
                 break;
         }
-    }
-
-    async enablePlugins(plugins) {
+}
+export async function enablePlugins(plugins) {
         plugins.forEach(plugin => {
             const pluginName = `FilePondPlugin${plugin}`;
             const pluginVariable = window[pluginName];
@@ -372,21 +344,20 @@ export class FilePondInterop {
                 console.error(`Could not load FilePond plugin (${pluginName}), are you sure the necessary script is on the page?`);
             }
         });
-    }
-
-    async enableOtherPlugins(plugins) {
+}
+export async function enableOtherPlugins(plugins) {
         plugins.forEach(plugin => {
             const pluginVariable = window[plugin];
             if (pluginVariable) {
                 FilePond.registerPlugin(pluginVariable);
             } else {
-                console.error(`Could not load FilePond plugin (${pluginName}), are you sure the necessary script is on the page?`);
+                console.error(`Could not load FilePond plugin (${plugin}), are you sure the necessary script is on the page?`);
             }
         });
-    }
+}
 
-    async getFileAsBlob(elementId, query) {
-        const pond = this.ponds[elementId];
+export async function getFileAsBlob(elementId, query) {
+        const pond = ponds[elementId];
         const fileItem = query ? pond.getFile(query) : pond.getFile();
         
         if (!fileItem) {
@@ -439,11 +410,9 @@ export class FilePondInterop {
         const fallbackBlob = file ? new Blob([file]) : new Blob([]);
         console.log(`Using fallback blob for ${query}, size:`, fallbackBlob.size);
         return fallbackBlob;
-    }
-
-    // New method to explicitly get the original (untransformed) file
-    getOriginalFileAsBlob(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function getOriginalFileAsBlob(elementId, query) {
+        const pond = ponds[elementId];
         const fileItem = query ? pond.getFile(query) : pond.getFile();
         
         if (!fileItem) {
@@ -453,18 +422,13 @@ export class FilePondInterop {
         // Always return the original file
         const file = fileItem.file;
         return file ? new Blob([file]) : new Blob([]);
-    }
-
-
-    hasFileContent(elementId, query) {
-        const pond = this.ponds[elementId];
+}
+export function hasFileContent(elementId, query) {
+        const pond = ponds[elementId];
         const file = query ? pond.getFile(query).file : pond.getFile().file;
         return file && file.size > 0;
-    }
-
-    // New method to get multiple files as blobs efficiently
-    // This method processes files sequentially to avoid concurrency issues
-    async getFilesAsBlobsSequential(elementId, fileIds) {
+}
+export async function getFilesAsBlobsSequential(elementId, fileIds) {
         if (!fileIds || fileIds.length === 0) {
             return [];
         }
@@ -474,7 +438,7 @@ export class FilePondInterop {
         const results = [];
         for (const fileId of fileIds) {
             try {
-                const blob = await this.getFileAsBlob(elementId, fileId);
+                const blob = await getFileAsBlob(elementId, fileId);
                 
                 // Log transformation info
                 console.log(`File ${fileId}: Original size vs Transformed size:`, blob.size);
@@ -495,29 +459,25 @@ export class FilePondInterop {
         }
         
         return results;
-    }
-
-    getJsonFromArguments(...args) {
-        const processedArgs = args.map(arg => (typeof arg === 'object' && arg !== null) ? this.objectToStringifyable(arg) : arg);
+}
+export function getJsonFromArguments(...args) {
+        const processedArgs = args.map(arg => (typeof arg === 'object' && arg !== null) ? objectToStringifyable(arg) : arg);
         return JSON.stringify(processedArgs);
-    }
-
-    getJsonFromObjectOrArray(objOrArray) {
-        const stringifyable = this.mapToJSON(objOrArray);
+}
+export function getJsonFromObjectOrArray(objOrArray) {
+        const stringifyable = mapToJSON(objOrArray);
         return JSON.stringify(stringifyable);
-    }
-
-    mapToJSON(objOrArray) {
+}
+export function mapToJSON(objOrArray) {
         if (Array.isArray(objOrArray)) {
-            return objOrArray.map(item => (typeof item === 'object' && item !== null) ? this.objectToStringifyable(item) : item);
+            return objOrArray.map(item => (typeof item === 'object' && item !== null) ? objectToStringifyable(item) : item);
         } else if (typeof objOrArray === 'object' && objOrArray !== null) {
-            return this.objectToStringifyable(objOrArray);
+            return objectToStringifyable(objOrArray);
         } else {
             return objOrArray;
         }
-    }
-
-    objectToStringifyable(obj) {
+}
+export function objectToStringifyable(obj) {
         const objectJSON = {};
         const props = Object.getOwnPropertyNames(obj);
 
@@ -527,30 +487,28 @@ export class FilePondInterop {
                 objectJSON[prop] = descriptor.get.call(obj);
             } else {
                 const propValue = obj[prop];
-                objectJSON[prop] = (typeof propValue === 'object' && propValue !== null) ? this.objectToStringifyable(propValue) : propValue;
+                objectJSON[prop] = (typeof propValue === 'object' && propValue !== null) ? objectToStringifyable(propValue) : propValue;
             }
         });
 
         return objectJSON;
-    }
-
-    createObserver(elementId) {
+}
+export function createObserver(elementId) {
         const target = document.getElementById(elementId);
-        this.observer = new MutationObserver((mutations) => {
+        pondMutationObserver = new MutationObserver((mutations) => {
             const targetRemoved = mutations.some(mutation => Array.from(mutation.removedNodes).indexOf(target) !== -1);
 
             if (targetRemoved) {
-                this.destroy(elementId);
+                destroy(elementId);
 
-                this.observer && this.observer.disconnect();
-                delete this.observer;
+                pondMutationObserver && pondMutationObserver.disconnect();
+                pondMutationObserver = null;
             }
         });
 
-        this.observer.observe(target.parentNode, { childList: true });
-    }
-
-    setFileSizeVisibility(elementId, showFileSize = true) {
+        pondMutationObserver.observe(target.parentNode, { childList: true });
+}
+export function setFileSizeVisibility(elementId, showFileSize = true) {
         // Find the FilePond element by ID
         const element = document.getElementById(elementId);
         
@@ -607,13 +565,12 @@ export class FilePondInterop {
         });
 
         // Store the observer so we can disconnect it later if needed
-        if (!this.fileSizeObservers) {
-            this.fileSizeObservers = {};
+        if (!fileSizeObservers) {
+            fileSizeObservers = {};
         }
-        this.fileSizeObservers[elementId] = observer;
-    }
-
-    setValidationState(elementId, isValid, errorMessage = null) {
+        fileSizeObservers[elementId] = observer;
+}
+export function setValidationState(elementId, isValid, errorMessage = null) {
         const wrapper = document.getElementById(elementId.replace('filepond-', 'filepond-wrapper-'));
         if (!wrapper) return;
 
@@ -642,10 +599,9 @@ export class FilePondInterop {
                 wrapper.appendChild(errorDiv);
             }
         }
-    }
-
-    setFileSuccess(elementId, query, isSuccess = true) {
-        const pond = this.ponds[elementId];
+}
+export function setFileSuccess(elementId, query, isSuccess = true) {
+        const pond = ponds[elementId];
         if (!pond) {
             console.warn(`Could not find FilePond instance for element: ${elementId}`);
             return;
@@ -657,11 +613,10 @@ export class FilePondInterop {
             return;
         }
 
-        this._setFileSuccessInternal(file, isSuccess, false);
-    }
-
-    setFileSuccessWhenReady(elementId, query, isSuccess = true) {
-        const pond = this.ponds[elementId];
+        _setFileSuccessInternal(file, isSuccess, false);
+}
+export function setFileSuccessWhenReady(elementId, query, isSuccess = true) {
+        const pond = ponds[elementId];
         if (!pond) {
             console.warn(`Could not find FilePond instance for element: ${elementId}`);
             return;
@@ -673,33 +628,29 @@ export class FilePondInterop {
             return;
         }
 
-        this._setFileSuccessInternal(file, isSuccess, true);
-    }
-
-    setAllFilesSuccess(elementId, isSuccess = true) {
-        const pond = this.ponds[elementId];
+        _setFileSuccessInternal(file, isSuccess, true);
+}
+export function setAllFilesSuccess(elementId, isSuccess = true) {
+        const pond = ponds[elementId];
         if (!pond) {
             console.warn(`Could not find FilePond instance for element: ${elementId}`);
             return;
         }
 
         const files = pond.getFiles();
-        this._setFilesSuccessInternal(files, isSuccess, false);
-    }
-
-    setAllFilesSuccessWhenReady(elementId, isSuccess = true) {
-        const pond = this.ponds[elementId];
+        _setFilesSuccessInternal(files, isSuccess, false);
+}
+export function setAllFilesSuccessWhenReady(elementId, isSuccess = true) {
+        const pond = ponds[elementId];
         if (!pond) {
             console.warn(`Could not find FilePond instance for element: ${elementId}`);
             return;
         }
 
         const files = pond.getFiles();
-        this._setFilesSuccessInternal(files, isSuccess, true);
-    }
-
-    // Helper method to set success state for a single file
-    _setFileSuccessInternal(file, isSuccess, waitForReady = false) {
+        _setFilesSuccessInternal(files, isSuccess, true);
+}
+export function _setFileSuccessInternal(file, isSuccess, waitForReady = false) {
         // Set metadata first
         if (isSuccess) {
             file.setMetadata('success', true);
@@ -772,10 +723,8 @@ export class FilePondInterop {
                 }, 100);
             }
         }
-    }
-
-    // Helper method to set success state for multiple files
-    _setFilesSuccessInternal(files, isSuccess, waitForReady = false) {
+}
+export function _setFilesSuccessInternal(files, isSuccess, waitForReady = false) {
         // Set metadata for all files first
         files.forEach(file => {
             if (isSuccess) {
@@ -858,8 +807,4 @@ export class FilePondInterop {
                 }, 100);
             }
         }
-    }
-
 }
-
-window.FilePondInterop = new FilePondInterop();
