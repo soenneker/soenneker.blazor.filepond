@@ -12,6 +12,7 @@
 @using Soenneker.Extensions.Enumerable
 @using Soenneker.Utils.Json
 @using Soenneker.Extensions.List
+@using Soenneker.Blazor.Utils.Ids
 
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
@@ -135,9 +136,10 @@
     {
         _initializing = false;
         _initialized = false;
-        _elementId = "filepond-" + Guid.NewGuid().ToString("N");
-        _observerId = "filepond-observer-" + Guid.NewGuid().ToString("N");
-        _wrapperId = "filepond-wrapper-" + Guid.NewGuid().ToString("N");
+        string root = BlazorIdGenerator.New("filepond");
+        _elementId = BlazorIdGenerator.Child(root, "input");
+        _observerId = BlazorIdGenerator.Child(root, "observer");
+        _wrapperId = BlazorIdGenerator.Child(root, "wrapper");
         Files = [];
         _silentAddFiles = [];
         _afterInitializationOperations = [];
