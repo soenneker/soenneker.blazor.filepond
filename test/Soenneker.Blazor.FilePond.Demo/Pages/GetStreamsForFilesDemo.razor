@@ -54,7 +54,7 @@
         <DemoPanel Title="Test Result" Description="Latest execution outcome and details.">
             @if (!string.IsNullOrWhiteSpace(lastTestResult))
             {
-                <Alert Variant="@(lastTestSuccess ? AlertVariant.Info : AlertVariant.Danger)">
+                <Alert Variant="@(lastTestSuccess ? AlertVariant.Default : AlertVariant.Destructive)">
                     <AlertMessage>@lastTestName</AlertMessage>
                     <AlertDescription>@lastTestResult</AlertDescription>
                 </Alert>
