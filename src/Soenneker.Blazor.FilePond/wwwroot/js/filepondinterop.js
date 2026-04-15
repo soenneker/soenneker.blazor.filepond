@@ -661,8 +661,8 @@ export function _setFileSuccessInternal(file, isSuccess, waitForReady = false) {
         // Apply styling function
         const applyStyling = () => {
             // Check if we need to wait for the file to be ready
-            // File is ready when it's either idle (1), processing queued (2), processing complete (4), or has been processed
-            if (waitForReady && file.status !== 1 && file.status !== 2 && file.status !== 4) { // 1 = Idle, 2 = ProcessingQueued, 4 = ProcessingComplete
+            // File is ready when it's either idle (2), processing queued (9), processing complete (5), or has been processed
+            if (waitForReady && file.status !== 2 && file.status !== 9 && file.status !== 5) { // 2 = Idle, 9 = ProcessingQueued, 5 = ProcessingComplete
                 return false;
             }
 
@@ -741,8 +741,8 @@ export function _setFilesSuccessInternal(files, isSuccess, waitForReady = false)
             
             files.forEach(file => {
                 // Check if we need to wait for the file to be ready
-                // File is ready when it's either idle (1), processing queued (2), processing complete (4), or has been processed
-                if (waitForReady && file.status !== 1 && file.status !== 2 && file.status !== 4) { // 1 = Idle, 2 = ProcessingQueued, 4 = ProcessingComplete
+                // File is ready when it's either idle (2), processing queued (9), processing complete (5), or has been processed
+                if (waitForReady && file.status !== 2 && file.status !== 9 && file.status !== 5) { // 2 = Idle, 9 = ProcessingQueued, 5 = ProcessingComplete
                     allReady = false;
                     return;
                 }

@@ -12,19 +12,19 @@ public sealed partial class FilePondFileStatus
     /// Represents the initialization status of a FilePond file. <para/>
     /// This status is set when a file is initially added to FilePond but has not started processing or loading.
     /// </summary>
-    public static readonly FilePondFileStatus Init = new(0);
+    public static readonly FilePondFileStatus Init = new(1);
 
     /// <summary>
     /// Represents the idle status of a FilePond file. <para/>
     /// In the idle state, a file is ready for user interaction. This state occurs after the initialization and before any processing or loading starts.
     /// </summary>
-    public static readonly FilePondFileStatus Idle = new(1);
+    public static readonly FilePondFileStatus Idle = new(2);
 
     /// <summary>
     /// Represents the processing queued status of a FilePond file. <para/>
     /// This status is set when a file is in the queue to be processed but has not yet started processing.
     /// </summary>
-    public static readonly FilePondFileStatus ProcessingQueued = new(2);
+    public static readonly FilePondFileStatus ProcessingQueued = new(9);
 
     /// <summary>
     /// Represents the processing status of a FilePond file. <para/>
@@ -36,19 +36,19 @@ public sealed partial class FilePondFileStatus
     /// Represents the processing complete status of a FilePond file. <para/>
     /// This status is set when the processing of a file is successfully completed, and the processed file is ready for further actions or uploading.
     /// </summary>
-    public static readonly FilePondFileStatus ProcessingComplete = new(4);
+    public static readonly FilePondFileStatus ProcessingComplete = new(5);
 
     /// <summary>
     /// Represents the processing error status of a FilePond file. <para/>
     /// This status is set when an error occurs during the processing of a file, and the file cannot be processed successfully.
     /// </summary>
-    public static readonly FilePondFileStatus ProcessingError = new(5);
+    public static readonly FilePondFileStatus ProcessingError = new(6);
 
     /// <summary>
     /// Represents the processing revert error status of a FilePond file. <para/>
     /// This status is set when an error occurs while reverting the processing changes of a file.
     /// </summary>
-    public static readonly FilePondFileStatus ProcessingRevertError = new(6);
+    public static readonly FilePondFileStatus ProcessingRevertError = new(10);
 
     /// <summary>
     /// Represents the loading status of a FilePond file. <para/>
