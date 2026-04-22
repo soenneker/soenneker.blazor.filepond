@@ -48,27 +48,27 @@
 
         <DemoPanel Title="Current Status" Description="Current validation settings and file counters.">
             <Div Space="Space.Y.Is3">
-                <Div Display="Display.Flex" Flex="Flex.Wrap" AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
+                <Div Display="Display.Flex" Flex=@("flex-wrap") AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
                     <Span FontWeight="FontWeight.Medium">File Size Validation</Span>
                     <Span TextColor="@(_options.AllowFileSizeValidation ? TextColor.Foreground : TextColor.MutedForeground)">
                         @(_options.AllowFileSizeValidation ? "Enabled" : "Disabled")
                     </Span>
                 </Div>
-                <Div Display="Display.Flex" Flex="Flex.Wrap" AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
+                <Div Display="Display.Flex" Flex=@("flex-wrap") AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
                     <Span FontWeight="FontWeight.Medium">File Type Validation</Span>
                     <Span TextColor="@(_options.AllowFileTypeValidation ? TextColor.Foreground : TextColor.MutedForeground)">
                         @(_options.AllowFileTypeValidation ? "Enabled" : "Disabled")
                     </Span>
                 </Div>
-                <Div Display="Display.Flex" Flex="Flex.Wrap" AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
+                <Div Display="Display.Flex" Flex=@("flex-wrap") AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
                     <Span FontWeight="FontWeight.Medium">Max File Size</Span>
                     <Span>@(_options.MaxFileSize?.ToString("N0") ?? "Unlimited") bytes</Span>
                 </Div>
-                <Div Display="Display.Flex" Flex="Flex.Wrap" AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
+                <Div Display="Display.Flex" Flex=@("flex-wrap") AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
                     <Span FontWeight="FontWeight.Medium">Accepted Types</Span>
                     <Span>@(_options.AcceptedFileTypes?.Count > 0 ? string.Join(", ", _options.AcceptedFileTypes) : "All types")</Span>
                 </Div>
-                <Div Display="Display.Flex" Flex="Flex.Wrap" AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
+                <Div Display="Display.Flex" Flex=@("flex-wrap") AlignUtility="Align.ItemsCenter.JustifyBetween" Gap="Gap.Is2">
                     <Span FontWeight="FontWeight.Medium">Files Added</Span>
                     <Span>@_filesAddedCount</Span>
                 </Div>
