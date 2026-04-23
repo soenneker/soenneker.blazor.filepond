@@ -31,14 +31,14 @@ jobs:
         with:
           dotnet-version: 10.0.x
 
-      - name: Restore tests
-        run: dotnet restore test/Soenneker.Blazor.FilePond.Demo/Soenneker.Blazor.FilePond.Demo.csproj --verbosity minimal
+      - name: Restore
+        run: dotnet restore Soenneker.Blazor.FilePond.slnx --verbosity minimal
 
-      - name: Build tests
-        run: dotnet build test/Soenneker.Blazor.FilePond.Demo/Soenneker.Blazor.FilePond.Demo.csproj --configuration Release --no-restore --verbosity minimal
+      - name: Build
+        run: dotnet build Soenneker.Blazor.FilePond.slnx --configuration Release --no-restore --verbosity minimal
 
       - name: Test
-        run: dotnet test --project test/Soenneker.Blazor.FilePond.Demo/Soenneker.Blazor.FilePond.Demo.csproj --configuration Release --no-build --no-restore --verbosity minimal
+        run: dotnet test --project test/Soenneker.Blazor.FilePond.Tests/Soenneker.Blazor.FilePond.Tests.csproj --configuration Release --no-build --no-restore --verbosity minimal
 
       - name: Pack
         run: dotnet pack src/Soenneker.Blazor.FilePond/Soenneker.Blazor.FilePond.csproj --configuration Release --no-build --no-restore --output . --verbosity minimal
