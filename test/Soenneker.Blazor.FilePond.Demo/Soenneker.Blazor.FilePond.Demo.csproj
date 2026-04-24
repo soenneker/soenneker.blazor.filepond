@@ -11,7 +11,7 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.7" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.7" PrivateAssets="all" />
-        <PackageReference Include="Soenneker.Quark.Gen.Lucide" Version="4.0.106">
+        <PackageReference Include="Soenneker.Quark.Gen.Lucide" Version="4.0.107">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
