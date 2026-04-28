@@ -11,13 +11,13 @@
 
 <Div Space="Space.Y.Is6">
     <Alert BackgroundColor="BackgroundColor.Accent">
-        <AlertMessage>Image transform stream check</AlertMessage>
+        <AlertTitle>Image transform stream check</AlertTitle>
         <AlertDescription>
             This page checks whether <Code Inline="true">GetStreamForFile()</Code> returns the transformed file instead of the original upload.
         </AlertDescription>
     </Alert>
 
-    <Grid Columns="Columns.Is1.OnMd.Is2" Gap="Gap.Is4">
+    <Grid Columns="GridCols.Is1.OnMd.Is2" Gap="Gap.Is4">
         <DemoPanel Title="Image Transform FilePond" Description="Upload an image and query the transformed and original streams.">
             <FilePond @ref="_filePond"
                       Options="_options"
@@ -42,8 +42,8 @@
 
             @if (!string.IsNullOrWhiteSpace(_errorMessage))
             {
-                <Alert Variant="AlertVariant.Danger">
-                    <AlertMessage>Error</AlertMessage>
+                <Alert Variant="AlertVariant.Destructive">
+                    <AlertTitle>Error</AlertTitle>
                     <AlertDescription>@_errorMessage</AlertDescription>
                 </Alert>
             }
@@ -51,7 +51,7 @@
             @if (!string.IsNullOrWhiteSpace(_successMessage))
             {
                 <Alert>
-                    <AlertMessage>Result</AlertMessage>
+                    <AlertTitle>Result</AlertTitle>
                     <AlertDescription>@_successMessage</AlertDescription>
                 </Alert>
             }

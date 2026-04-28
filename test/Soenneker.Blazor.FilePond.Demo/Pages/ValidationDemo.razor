@@ -6,7 +6,7 @@
 @using Soenneker.Utils.Random
 @inject ILogger<ValidationDemo> Logger
 
-<Grid Columns="Columns.Is1.OnMd.Is2" Gap="Gap.Is4">
+<Grid Columns="GridCols.Is1.OnMd.Is2" Gap="Gap.Is4">
     <DemoPanel Title="Validation" Description="Drive validation state directly from the demo.">
         <FilePond @ref="FilePond"
                   Options="_options"
