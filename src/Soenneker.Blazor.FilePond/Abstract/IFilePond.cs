@@ -6,14 +6,14 @@ using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Soenneker.Quark;
+using Soenneker.Lepton.Suite.Abstract;
 
 namespace Soenneker.Blazor.FilePond.Abstract;
 
 /// <summary>
 /// Represents a FilePond component in Blazor.
 /// </summary>
-public interface IFilePond : ICoreCancellableComponent
+public interface IFilePond : ILeptonCancellableIdentifiableContentElement
 {
     /// <summary>
     /// Gets or sets the options for the FilePond component.

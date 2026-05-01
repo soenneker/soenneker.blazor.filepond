@@ -13,17 +13,18 @@
 @using Soenneker.Utils.Json
 @using Soenneker.Extensions.List
 @using Soenneker.Blazor.Utils.Ids
+@using Soenneker.Lepton.Suite
 
 @inject IFilePondInterop FilePondInterop
 @inject IInteropEventListener InteropEventListener
 @inject ILogger<FilePond> Logger
 
-@inherits Soenneker.Quark.CoreCancellableComponent
+@inherits LeptonCancellableIdentifiableContentElement
 @implements IFilePond
 
 <div id="@_observerId" ></div>
 <div id="@_wrapperId" class="@GetWrapperCssClass()">
-    <input type="file" @attributes="Attributes" id="@_elementId" />
+    <input type="file" @attributes='BuildAttributes("id", _elementId)' />
     @if (ValidationErrorMessage.HasContent())
     {
         <div class="filepond-validation-error">@ValidationErrorMessage</div>
