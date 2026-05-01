@@ -24,7 +24,7 @@
 
 <div id="@_observerId" ></div>
 <div id="@_wrapperId" class="@GetWrapperCssClass()">
-    <input type="file" @attributes='BuildAttributes("id", _elementId)' />
+    <input type="file" @attributes="InputAttributes" />
     @if (ValidationErrorMessage.HasContent())
     {
         <div class="filepond-validation-error">@ValidationErrorMessage</div>
@@ -130,6 +130,16 @@
     private bool _initializing;
     private bool _initialized;
     private bool _hasBeenValidated;
+
+    private Dictionary<string, object> InputAttributes
+    {
+        get
+        {
+            Dictionary<string, object> attributes = BuildAttributes();
+            attributes["id"] = _elementId;
+            return attributes;
+        }
+    }
 
     private readonly List<Func<ValueTask>> _afterInitializationOperations;
 
