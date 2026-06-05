@@ -93,9 +93,18 @@ public sealed partial class FilePondPluginType
     /// </summary>
     public static readonly FilePondPluginType ImageValidateSize = new(nameof(ImageValidateSize));
 
+    /// <summary>
+    /// The media preview.
+    /// </summary>
     public static readonly FilePondPluginType MediaPreview = new(nameof(MediaPreview));
 
+    /// <summary>
+    /// The image overlay.
+    /// </summary>
     public static readonly FilePondPluginType ImageOverlay = new(nameof(ImageOverlay));
 
+    /// <summary>
+    /// The pdf preview.
+    /// </summary>
     public static readonly FilePondPluginType PdfPreview = new(nameof(PdfPreview));
 }

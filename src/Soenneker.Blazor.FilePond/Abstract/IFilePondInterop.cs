@@ -16,6 +16,11 @@ namespace Soenneker.Blazor.FilePond.Abstract;
 /// </summary>
 public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 {
+    /// <summary>
+    /// Executes the initialize operation.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask Initialize(CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -172,10 +177,30 @@ public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
     /// <param name="cancellationToken">A token to observe while waiting for the asynchronous operation to complete.</param>
     ValueTask Destroy(string elementId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Creates observer.
+    /// </summary>
+    /// <param name="elementId">The element id.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask CreateObserver(string elementId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Executes the enable plugins operation.
+    /// </summary>
+    /// <param name="useCdn">The use cdn.</param>
+    /// <param name="filePondPluginTypes">The file pond plugin types.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask EnablePlugins(bool useCdn, List<FilePondPluginType> filePondPluginTypes, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Executes the enable other plugins operation.
+    /// </summary>
+    /// <param name="useCdn">The use cdn.</param>
+    /// <param name="filePondOtherPlugins">The file pond other plugins.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask EnableOtherPlugins(bool useCdn, List<string> filePondOtherPlugins, CancellationToken cancellationToken = default);
 
     /// <summary>

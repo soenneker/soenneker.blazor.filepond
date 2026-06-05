@@ -113,10 +113,19 @@ public interface IFilePond : ILeptonCancellableIdentifiableContentElement
     /// </summary>
     EventCallback<(List<FilePondFileItem> Files, int Origin, int Target)> OnReorderFiles { get; set; }
 
+    /// <summary>
+    /// Gets or sets on server load.
+    /// </summary>
     EventCallback<FilePondFileItem> OnServerLoad { get; set; }
 
+    /// <summary>
+    /// Gets or sets on server error.
+    /// </summary>
     EventCallback<FilePondFileItem> OnServerError { get; set; }
 
+    /// <summary>
+    /// Gets or sets on server data.
+    /// </summary>
     EventCallback<FilePondFileItem> OnServerData { get; set; }
 
     /// <summary>
@@ -187,6 +196,13 @@ public interface IFilePond : ILeptonCancellableIdentifiableContentElement
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     ValueTask AddFile(string uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Adds file.
+    /// </summary>
+    /// <param name="stream">The stream.</param>
+    /// <param name="options">The options.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask AddFile(Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -207,8 +223,21 @@ public interface IFilePond : ILeptonCancellableIdentifiableContentElement
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     ValueTask AddFiles(List<string> uriOrBase64EncodedData, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Removes file.
+    /// </summary>
+    /// <param name="options">The options.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask RemoveFile(FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Removes file.
+    /// </summary>
+    /// <param name="index">The index.</param>
+    /// <param name="options">The options.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask RemoveFile(int index, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -309,8 +338,20 @@ public interface IFilePond : ILeptonCancellableIdentifiableContentElement
     /// <returns>A <see cref="ValueTask"/> representing the asynchronous operation.</returns>
     ValueTask Sort(string compareFunctionName, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Executes the move file operation.
+    /// </summary>
+    /// <param name="query">The query.</param>
+    /// <param name="index">The index.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask MoveFile(object query, int index, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Executes the destroy operation.
+    /// </summary>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     ValueTask Destroy(CancellationToken cancellationToken = default);
 
     /// <summary>

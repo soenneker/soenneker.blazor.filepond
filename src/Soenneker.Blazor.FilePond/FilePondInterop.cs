@@ -384,6 +384,15 @@ public sealed class FilePondInterop : IFilePondInterop
         }
     }
 
+    /// <summary>
+    /// Adds event listener.
+    /// </summary>
+    /// <param name="functionName">The function name.</param>
+    /// <param name="elementId">The element id.</param>
+    /// <param name="eventName">The event name.</param>
+    /// <param name="dotNetCallback">The dot net callback.</param>
+    /// <param name="cancellationToken">The cancellation token.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async ValueTask AddEventListener(string functionName, string elementId, string eventName, object dotNetCallback,
         CancellationToken cancellationToken = default)
     {
@@ -610,6 +619,15 @@ public sealed class FilePondInterop : IFilePondInterop
         }
     }
 
+    /// <summary>
+    /// Executes the process file js operation.
+    /// </summary>
+    /// <param name="elementId">The element id.</param>
+    /// <param name="processId">The process id.</param>
+    /// <param name="fieldName">The field name.</param>
+    /// <param name="fileJson">The file json.</param>
+    /// <param name="metadataJson">The metadata json.</param>
+    /// <returns>A task containing the result of the operation.</returns>
     [JSInvokable("ProcessFileJs")]
     public async Task<string> ProcessFileJs(string elementId, string processId, string fieldName, string fileJson, string? metadataJson)
     {
@@ -649,6 +667,12 @@ public sealed class FilePondInterop : IFilePondInterop
         }
     }
 
+    /// <summary>
+    /// Executes the abort server process js operation.
+    /// </summary>
+    /// <param name="elementId">The element id.</param>
+    /// <param name="processId">The process id.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     [JSInvokable("AbortServerProcessJs")]
     public Task AbortServerProcessJs(string elementId, string processId)
     {
@@ -662,6 +686,10 @@ public sealed class FilePondInterop : IFilePondInterop
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// Asynchronously releases resources used by the current instance.
+    /// </summary>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async ValueTask DisposeAsync()
     {
         foreach (ServerProcessContext context in _activeServerProcesses.Values)

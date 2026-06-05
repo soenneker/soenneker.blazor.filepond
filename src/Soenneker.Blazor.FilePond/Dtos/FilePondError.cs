@@ -2,6 +2,9 @@ using System.Text.Json.Serialization;
 
 namespace Soenneker.Blazor.FilePond.Dtos;
 
+/// <summary>
+/// Represents the file pond error record.
+/// </summary>
 public sealed record FilePondError
 {
     /// <summary>

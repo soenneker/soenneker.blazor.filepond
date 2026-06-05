@@ -180,6 +180,9 @@ public sealed class FilePondOptions
     [JsonPropertyName("credits")]
     public Dictionary<string, string>? Credits { get; set; }
 
+    /// <summary>
+    /// Gets or sets a value indicating whether use cdn.
+    /// </summary>
     [JsonPropertyName("useCdn")]
     public bool UseCdn { get; set; } = true;
 
