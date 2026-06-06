@@ -43,7 +43,7 @@
 
     <ItemGroup>
         <PackageReference Include="Soenneker.Asyncs.Initializers" Version="4.0.55" />
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.3969" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.3970" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1668" />
         <PackageReference Include="Soenneker.Extensions.List" Version="4.0.971" />
         <PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.17" />
