@@ -12,7 +12,7 @@ internal static class FilePondUtil
         if (type == null)
         {
             return useCdn
-                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.8/dist/filepond.min.css", "sha256-rPKREUsGjpXZQAdsZrdB0HLRhdxPetyzFUv45vgbDLs=")
+                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.12/dist/filepond.min.css", "sha256-XeI6SYpZ0IcRzLoy8CiLNc2r+M4OO7bBGvLtcZF0K30=")
                 : ($"{localBasePath}filepond.min.css", null);
         }
 
@@ -40,8 +40,8 @@ internal static class FilePondUtil
             },
             {
                 nameof(FilePondPluginType.FilePoster),
-                ("https://cdn.jsdelivr.net/npm/filepond-plugin-file-poster@2.5.1/dist/filepond-plugin-file-poster.min.css",
-                    "sha256-rX6jcSTtxygcIKjtgousEYPuZlyvaLRXumGXjGBdzDw=")
+                ("https://cdn.jsdelivr.net/npm/filepond-plugin-file-poster@2.5.2/dist/filepond-plugin-file-poster.min.css",
+                    "sha256-7n3qCDe+cBCdOP00L7f5v+4PbYs9W1NYwR09uam8LhA=")
             },
             {
                 nameof(FilePondPluginType.PdfPreview),
@@ -65,7 +65,7 @@ internal static class FilePondUtil
         if (type == null)
         {
             return useCdn
-                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.8/dist/filepond.min.js", "sha256-79w3nNtc2CIEF9m4/IxZeF660M0kGLHnJ3v/V9UDLxY=")
+                ? ("https://cdn.jsdelivr.net/npm/filepond@4.32.12/dist/filepond.min.js", "sha256-FbTaSG26e32TaHrD36LOZMAPGgtROLQlylUTewUI9t4=")
                 : ($"{localBasePath}filepond.min.js", null);
         }
 
@@ -118,8 +118,8 @@ internal static class FilePondUtil
             },
             {
                 nameof(FilePondPluginType.ImageTransform),
-                ("https://cdn.jsdelivr.net/npm/filepond-plugin-image-transform@3.8.7/dist/filepond-plugin-image-transform.min.js",
-                    "sha256-GU0jEm8SoiNKHfsqyKpkOea4WkH3g9wmZtfndENkkm4=")
+                ("https://cdn.jsdelivr.net/npm/filepond-plugin-image-transform@3.8.8/dist/filepond-plugin-image-transform.min.js",
+                    "sha256-YSv4qxeZzs1+DAHOKdWHKoZ3jc0L5OYUZjTOiemAGhU=")
             },
             {
                 nameof(FilePondPluginType.ImageCrop),
@@ -138,8 +138,8 @@ internal static class FilePondUtil
             },
             {
                 nameof(FilePondPluginType.FilePoster),
-                ("https://cdn.jsdelivr.net/npm/filepond-plugin-file-poster@2.5.1/dist/filepond-plugin-file-poster.min.js",
-                    "sha256-ujyZGxQynUBTF7MOO3m9BJb6RRmn0DVwTlpBOzTU7cM=")
+                ("https://cdn.jsdelivr.net/npm/filepond-plugin-file-poster@2.5.2/dist/filepond-plugin-file-poster.min.js",
+                    "sha256-Y5pbEaMEPo4/xVaqMmdYv8kFBYJcI2sU0qGdV8ZaDhA=")
             },
             {
                 nameof(FilePondPluginType.ImageValidateSize),
