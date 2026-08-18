@@ -15,7 +15,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Soenneker.Quark.Gen.Tailwind.Manifest" Version="4.0.181">
+        <PackageReference Include="Soenneker.Quark.Gen.Tailwind.Manifest" Version="4.0.182">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -24,7 +24,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Soenneker.Quark.Suite" Version="4.0.1253" />
+        <PackageReference Include="Soenneker.Quark.Suite" Version="4.0.1255" />
     </ItemGroup>
 
     <ItemGroup>
