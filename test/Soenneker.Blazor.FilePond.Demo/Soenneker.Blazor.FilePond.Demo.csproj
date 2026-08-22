@@ -11,11 +11,11 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.11" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.11" PrivateAssets="all" />
-        <PackageReference Include="Soenneker.Quark.Gen.Lucide" Version="4.0.205">
+        <PackageReference Include="Soenneker.Quark.Gen.Lucide" Version="4.0.206">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Soenneker.Quark.Gen.Tailwind.Manifest" Version="4.0.192">
+        <PackageReference Include="Soenneker.Quark.Gen.Tailwind.Manifest" Version="4.0.193">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
@@ -24,7 +24,7 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Soenneker.Quark.Suite" Version="4.0.1270" />
+        <PackageReference Include="Soenneker.Quark.Suite" Version="4.0.1271" />
     </ItemGroup>
 
     <ItemGroup>
