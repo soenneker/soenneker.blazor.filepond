@@ -46,8 +46,11 @@ public sealed class FilePondServerProcessRequest
     }
 
     /// <summary>
-    /// Retrieves a stream for the current file using the same transformed output FilePond would upload.
+    /// Retrieves stream.
     /// </summary>
+    /// <param name="maxAllowedSize">Max Allowed Size for the get stream operation.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task whose result is the requested stream.</returns>
     public ValueTask<Stream?> GetStream(long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
         return _getStreamFunc(maxAllowedSize, cancellationToken);
@@ -56,6 +59,11 @@ public sealed class FilePondServerProcessRequest
     /// <summary>
     /// Reports upload progress back to FilePond so the built-in progress UI can update.
     /// </summary>
+    /// <param name="isLengthComputable">Whether length computable.</param>
+    /// <param name="loaded">Loaded for the report progress operation.</param>
+    /// <param name="total">Total for the report progress operation.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the report progress operation is complete.</returns>
     public ValueTask ReportProgress(bool isLengthComputable, long loaded, long total, CancellationToken cancellationToken = default)
     {
         return _reportProgressFunc(isLengthComputable, loaded, total, cancellationToken);

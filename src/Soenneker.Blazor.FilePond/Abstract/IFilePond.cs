@@ -199,10 +199,10 @@ public interface IFilePond : ILeptonCancellableIdentifiableContentElement
     /// <summary>
     /// Adds file.
     /// </summary>
-    /// <param name="stream">The stream.</param>
-    /// <param name="options">The options.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="stream">Stream for the add file operation.</param>
+    /// <param name="options">Options to configure for the file pond.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the file addition is complete.</returns>
     ValueTask AddFile(Stream stream, FilePondAddFileOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -226,26 +226,27 @@ public interface IFilePond : ILeptonCancellableIdentifiableContentElement
     /// <summary>
     /// Removes file.
     /// </summary>
-    /// <param name="options">The options.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="options">Options to configure for the file pond.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the file removal is complete.</returns>
     ValueTask RemoveFile(FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes file.
     /// </summary>
-    /// <param name="index">The index.</param>
-    /// <param name="options">The options.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="index">Zero-based position of the target item.</param>
+    /// <param name="options">Options to configure for the file pond.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the file removal is complete.</returns>
     ValueTask RemoveFile(int index, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Removes a file from FilePond at the specified index using the provided options.
     /// </summary>
-    /// <param name="fileId">The ID of the file to be removed.</param>
+    /// <param name="fileId">Identifier of the file to target.</param>
     /// <param name="options">Additional options for the file removal (optional).</param>
     /// <param name="cancellationToken">A cancellation token that can be used to cancel the asynchronous operation.</param>
+    /// <returns>A task that completes when the file removal is complete.</returns>
     ValueTask RemoveFile(string fileId, FilePondRemoveFileOptions? options = null, CancellationToken cancellationToken = default);
 
     /// <summary>
@@ -339,25 +340,26 @@ public interface IFilePond : ILeptonCancellableIdentifiableContentElement
     ValueTask Sort(string compareFunctionName, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes the move file operation.
+    /// Moves file.
     /// </summary>
-    /// <param name="query">The query.</param>
-    /// <param name="index">The index.</param>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="query">CSS media-query expression to evaluate against the current viewport.</param>
+    /// <param name="index">Zero-based position of the target item.</param>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the move file operation is complete.</returns>
     ValueTask MoveFile(object query, int index, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Executes the destroy operation.
+    /// Releases the resources held by the file pond.
     /// </summary>
-    /// <param name="cancellationToken">The cancellation token.</param>
-    /// <returns>A task that represents the asynchronous operation.</returns>
+    /// <param name="cancellationToken">Token used to cancel the operation.</param>
+    /// <returns>A task that completes when the destroy operation is complete.</returns>
     ValueTask Destroy(CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Destroys the element and initializes a new one in its place.
     /// </summary>
     /// <param name="cancellationToken">Cancellation token to cancel the operation.</param>
+    /// <returns>A task that completes when the re initialize operation is complete.</returns>
     ValueTask ReInitialize(CancellationToken cancellationToken = default);
 
     /// <summary>
