@@ -2,10 +2,11 @@ const ponds = {};
 const fpOptions = {};
 const deletedFlags = {};
 const serverProcesses = {};
-let pondMutationObserver = null;
+const pondMutationObservers = {};
 let fileSizeObservers;
 
 export async function create(elementId, options, dotNetCallback, useBlazorServerProcess = false) {
+        delete deletedFlags[elementId];
         let pond;
 
         const element = document.getElementById(elementId);
@@ -181,6 +182,11 @@ export function destroy(elementId) {
         if (fileSizeObservers && fileSizeObservers[elementId]) {
             fileSizeObservers[elementId].disconnect();
             delete fileSizeObservers[elementId];
+        }
+
+        if (pondMutationObservers[elementId]) {
+            pondMutationObservers[elementId].disconnect();
+            delete pondMutationObservers[elementId];
         }
 
         Object.keys(serverProcesses)
@@ -495,18 +501,22 @@ export function objectToStringifyable(obj) {
 }
 export function createObserver(elementId) {
         const target = document.getElementById(elementId);
-        pondMutationObserver = new MutationObserver((mutations) => {
+        if (!target?.parentNode) {
+            return;
+        }
+
+        pondMutationObservers[elementId]?.disconnect();
+
+        const observer = new MutationObserver((mutations) => {
             const targetRemoved = mutations.some(mutation => Array.from(mutation.removedNodes).indexOf(target) !== -1);
 
             if (targetRemoved) {
                 destroy(elementId);
-
-                pondMutationObserver && pondMutationObserver.disconnect();
-                pondMutationObserver = null;
             }
         });
 
-        pondMutationObserver.observe(target.parentNode, { childList: true });
+        observer.observe(target.parentNode, { childList: true });
+        pondMutationObservers[elementId] = observer;
 }
 export function setFileSizeVisibility(elementId, showFileSize = true) {
         // Find the FilePond element by ID
@@ -568,6 +578,7 @@ export function setFileSizeVisibility(elementId, showFileSize = true) {
         if (!fileSizeObservers) {
             fileSizeObservers = {};
         }
+        fileSizeObservers[elementId]?.disconnect();
         fileSizeObservers[elementId] = observer;
 }
 export function setValidationState(elementId, isValid, errorMessage = null) {

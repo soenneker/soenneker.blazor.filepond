@@ -4,186 +4,145 @@
 [![](https://img.shields.io/badge/Demo-Live-blueviolet?style=for-the-badge&logo=github)](https://soenneker.github.io/soenneker.blazor.filepond)
 [![](https://img.shields.io/github/actions/workflow/status/soenneker/soenneker.blazor.filepond/codeql.yml?label=CodeQL&style=for-the-badge)](https://github.com/soenneker/soenneker.blazor.filepond/actions/workflows/codeql.yml)
 
-# ![](https://user-images.githubusercontent.com/4441470/224455560-91ed3ee7-f510-4041-a8d2-3fc093025112.png) Soenneker.Blazor.FilePond
-### A Blazor interop library for the file upload library [FilePond](https://pqina.nl/filepond/)
+# Soenneker.Blazor.FilePond
 
-This library simplifies the integration of FilePond into Blazor applications, providing access to options, methods, plugins, and events. A demo project showcasing common usages is included.
-
-Diligence was taken to align the Blazor API with JS. Refer to the [FilePond documentation](https://pqina.nl/filepond/docs/) for details.
+A Blazor component and interop API for [FilePond](https://pqina.nl/filepond/), including plugin loading, typed events, browser-file streams, validation styling, and Blazor-owned upload processing.
 
 ## Installation
 
-```
+```bash
 dotnet add package Soenneker.Blazor.FilePond
 ```
 
-### Add the following to your `Startup.cs` file
+Register the scoped interop service in `Program.cs`:
 
 ```csharp
-public void ConfigureServices(IServiceCollection services)
-{
-    services.AddFilePond();
-}
+using Soenneker.Blazor.FilePond.Registrars;
+
+builder.Services.AddFilePondInteropAsScoped();
 ```
 
-? Do not include styles or scripts on the page as they get lazily injected automatically, including most plugins.
+Scripts and styles are loaded on demand. Do not add FilePond assets to the page separately.
 
-## Usage
-
-```razor
-@using Soenneker.Blazor.FilePond
-
-<FilePond @ref="FilePond" Options="_options" OnAddFile="OnAddFile"></FilePond>
-
-@code{
-    private FilePond? FilePond { get; set; }
-
-    private readonly FilePondOptions _options = new()
-    {
-        MaxFiles = 20,
-        AllowMultiple = true,
-        EnabledPlugins = [FilePondPluginType.ImagePreview]
-    };
-
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-        {
-            await FilePond.AddFile("https://picsum.photos/500/500");
-        }
-    }
-
-    private async Task OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
-    {
-        Logger.LogInformation("OnAddFile fired: Filename: {fileName}", obj.fileItem.Filename);
-        Stream? stream = await FilePond!.GetStreamForFile();
-        // do something with the stream
-        await stream.DisposeAsync();
-    }
-}
-```
-
-## Blazor-Driven `server.process`
-
-Use `OnServerProcess` when you want Blazor to own FilePond's `server.process` flow while still updating FilePond's built-in upload progress UI.
+## Select files
 
 ```razor
 @using Soenneker.Blazor.FilePond
 @using Soenneker.Blazor.FilePond.Dtos
+@using Soenneker.Blazor.FilePond.Enums
+@using Soenneker.Blazor.FilePond.Options
 
-<FilePond @ref="FilePond" Options="_options" OnServerProcess="UploadAsync"></FilePond>
+<FilePond @ref="_pond"
+          Options="_options"
+          OnAddFile="HandleFileAdded" />
 
 @code {
-    private FilePond? FilePond { get; set; }
+    private const long MaxFileBytes = 10 * 1024 * 1024;
+    private FilePond? _pond;
 
     private readonly FilePondOptions _options = new()
     {
-        InstantUpload = true
+        AllowMultiple = true,
+        MaxFiles = 5,
+        MaxFileSize = MaxFileBytes,
+        AcceptedFileTypes = ["image/jpeg", "image/png"],
+        EnabledPlugins =
+        [
+            FilePondPluginType.FileValidateSize,
+            FilePondPluginType.FileValidateType,
+            FilePondPluginType.ImagePreview
+        ]
     };
 
-    private async ValueTask<string> UploadAsync(FilePondServerProcessRequest request, CancellationToken cancellationToken)
+    private async Task HandleFileAdded((FilePondError? Error, FilePondFileItem File) result)
     {
-        await using Stream? stream = await request.GetStream(cancellationToken: cancellationToken);
+        if (result.Error is not null)
+            return;
 
-        if (stream == null)
-            throw new InvalidOperationException("Could not open the FilePond upload stream.");
+        await using Stream? stream = await _pond!.GetStreamForFile(
+            result.File.Id,
+            maxAllowedSize: MaxFileBytes);
 
-        // Wire this to your real HTTP upload progress callback.
-        await request.ReportProgress(true, stream.Length, stream.Length, cancellationToken);
+        if (stream is null)
+            return;
 
-        // Return the server file id that FilePond should store.
-        return "server-file-id";
+        // Read or upload the stream here.
     }
 }
 ```
 
-`request.GetStream()` returns the same file data FilePond would normally upload, and `request.ReportProgress(...)` pushes progress back into FilePond so the upload bar stays in sync with your Blazor-driven upload.
+Selecting a file does not persist it. Use the returned stream, configure FilePond's `Server` options, or supply `OnServerProcess` to upload it.
 
-## Validation Features
+`GetStreamForFile` returns the output after enabled transforms. Use `GetOriginalStreamForFile` when you need the browser-selected original. Dispose every returned stream. If neither `maxAllowedSize` nor `Options.MaxFileSize` is set, stream opening is limited to 2 MB.
 
-The FilePond component supports validation states with visual feedback and error messages.
+## Handle `server.process` in Blazor
 
-### Basic Validation
+Use `OnServerProcess` when FilePond should delegate each upload to your Blazor code. Return the permanent or temporary server ID that FilePond should associate with the item.
 
 ```razor
-<FilePond @ref="FilePond" 
-          IsValid="@_isValid"
-          ValidationErrorMessage="@_validationErrorMessage">
-</FilePond>
+@inject HttpClient Http
+
+<FilePond Options="_options" OnServerProcess="Upload" />
 
 @code {
-    private bool _isValid = true;
-    private string? _validationErrorMessage;
+    private const long MaxFileBytes = 10 * 1024 * 1024;
 
-    private async Task ValidateFiles()
+    private readonly FilePondOptions _options = new()
     {
-        var files = await FilePond!.GetFiles();
-        if (files?.Count == 0)
-        {
-            await FilePond.SetValidationState(false, "Please select at least one file.");
-        }
-        else
-        {
-            await FilePond.SetValidationState(true);
-        }
+        InstantUpload = true,
+        MaxFileSize = MaxFileBytes,
+        EnabledPlugins = [FilePondPluginType.FileValidateSize]
+    };
+
+    private async ValueTask<string> Upload(
+        FilePondServerProcessRequest request,
+        CancellationToken cancellationToken)
+    {
+        await using Stream? stream = await request.GetStream(
+            MaxFileBytes,
+            cancellationToken);
+
+        if (stream is null)
+            throw new InvalidOperationException("The selected file could not be opened.");
+
+        await request.ReportProgress(
+            isLengthComputable: true,
+            loaded: 0,
+            total: request.File.FileSize,
+            cancellationToken);
+
+        using var content = new StreamContent(stream);
+        using HttpResponseMessage response = await Http.PostAsync(
+            "api/uploads",
+            content,
+            cancellationToken);
+
+        response.EnsureSuccessStatusCode();
+
+        await request.ReportProgress(
+            true,
+            request.File.FileSize,
+            request.File.FileSize,
+            cancellationToken);
+
+        return await response.Content.ReadAsStringAsync(cancellationToken);
     }
 }
 ```
 
-### Programmatic Validation Control
+The callback token is canceled when FilePond aborts the upload or the component is disposed. Let cancellation and upload failures propagate so FilePond can show the failed or canceled state. `ReportProgress` updates the UI only; call it with real byte counts when your upload client exposes progress.
+
+## Validation and security
 
 ```csharp
-// Set validation state
-await FilePond.SetValidationState(false, "Custom error message");
-
-// Clear validation state
-await FilePond.SetValidationState(true);
+await _pond!.SetValidationState(false, "Choose at least one image.");
+await _pond.SetValidationState(true);
 ```
 
-## File Success States
+`IsValid`, `ValidationErrorMessage`, and `SetValidationState` control presentation. Client-side type, extension, count, and size checks are usability features—not a security boundary. Enforce authorization and limits on the receiving server, generate storage names instead of trusting `Filename`, inspect the actual content type/signature, and keep uploaded files outside executable web roots.
 
-You can programmatically set files to appear green (success state) within FilePond.
+## CDN and plugins
 
-### Setting Individual File Success
+`UseCdn` defaults to `true`; set it to `false` to load the packaged FilePond and official-plugin assets. `EnabledPlugins` loads supported plugins for the scoped session before the pond is created. Scripts for `EnabledOtherPlugins` must already exist on the page and the list must contain their JavaScript global names.
 
-```csharp
-// Set a specific file as successful by ID
-await FilePond.SetFileSuccess(fileId, true);
-
-// Set a specific file as successful by index
-await FilePond.SetFileSuccess(0, true);
-
-// Clear success state
-await FilePond.SetFileSuccess(fileId, false);
-
-// Set file success when the file is fully processed and ready (recommended)
-await FilePond.SetFileSuccessWhenReady(fileId, true);
-```
-
-### Setting All Files Success
-
-```csharp
-// Set all files as successful
-await FilePond.SetAllFilesSuccess(true);
-
-// Clear all success states
-await FilePond.SetAllFilesSuccess(false);
-```
-
-### Example: Auto-success on File Upload
-
-```csharp
-private async Task OnAddFile((FilePondError? error, FilePondFileItem fileItem) obj)
-{
-    // Process the file...
-    
-    // Set the file as successful when it's ready (recommended approach)
-    await FilePond!.SetFileSuccessWhenReady(obj.fileItem.Id, true);
-}
-```
-
-## Demo
-
-Check out the demo project for complete examples:
-- Basic usage: `/`
-- Validation & Success features: `/validation-demo`
+For the full options and method surface, use the typed `FilePondOptions` and `IFilePond` APIs; their names follow FilePond's corresponding options and methods.
