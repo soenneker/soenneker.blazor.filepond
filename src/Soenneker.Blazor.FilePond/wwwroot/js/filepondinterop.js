@@ -386,11 +386,10 @@ export async function getFileAsBlob(elementId, query) {
                 if (typeof preparedFile.output === 'string') {
                     // Base64 encoded data
                     const byteCharacters = atob(preparedFile.output.split(',')[1] || preparedFile.output);
-                    const byteNumbers = new Array(byteCharacters.length);
+                    const byteArray = new Uint8Array(byteCharacters.length);
                     for (let i = 0; i < byteCharacters.length; i++) {
-                        byteNumbers[i] = byteCharacters.charCodeAt(i);
+                        byteArray[i] = byteCharacters.charCodeAt(i);
                     }
-                    const byteArray = new Uint8Array(byteNumbers);
                     const blob = new Blob([byteArray]);
                     console.log(`Created blob from base64 for ${query}, size:`, blob.size);
                     return blob;
@@ -508,7 +507,7 @@ export function createObserver(elementId) {
         pondMutationObservers[elementId]?.disconnect();
 
         const observer = new MutationObserver((mutations) => {
-            const targetRemoved = mutations.some(mutation => Array.from(mutation.removedNodes).indexOf(target) !== -1);
+            const targetRemoved = mutations.some(mutation => Array.prototype.indexOf.call(mutation.removedNodes, target) !== -1);
 
             if (targetRemoved) {
                 destroy(elementId);
