@@ -20,11 +20,11 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Soenneker.Serilog.Sinks.Browser.Blazor" Version="4.0.408" />
-        <PackageReference Include="Soenneker.Quark.Gen.Tailwind" Version="4.0.257">
+        <PackageReference Include="Soenneker.Quark.Gen.Tailwind" Version="4.0.259">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Soenneker.Quark.Suite" Version="4.0.1406" />
+        <PackageReference Include="Soenneker.Quark.Suite" Version="4.0.1407" />
     </ItemGroup>
 
     <ItemGroup>
