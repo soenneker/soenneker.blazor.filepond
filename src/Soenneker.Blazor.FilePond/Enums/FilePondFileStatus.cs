@@ -8,6 +8,9 @@ namespace Soenneker.Blazor.FilePond.Enums;
 [EnumValue]
 public sealed partial class FilePondFileStatus
 {
+    // Prevent JSON source generation from assuming an implicit public constructor.
+    private FilePondFileStatus() => throw new System.NotSupportedException("Use a declared enum value.");
+
     /// <summary>
     /// Represents the initialization status of a FilePond file. <para/>
     /// This status is set when a file is initially added to FilePond but has not started processing or loading.

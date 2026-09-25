@@ -9,6 +9,9 @@ namespace Soenneker.Blazor.FilePond.Enums;
 [EnumValue<string>]
 public sealed partial class FilePondPluginType
 {
+    // Prevent JSON source generation from assuming an implicit public constructor.
+    private FilePondPluginType() => throw new System.NotSupportedException("Use a declared enum value.");
+
     /// <summary>
     /// Represents the FileEncode plugin for FilePond.
     /// For more information, see: https://pqina.nl/filepond/docs/api/plugins/file-encode/

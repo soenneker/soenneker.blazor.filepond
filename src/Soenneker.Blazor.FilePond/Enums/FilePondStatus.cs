@@ -8,6 +8,9 @@ namespace Soenneker.Blazor.FilePond.Enums;
 [EnumValue]
 public sealed partial class FilePondStatus 
 {
+    // Prevent JSON source generation from assuming an implicit public constructor.
+    private FilePondStatus() => throw new System.NotSupportedException("Use a declared enum value.");
+
     /// <summary>
     /// The empty.
     /// </summary>
