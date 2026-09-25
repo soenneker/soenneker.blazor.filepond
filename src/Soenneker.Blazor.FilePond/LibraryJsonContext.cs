@@ -15,6 +15,8 @@ namespace Soenneker.Blazor.FilePond;
 [JsonSerializable(typeof(FilePondFileItem))]
 [JsonSerializable(typeof(FilePondOptions))]
 [JsonSerializable(typeof(List<FilePondFileItem>))]
+[JsonSerializable(typeof(FilePondError))]
+[JsonSerializable(typeof(FilePondFileRenameInfo))]
 [JsonSerializable(typeof(object))]
 [JsonSerializable(typeof(string))]
 [JsonSerializable(typeof(bool))]
