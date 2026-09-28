@@ -11,7 +11,6 @@ using Soenneker.Blazor.FilePond.Options;
 using Soenneker.Utils.Json;
 using System.IO;
 using System.Linq;
-using Soenneker.Extensions.Enumerable;
 using System.Threading;
 using Soenneker.Asyncs.Initializers;
 using Soenneker.Blazor.Utils.ModuleImport.Abstract;
@@ -479,7 +478,7 @@ public sealed class FilePondInterop : IFilePondInterop
     {
         List<FilePondFileItem>? files = await GetFiles(elementId, cancellationToken);
 
-        if (files.IsNullOrEmpty())
+        if (files is null || files.Count == 0)
             return new List<Stream>();
 
         // Use the new GetStreamsForFiles method to avoid concurrency issues
@@ -496,7 +495,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
             using (source)
             {
-                if (fileIds.IsNullOrEmpty())
+                if (fileIds is null || fileIds.Count == 0)
                 {
                     _logger.LogWarning("GetStreamsForFiles called with empty fileIds list");
                     return new List<Stream>();

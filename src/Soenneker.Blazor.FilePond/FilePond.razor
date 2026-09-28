@@ -9,7 +9,6 @@
 @using Soenneker.Blazor.Utils.InteropEventListener.Abstract
 @using Soenneker.Extensions.String
 @using Soenneker.Extensions.CancellationTokens
-@using Soenneker.Extensions.Enumerable
 @using Soenneker.Utils.Json
 @using Soenneker.Extensions.List
 @using Soenneker.Blazor.Utils.Ids
@@ -193,10 +192,10 @@
 
                 if (Options != null)
                 {
-                    if (Options.EnabledPlugins.Populated())
+                    if (Options.EnabledPlugins is { Count: > 0 })
                         await FilePondInterop.EnablePlugins(Options.UseCdn, Options.EnabledPlugins, linked);
 
-                    if (Options.EnabledOtherPlugins.Populated())
+                    if (Options.EnabledOtherPlugins is { Count: > 0 })
                         await FilePondInterop.EnableOtherPlugins(Options.UseCdn, Options.EnabledOtherPlugins, linked);
                 }
 
@@ -263,10 +262,10 @@
 
         using (cts)
         {
-            if (options.EnabledPlugins.Populated())
+            if (options.EnabledPlugins is { Count: > 0 })
                 await FilePondInterop.EnablePlugins(options.UseCdn, options.EnabledPlugins, linked);
 
-            if (options.EnabledOtherPlugins.Populated())
+            if (options.EnabledOtherPlugins is { Count: > 0 })
                 await FilePondInterop.EnableOtherPlugins(options.UseCdn, options.EnabledOtherPlugins, linked);
 
             await FilePondInterop.SetOptions(_elementId, options, useBlazorServerProcess, linked);
@@ -606,7 +605,7 @@
 
     public async ValueTask<List<Stream>> GetStreamsForFiles(List<FilePondFileItem> files, long? maxAllowedSize = null, CancellationToken cancellationToken = default)
     {
-        if (files.IsNullOrEmpty())
+        if (files is null || files.Count == 0)
             return new List<Stream>();
 
         List<string> fileIds = files.Select(f => f.Id).ToList();
