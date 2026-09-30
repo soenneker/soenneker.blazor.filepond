@@ -14,7 +14,7 @@ namespace Soenneker.Blazor.FilePond.Abstract;
 /// <summary>
 /// A Blazor interop library for the file upload library FilePond.
 /// </summary>
-/// <remarks>Library DTOs use generated JSON metadata. Register an additional source-generated JsonSerializerContext for custom values inside object-typed properties; unknown CLR types are rejected.</remarks>
+/// <remarks>Payloads use JsonUtil web JSON defaults, including custom values inside object-typed properties.</remarks>
 public interface IFilePondInterop : IEventListeningInterop, IAsyncDisposable
 {
     /// <summary>

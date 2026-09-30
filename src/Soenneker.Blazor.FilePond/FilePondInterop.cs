@@ -28,10 +28,7 @@ namespace Soenneker.Blazor.FilePond;
 /// <inheritdoc cref="IFilePondInterop"/>
 public sealed class FilePondInterop : IFilePondInterop
 {
-    private readonly System.Text.Json.JsonSerializerOptions _jsonOptions;
 
-    private System.Text.Json.Serialization.Metadata.JsonTypeInfo<T> GetJsonTypeInfo<T>() =>
-        (System.Text.Json.Serialization.Metadata.JsonTypeInfo<T>)_jsonOptions.GetTypeInfo(typeof(T));
 
     private readonly ILogger<FilePondInterop> _logger;
     private readonly List<FilePondPluginType> _enabledPlugins = [];
@@ -51,9 +48,8 @@ public sealed class FilePondInterop : IFilePondInterop
     private readonly CancellationScope _cancellationScope = new();
     private DotNetObjectReference<FilePondInterop>? _dotNetReference;
 
-    public FilePondInterop(ILogger<FilePondInterop> logger, IResourceLoader resourceLoader, IModuleImportUtil moduleImportUtil, System.Text.Json.Serialization.JsonSerializerContext? jsonContext = null)
+    public FilePondInterop(ILogger<FilePondInterop> logger, IResourceLoader resourceLoader, IModuleImportUtil moduleImportUtil)
     {
-        _jsonOptions = LibraryJsonContext.WithContext(jsonContext);
         _logger = logger;
         _resourceLoader = resourceLoader;
         _moduleImportUtil = moduleImportUtil;
@@ -128,7 +124,7 @@ public sealed class FilePondInterop : IFilePondInterop
             string? json = null;
 
             if (options != null)
-                json = JsonUtil.Serialize(options, GetJsonTypeInfo<FilePondOptions>());
+                json = JsonUtil.Serialize(options);
 
             object? dotNetReference = useBlazorServerProcess ? GetOrCreateDotNetReference() : null;
 
@@ -145,7 +141,7 @@ public sealed class FilePondInterop : IFilePondInterop
     public async ValueTask SetOptions(string elementId, FilePondOptions options, bool useBlazorServerProcess = false, CancellationToken cancellationToken = default)
     {
         CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
-        string json = JsonUtil.Serialize(options, GetJsonTypeInfo<FilePondOptions>())!;
+        string json = JsonUtil.Serialize(options)!;
 
         using (source)
         {
@@ -278,7 +274,7 @@ public sealed class FilePondInterop : IFilePondInterop
         using (source)
         {
             var str = await InvokeAsync<string>("getFile", linked, elementId, query);
-        return JsonUtil.Deserialize<FilePondFileItem>(str, GetJsonTypeInfo<FilePondFileItem>());
+        return JsonUtil.Deserialize<FilePondFileItem>(str);
         }
     }
 
@@ -289,7 +285,7 @@ public sealed class FilePondInterop : IFilePondInterop
         using (source)
         {
             var str = await InvokeAsync<string>("getFiles", linked, elementId);
-            return JsonUtil.Deserialize<List<FilePondFileItem>>(str, GetJsonTypeInfo<List<FilePondFileItem>>());
+            return JsonUtil.Deserialize<List<FilePondFileItem>>(str);
         }
     }
 
@@ -640,7 +636,7 @@ public sealed class FilePondInterop : IFilePondInterop
         if (!_serverProcessRegistrations.TryGetValue(elementId, out ServerProcessRegistration? registration))
             throw new InvalidOperationException($"No Blazor server.process handler registered for FilePond element '{elementId}'.");
 
-        FilePondFileItem? file = JsonUtil.Deserialize<FilePondFileItem>(fileJson, GetJsonTypeInfo<FilePondFileItem>());
+        FilePondFileItem? file = JsonUtil.Deserialize<FilePondFileItem>(fileJson);
 
         if (file == null || !file.Id.HasContent())
             throw new InvalidOperationException("Unable to resolve the FilePond file item for Blazor-driven server.process");
