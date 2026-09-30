@@ -9,7 +9,7 @@ namespace Soenneker.Blazor.FilePond.Tests;
 public class JsonMetadataTests
 {
     [Test]
-    public async Task File_origin_remains_numeric_and_round_trips()
+    public async ValueTask File_origin_remains_numeric_and_round_trips()
     {
         var metadata = LibraryJsonContext.Get<FilePondFileItem>();
         var value = JsonUtil.Deserialize("{\"id\":\"file-1\",\"origin\":1}", metadata)!;
