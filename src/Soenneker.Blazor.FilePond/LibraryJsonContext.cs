@@ -14,6 +14,8 @@ namespace Soenneker.Blazor.FilePond;
 [JsonSourceGenerationOptions(JsonSerializerDefaults.Web, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, ReadCommentHandling = JsonCommentHandling.Skip, UseStringEnumConverter = true, Converters = new[] { typeof(FilePondFileOriginMetadataConverter), typeof(FilePondFileStatusMetadataConverter), typeof(FilePondPluginTypeMetadataConverter), typeof(FilePondStatusMetadataConverter) })]
 [JsonSerializable(typeof(FilePondFileItem))]
 [JsonSerializable(typeof(FilePondOptions))]
+[JsonSerializable(typeof(FilePondAddFileOptions))]
+[JsonSerializable(typeof(FilePondRemoveFileOptions))]
 [JsonSerializable(typeof(List<FilePondFileItem>))]
 [JsonSerializable(typeof(FilePondError))]
 [JsonSerializable(typeof(FilePondFileRenameInfo))]

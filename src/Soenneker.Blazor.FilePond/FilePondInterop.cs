@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization.Metadata;
+using System.Text.Json.Serialization;
 using System.Diagnostics.CodeAnalysis;
 using System;
 using System.Collections.Concurrent;
@@ -28,6 +30,10 @@ namespace Soenneker.Blazor.FilePond;
 /// <inheritdoc cref="IFilePondInterop"/>
 public sealed class FilePondInterop : IFilePondInterop
 {
+    private readonly JsonSerializerOptions _jsonOptions;
+
+    private JsonTypeInfo<T> GetJsonTypeInfo<T>() => (JsonTypeInfo<T>)_jsonOptions.GetTypeInfo(typeof(T));
+
 
 
     private readonly ILogger<FilePondInterop> _logger;
@@ -48,8 +54,9 @@ public sealed class FilePondInterop : IFilePondInterop
     private readonly CancellationScope _cancellationScope = new();
     private DotNetObjectReference<FilePondInterop>? _dotNetReference;
 
-    public FilePondInterop(ILogger<FilePondInterop> logger, IResourceLoader resourceLoader, IModuleImportUtil moduleImportUtil)
+    public FilePondInterop(ILogger<FilePondInterop> logger, IResourceLoader resourceLoader, IModuleImportUtil moduleImportUtil, JsonSerializerContext? jsonContext = null)
     {
+        _jsonOptions = LibraryJsonContext.WithContext(jsonContext);
         _logger = logger;
         _resourceLoader = resourceLoader;
         _moduleImportUtil = moduleImportUtil;
@@ -124,7 +131,7 @@ public sealed class FilePondInterop : IFilePondInterop
             string? json = null;
 
             if (options != null)
-                json = JsonUtil.Serialize(options);
+                json = JsonUtil.Serialize(options, GetJsonTypeInfo<FilePondOptions>());
 
             object? dotNetReference = useBlazorServerProcess ? GetOrCreateDotNetReference() : null;
 
@@ -141,7 +148,7 @@ public sealed class FilePondInterop : IFilePondInterop
     public async ValueTask SetOptions(string elementId, FilePondOptions options, bool useBlazorServerProcess = false, CancellationToken cancellationToken = default)
     {
         CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
-        string json = JsonUtil.Serialize(options)!;
+        string json = JsonUtil.Serialize(options, GetJsonTypeInfo<FilePondOptions>())!;
 
         using (source)
         {
@@ -160,7 +167,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addFile", linked, elementId, uriOrBase64EncodedData, options);
+            await InvokeVoidAsync("addFile", linked, elementId, uriOrBase64EncodedData, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -176,7 +183,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addFileFromStream", linked, elementId, streamRef, options);
+            await InvokeVoidAsync("addFileFromStream", linked, elementId, streamRef, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -192,7 +199,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addLimboFile", linked, elementId, filename, options);
+            await InvokeVoidAsync("addLimboFile", linked, elementId, filename, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -208,7 +215,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addFiles", linked, elementId, uriOrBase64EncodedData, options);
+            await InvokeVoidAsync("addFiles", linked, elementId, uriOrBase64EncodedData, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -223,7 +230,7 @@ public sealed class FilePondInterop : IFilePondInterop
         CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
-            await InvokeVoidAsync("removeFile", linked, elementId, query, options);
+            await InvokeVoidAsync("removeFile", linked, elementId, query, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondRemoveFileOptions>()));
     }
 
     public async ValueTask RemoveFiles(string elementId, object? query = null, FilePondRemoveFileOptions? options = null,
@@ -274,7 +281,7 @@ public sealed class FilePondInterop : IFilePondInterop
         using (source)
         {
             var str = await InvokeAsync<string>("getFile", linked, elementId, query);
-        return JsonUtil.Deserialize<FilePondFileItem>(str);
+        return JsonUtil.Deserialize(str, GetJsonTypeInfo<FilePondFileItem>());
         }
     }
 
@@ -285,7 +292,7 @@ public sealed class FilePondInterop : IFilePondInterop
         using (source)
         {
             var str = await InvokeAsync<string>("getFiles", linked, elementId);
-            return JsonUtil.Deserialize<List<FilePondFileItem>>(str);
+            return JsonUtil.Deserialize(str, GetJsonTypeInfo<List<FilePondFileItem>>());
         }
     }
 
@@ -636,7 +643,7 @@ public sealed class FilePondInterop : IFilePondInterop
         if (!_serverProcessRegistrations.TryGetValue(elementId, out ServerProcessRegistration? registration))
             throw new InvalidOperationException($"No Blazor server.process handler registered for FilePond element '{elementId}'.");
 
-        FilePondFileItem? file = JsonUtil.Deserialize<FilePondFileItem>(fileJson);
+        FilePondFileItem? file = JsonUtil.Deserialize(fileJson, GetJsonTypeInfo<FilePondFileItem>());
 
         if (file == null || !file.Id.HasContent())
             throw new InvalidOperationException("Unable to resolve the FilePond file item for Blazor-driven server.process");

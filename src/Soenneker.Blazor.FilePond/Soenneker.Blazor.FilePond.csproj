@@ -52,4 +52,7 @@
     <ItemGroup>
         <InternalsVisibleTo Include="Soenneker.Blazor.FilePond.Tests" />
     </ItemGroup>
+    <ItemGroup>
+        <InternalsVisibleTo Include="Soenneker.Blazor.FilePond.TrimSmoke" />
+    </ItemGroup>
 </Project>
