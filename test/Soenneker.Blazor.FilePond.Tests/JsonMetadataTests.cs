@@ -3,13 +3,14 @@ using System.Threading.Tasks;
 using Soenneker.Blazor.FilePond.Dtos;
 using Soenneker.Blazor.FilePond.Enums;
 using Soenneker.Utils.Json;
+using System.Threading;
 
 namespace Soenneker.Blazor.FilePond.Tests;
 
 public class JsonMetadataTests
 {
     [Test]
-    public async ValueTask File_origin_remains_numeric_and_round_trips()
+    public async ValueTask File_origin_remains_numeric_and_round_trips(CancellationToken cancellationToken)
     {
         var metadata = LibraryJsonContext.Get<FilePondFileItem>();
         var value = JsonUtil.Deserialize("{\"id\":\"file-1\",\"origin\":1}", metadata)!;
