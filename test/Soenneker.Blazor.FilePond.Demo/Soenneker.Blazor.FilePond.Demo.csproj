@@ -11,16 +11,16 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly" Version="10.0.12" />
         <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.DevServer" Version="10.0.12" PrivateAssets="all" />
-        <PackageReference Include="Soenneker.Quark.Gen.Lucide" Version="4.0.278">
+        <PackageReference Include="Soenneker.Quark.Gen.Lucide" Version="4.0.283">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Soenneker.Quark.Gen.Tailwind.Manifest" Version="4.0.272">
+        <PackageReference Include="Soenneker.Quark.Gen.Tailwind.Manifest" Version="4.0.277">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Soenneker.Serilog.Sinks.Browser.Blazor" Version="4.0.414" />
-        <PackageReference Include="Soenneker.Quark.Gen.Tailwind" Version="4.0.284">
+        <PackageReference Include="Soenneker.Serilog.Sinks.Browser.Blazor" Version="4.0.419" />
+        <PackageReference Include="Soenneker.Quark.Gen.Tailwind" Version="4.0.290">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
