@@ -43,11 +43,11 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Soenneker.Asyncs.Initializers" Version="4.0.126" />
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.4186" />
+        <PackageReference Include="Soenneker.Asyncs.Initializers" Version="4.0.128" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.4188" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1788" />
         <PackageReference Include="Soenneker.Extensions.List" Version="4.0.1006" />
-        <PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.110" />
+        <PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.115" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Soenneker.Blazor.FilePond.Tests" />
