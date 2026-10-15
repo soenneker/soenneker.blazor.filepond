@@ -45,9 +45,9 @@
     <ItemGroup>
         <PackageReference Include="Soenneker.Asyncs.Initializers" Version="4.0.130" />
         <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.4191" />
-        <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1789" />
-        <PackageReference Include="Soenneker.Extensions.List" Version="4.0.1006" />
-        <PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.115" />
+        <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1791" />
+        <PackageReference Include="Soenneker.Extensions.List" Version="4.0.1007" />
+        <PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.118" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Soenneker.Blazor.FilePond.Tests" />
