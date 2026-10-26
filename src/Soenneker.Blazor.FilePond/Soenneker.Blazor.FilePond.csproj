@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk.Razor">
     <PropertyGroup>
-        <TargetFramework>net10.0</TargetFramework>
+        <TargetFramework>net11.0</TargetFramework>
         <Nullable>enable</Nullable>
         <IsAotCompatible>true</IsAotCompatible>
         <Platforms>AnyCPU</Platforms>
@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <Description>A Blazor interop library for the file upload library FilePond</Description>
-        <Version Condition="'$(BUILD_VERSION)' == ''">4.0.0</Version>
+        <Version Condition="'$(BUILD_VERSION)' == ''">11.0.0</Version>
         <Version Condition="'$(BUILD_VERSION)' != ''">$(BUILD_VERSION)</Version>
         <AssemblyName>Soenneker.Blazor.FilePond</AssemblyName>
         <PackageId>Soenneker.Blazor.FilePond</PackageId>
@@ -44,10 +44,10 @@
 
     <ItemGroup>
         <PackageReference Include="Soenneker.Asyncs.Initializers" Version="4.0.130" />
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.4192" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.4193" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1792" />
-        <PackageReference Include="Soenneker.Extensions.List" Version="4.0.1007" />
-        <PackageReference Include="Soenneker.Lepton.Suite" Version="4.0.128" />
+        <PackageReference Include="Soenneker.Extensions.List" Version="4.0.1008" />
+        <PackageReference Include="Soenneker.Lepton.Suite" Version="11.0.130" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Soenneker.Blazor.FilePond.Tests" />
