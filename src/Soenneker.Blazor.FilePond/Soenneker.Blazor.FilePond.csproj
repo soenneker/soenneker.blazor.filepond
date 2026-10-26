@@ -47,7 +47,7 @@
         <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="4.0.4193" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="4.0.1793" />
         <PackageReference Include="Soenneker.Extensions.List" Version="4.0.1008" />
-        <PackageReference Include="Soenneker.Lepton.Suite" Version="11.0.130" />
+        <PackageReference Include="Soenneker.Lepton.Suite" Version="11.0.132" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Soenneker.Blazor.FilePond.Tests" />
