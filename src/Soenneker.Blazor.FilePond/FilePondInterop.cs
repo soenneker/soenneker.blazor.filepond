@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using Soenneker.Blazor.FilePond.Abstract;
 using Microsoft.Extensions.Logging;
 using Microsoft.JSInterop;
+using Soenneker.Blazor.Extensions.IJSObjectReferences;
 using System.Threading.Tasks;
 using Soenneker.Blazor.FilePond.Dtos;
 using Soenneker.Blazor.FilePond.Options;
@@ -96,28 +97,14 @@ public sealed class FilePondInterop : IFilePondInterop
 
     private async ValueTask InvokeVoidAsync(string identifier, CancellationToken cancellationToken, params object?[] args)
     {
-        try
-        {
-            IJSObjectReference module = await GetModule(cancellationToken);
-            await module.InvokeVoidAsync(identifier, cancellationToken, args);
-        }
-        catch (JSException exception)
-        {
-            throw new JSException($"JavaScript operation 'FilePondInterop.{identifier}' failed: {exception.Message}", exception);
-        }
+        IJSObjectReference module = await GetModule(cancellationToken);
+        await module.InvokeVoidWithContextAsync(identifier, cancellationToken, args);
     }
 
     private async ValueTask<T> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] T>(string identifier, CancellationToken cancellationToken, params object?[] args)
     {
-        try
-        {
-            IJSObjectReference module = await GetModule(cancellationToken);
-            return await module.InvokeAsync<T>(identifier, cancellationToken, args);
-        }
-        catch (JSException exception)
-        {
-            throw new JSException($"JavaScript operation 'FilePondInterop.{identifier}' failed: {exception.Message}", exception);
-        }
+        IJSObjectReference module = await GetModule(cancellationToken);
+        return await module.InvokeWithContextAsync<T>(identifier, cancellationToken, args);
     }
 
     public async ValueTask Initialize(CancellationToken cancellationToken = default)
