@@ -96,14 +96,28 @@ public sealed class FilePondInterop : IFilePondInterop
 
     private async ValueTask InvokeVoidAsync(string identifier, CancellationToken cancellationToken, params object?[] args)
     {
-        IJSObjectReference module = await GetModule(cancellationToken);
-        await module.InvokeVoidAsync(identifier, cancellationToken, args);
+        try
+        {
+            IJSObjectReference module = await GetModule(cancellationToken);
+            await module.InvokeVoidAsync(identifier, cancellationToken, args);
+        }
+        catch (JSException exception)
+        {
+            throw new JSException($"JavaScript operation 'FilePondInterop.{identifier}' failed: {exception.Message}", exception);
+        }
     }
 
     private async ValueTask<T> InvokeAsync<[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicConstructors | DynamicallyAccessedMemberTypes.PublicFields | DynamicallyAccessedMemberTypes.PublicProperties)] T>(string identifier, CancellationToken cancellationToken, params object?[] args)
     {
-        IJSObjectReference module = await GetModule(cancellationToken);
-        return await module.InvokeAsync<T>(identifier, cancellationToken, args);
+        try
+        {
+            IJSObjectReference module = await GetModule(cancellationToken);
+            return await module.InvokeAsync<T>(identifier, cancellationToken, args);
+        }
+        catch (JSException exception)
+        {
+            throw new JSException($"JavaScript operation 'FilePondInterop.{identifier}' failed: {exception.Message}", exception);
+        }
     }
 
     public async ValueTask Initialize(CancellationToken cancellationToken = default)
@@ -167,7 +181,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addFile", linked, elementId, uriOrBase64EncodedData, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
+            await InvokeVoidAsync("addFile", linked, elementId, uriOrBase64EncodedData, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions?>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -183,7 +197,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addFileFromStream", linked, elementId, streamRef, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
+            await InvokeVoidAsync("addFileFromStream", linked, elementId, streamRef, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions?>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -199,7 +213,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addLimboFile", linked, elementId, filename, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
+            await InvokeVoidAsync("addLimboFile", linked, elementId, filename, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions?>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -215,7 +229,7 @@ public sealed class FilePondInterop : IFilePondInterop
 
         using (source)
         {
-            await InvokeVoidAsync("addFiles", linked, elementId, uriOrBase64EncodedData, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions>()));
+            await InvokeVoidAsync("addFiles", linked, elementId, uriOrBase64EncodedData, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondAddFileOptions?>()));
 
             if (options is {ShowFileSize: false})
             {
@@ -230,7 +244,7 @@ public sealed class FilePondInterop : IFilePondInterop
         CancellationToken linked = _cancellationScope.CancellationToken.Link(cancellationToken, out CancellationTokenSource? source);
 
         using (source)
-            await InvokeVoidAsync("removeFile", linked, elementId, query, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondRemoveFileOptions>()));
+            await InvokeVoidAsync("removeFile", linked, elementId, query, JsonSerializer.SerializeToElement(options, GetJsonTypeInfo<FilePondRemoveFileOptions?>()));
     }
 
     public async ValueTask RemoveFiles(string elementId, object? query = null, FilePondRemoveFileOptions? options = null,

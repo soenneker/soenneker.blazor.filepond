@@ -1,3 +1,5 @@
+@using Microsoft.Extensions.Logging
+@inject ILogger<GetStreamsForFilesDemo> Logger
 @page "/getstreamsforfiles-demo"
 @using Soenneker.Blazor.FilePond
 @using Soenneker.Blazor.FilePond.Options
@@ -270,7 +272,7 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("console.error", $"Error downloading streams: {ex.Message}");
+            Logger.LogError(ex, "Error downloading streams");
         }
     }
 
@@ -293,11 +295,10 @@
             }
             
             lastTestDetails = string.Join("\n", content);
-            StateHasChanged();
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("console.error", $"Error showing stream content: {ex.Message}");
+            Logger.LogError(ex, "Error showing stream content");
         }
     }
 
@@ -345,15 +346,15 @@
         }
         catch (Exception ex)
         {
-            await JSRuntime.InvokeVoidAsync("console.error", $"Error comparing files: {ex.Message}");
+            Logger.LogError(ex, "Error comparing files");
         }
     }
 
-    protected override async Task OnAfterRenderAsync(bool firstRender)
+    protected override void OnAfterRender(bool firstRender)
     {
         if (firstRender)
         {
-            await JSRuntime.InvokeVoidAsync("console.log", "GetStreamsForFiles Demo page loaded");
+            Logger.LogInformation("GetStreamsForFiles Demo page loaded");
         }
     }
 }

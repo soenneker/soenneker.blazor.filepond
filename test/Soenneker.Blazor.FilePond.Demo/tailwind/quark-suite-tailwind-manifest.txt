@@ -497,6 +497,7 @@ OnInteraction
 OnInteractionInternal
 OnInteractionInternal:
 OnParametersSetAsync
+OnRefreshClick
 OnTogglePlayback
 One
 Only
@@ -576,7 +577,6 @@ RealtimeScrollingEnabled
 Redo
 Reference
 Refresh
-RefreshItems
 Reject
 Reload
 Remembers
