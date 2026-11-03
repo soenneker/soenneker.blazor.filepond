@@ -46,10 +46,10 @@
 
     <ItemGroup>
         <PackageReference Include="Soenneker.Asyncs.Initializers" Version="11.0.135" />
-        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="11.0.4204" />
+        <PackageReference Include="Soenneker.Blazor.Utils.InteropEventListener" Version="11.0.4205" />
         <PackageReference Include="Soenneker.Blazor.Utils.ResourceLoader" Version="11.0.1807" />
         <PackageReference Include="Soenneker.Extensions.List" Version="11.0.1011" />
-        <PackageReference Include="Soenneker.Lepton.Suite" Version="11.0.134" />
+        <PackageReference Include="Soenneker.Lepton.Suite" Version="11.0.135" />
     </ItemGroup>
     <ItemGroup>
         <InternalsVisibleTo Include="Soenneker.Blazor.FilePond.Tests" />
@@ -61,6 +61,6 @@
         <PackageReference Include="Soenneker.Blazor.Extensions.IJSObjectReferences" Version="11.0.2" />
     </ItemGroup>
     <ItemGroup>
-        <PackageReference Include="Soenneker.Gen.Web.Minifier" Version="11.0.45" PrivateAssets="all" />
+        <PackageReference Include="Soenneker.Gen.Web.Minifier" Version="11.0.46" PrivateAssets="all" />
     </ItemGroup>
 </Project>
